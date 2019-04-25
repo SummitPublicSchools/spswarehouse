@@ -1,0 +1,4 @@
+== Setting up credentials ==
+
+- Copy the credentials.py.template file to credentials.py
+- Fill in your Snowflake login credentials between quotation marks
