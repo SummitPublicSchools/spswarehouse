@@ -1,0 +1,7 @@
+#
+####### requirements.txt #######
+#
+
+pandas == 0.23.4
+sqlalchemy == 1.2.15
+snowflake.sqlalchemy == 1.1.11

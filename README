@@ -2,3 +2,8 @@
 
 - Copy the credentials.py.template file to credentials.py
 - Fill in your Snowflake login credentials between quotation marks
+
+== Installing dependencies ==
+
+- This assumes that you have terminal access and pip installed.
+- Run pip -r requirements.txt in the command line
