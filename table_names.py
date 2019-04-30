@@ -1,4 +1,4 @@
-from warehouse import Warehouse
+from .warehouse import Warehouse
 
 def initialize_schema_object(klass):
     schema_name = klass.schema_name
@@ -30,16 +30,20 @@ class SchoolMint:
 class WildWest:
     schema_name = 'wild_west'
 
-initialize_schema_object(InformationSchema)
-initialize_schema_object(InfoTeam)
-initialize_schema_object(PowerSchool)
-initialize_schema_object(Public)
-initialize_schema_object(SchoolMint)
-initialize_schema_object(WildWest)
+# initialize_schema_object(InformationSchema)
+# information_schema = InformationSchema()
 
-information_schema = InformationSchema()
-info_team = InfoTeam()
-powerschool = PowerSchool()
+# initialize_schema_object(InfoTeam)
+# info_team = InfoTeam()
+
+# initialize_schema_object(PowerSchool)
+# powerschool = PowerSchool()
+
+# initialize_schema_object(SchoolMint)
+# schoolmint = SchoolMint()
+
+initialize_schema_object(Public)
 public = Public()
-schoolmint = SchoolMint()
+
+initialize_schema_object(WildWest)
 wild_west = WildWest()
