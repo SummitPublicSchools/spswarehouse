@@ -7,3 +7,23 @@
 
 - This assumes that you have terminal access and pip installed.
 - Run pip -r requirements.txt in the command line
+
+== Uploading CSV file ==
+
+To upload CSV files to the warehouse, you'll need the "table_utils" and
+"warehouse" modules:
+
+    from table_utils import *
+    from warehouse import Warehouse
+
+If the table you want to upload to already exists, upload the CSV:
+
+    reflected_table = Warehouse.reflect(<table name>)
+    upload_csv(reflected_table, <csv_file>)
+
+If you want to upload to a *new* table, you'll have to create it first:
+
+    sql = create_table_stmt_from_csv(<csv_file>, <table name>, <schema>)
+    Warehouse.execute(sql)
+
+ Now you can call reflect() and upload_csv() for the table.
