@@ -70,7 +70,7 @@ class Warehouse:
         """
         return pandas.read_sql(sql, self.engine)
 
-    def reflect(self, table_or_view, schema='public'):
+    def reflect(self, table_or_view, schema=snowflake_config['schema']):
         """
         reflect: table name, schema name (optional) -> SQLAlchemy Table object
         reflect: view name,  schema name (optional) -> SQLAlchemy Table object
@@ -94,11 +94,7 @@ class Warehouse:
         if table is not None:
             return table
 
-        # apparently, sqlalchemy is pretty picky about the public schema
-        if schema == 'public':
-            table = Table(table_or_view, self.meta, autoload=True)
-        else:
-            table = Table(table_or_view, self.meta, autoload=True, schema=schema)
+        table = Table(table_or_view, self.meta, autoload=True, schema=schema)
 
         # sets the column names explicitly on the instance so that tab-completion is easy
         for c in table.columns:
