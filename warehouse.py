@@ -1,6 +1,6 @@
 import pandas
 
-from credentials import snowflake_config
+from .credentials import snowflake_config
 from sqlalchemy.engine.url import URL
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.engine import reflection
