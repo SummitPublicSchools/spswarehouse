@@ -54,7 +54,7 @@ Snowflake access is implemented in by `Warehouse`. You can:
 - Reflect a table using `reflect_table()`
 - Run a SQL command using `execute()`
 
-## Table & column name tab-completion
+### Table & column name tab-completion
 
 When you run `import spswarehouse`, some tab-completion for table and column names is automatically set up.
 
@@ -77,28 +77,31 @@ initialize_schema_object(SchoolMint)
 schoolmint = SchoolMint()
 ```
 
-## CSV file upload
+### Uploading data
 
-CSV uploading is implemented by the `table_utils` module.
+The `table_utils` module implements uploading data to the Snowflake warehouse.
 
-If the table you want to upload your CSV to already exists:
+The data sources you can upload from are:
 
-```
-from spswarehouse.table_utils import *
-from spswarehouse.warehouse import Warehouse
+- pandas.DataFrame `dataframe`
+- CSV file `csv_filename`
+- Google Sheet `google_sheet`
 
-reflected_table = Warehouse.reflect(<table name>)
-upload_csv(reflected_table, <csv_file>)
-```
+The two major methods are `create_table_stmt` and `upload_to_warehouse`. Both support the above data sources as optional arguments:
 
-If you want to upload to a *new* table, you'll have to create the table first:
+ - `dataframe`
+ - `csv_filename`
+ - `google_sheet`
 
-```
-sql = create_table_stmt_from_csv(<csv_file>, <table name>, <schema>)
-Warehouse.execute(sql)
-```
+From Jupyter Notebook, open `snowflake-upload-example.ipynb` for a basic example.
 
- Now you can call `reflect()` and `upload_csv()`.
+### Column types
+
+`create_table_stmt()` will try to guess column types when given a DataFrame, CSV file, or Google Sheet.  
+
+If you want to explicitly name and type your columns, you can pass in the `columns` argument instead.
+
+See the documentation for `guess_col_types()` for best practices for types.
 
 ## Google Sheets
 
@@ -117,7 +120,7 @@ From Jupyter Notebook, open and run `googlesheets-example.ipynb` for a basic exa
 
 ### Uploading to warehouse
 
-Once you have a `DataFrame`, you can download data to a CSV file to your local machine and upload it to the warehouse using `table_utils`.
+From Jupyter Notebook open and run `snowflake-upload-example.ipynb` for a basic example on uploading Google Sheet data to the Snowflake warehouse.
 
 ### Column types
 
