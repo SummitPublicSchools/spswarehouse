@@ -25,12 +25,22 @@ You can `exit` the Anaconda Prompt; the next step is more easily done in the Fil
 
 ### Set up credentials
 
-To access the Snowflake data warehouse, you'll need to set up your credentials first. This file is in the
-`spswarehouse` directory.
+The default directory where this module is installed is `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`. Your credentials are in the `spswarehouse` subdirectory.
 
-- Default directory: `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`
 - Copy the `credentials.py.template` file to `credentials.py`.
+
+#### Snowflake
+
+To access the Snowflake data warehouse, you'll need to set up your credentials first.
+
 - Fill in your Snowflake `user` and `password`  credentials between quotation marks.
+
+#### Google Sheets
+
+To access your Google Sheets, you'll need to get the OAuth2 client secret from an administrator.
+
+- In `credentials.py`, under `google_config` and `oauth2-client-id`, fill in the `client_secret` between quotation marks.
+- The first time you `import` the `GoogleSheets` module, a browser tab will open for you to grant access to your user data.
 
 # Usage
 
@@ -89,6 +99,23 @@ Warehouse.execute(sql)
 
  Now you can call `reflect()` and `upload_csv()`.
 
- ## GoogleSheet upload
+## Google Sheet
+
+Make sure you've set up `credentials.py` first.
+
+The first time you `import` the `GoogleSheets` module, you'll grant access to your data.
+
+`GoogleSheets` is really an instance of `gspread.Client`, so you use the entire
+[`gspread`](https://gspread.readthedocs.io/en/latest/) Python API.
+
+### Accessing data
+
+From Jupyter Notebook, open and run `GoogleSheets Example.ipynb` for a basic example on loading a spreadsheet and reading sheet data into `pandas.DataFrame`.
+
+### Uploading to warehouse
+
+Once you have a `DataFrame`, you can download data to a CSV file to your local machine and upload it to the warehouse using `table_utils`.
+
+### Column types
 
 TODO
