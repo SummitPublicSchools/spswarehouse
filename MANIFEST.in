@@ -1,0 +1,10 @@
+# The wheel/bdist does **NOT** look at this file.
+
+# Do **NOT** run setup.py for bdist_wheel or you will upload your password.
+# If for some reason you must create a wheel distribution, delete your
+# credentials.py file before running any commands.
+exclude spswarehouse/credentials.py
+
+# This makes non *.py files available in the manual .tar.gz download
+include spswarehouse/requirements.txt
+include spswarehouse/credentials.py.template
