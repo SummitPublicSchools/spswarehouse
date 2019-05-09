@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from warehouse import Warehouse
+from .warehouse import Warehouse
 
 ENCODING='utf-8'
 INSERT_BATCH_SIZE=50
