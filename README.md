@@ -8,18 +8,27 @@
 ## Installation
 
 - To install, run: `pip install spswarehouse`
+    - This can be done from `Anaconda Prompt` from the Start Menu.
 - Locate the install directory by running: `pip show pip | grep "Location:" | cut -d " " -f2`
+    - If this doesn't work, run `pip show pip`, then look at the line "Location:".
 
 The files referred to in this `README` are in `<install-directory>/spswarehouse/`.
 
 ### Set up dependencies
 
+- Change to the `spswarehouse` directory
+    - `cd <install-directory>\spswarehouse`
+    - The default for Anaconda3 is `cd Anaconda3\Lib\site-packages\spswarehouse`
 - Run: `pip install -r requirements.txt`
+
+You can `exit` the Anaconda Prompt; the next step is more easily done in the File Explorer.
 
 ### Set up credentials
 
 To access the Snowflake data warehouse, you'll need to set up your credentials first. This file is in the
+`spswarehouse` directory.
 
+- Default directory: `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`
 - Copy the `credentials.py.template` file to `credentials.py`.
 - Fill in your Snowflake `user` and `password`  credentials between quotation marks.
 
