@@ -39,6 +39,8 @@ def upload_df(
     '''
     end_index = len(df) if end_index is None else end_index
 
+    df = sanitize_df_for_upload(df)
+    
     print(str(end_index - start_index) + ' rows to insert')
     while start_index < end_index:
         df_insert = df[start_index:start_index+INSERT_BATCH_SIZE]
