@@ -142,3 +142,35 @@ This lets us use the Google Sheets API to access sheet data. It only has to be d
 - You will need to distribute the private key securely so it can be added to `credentials.py`.
 
 ## PyPI
+
+We use [PyPI](https://pypi.org/) to distribute the `spswarehouse` module and [Test PyPI](https://test.pypi.org/)  for testing.
+
+The `spswarehouse` project is [here](https://pypi.org/project/spswarehouse/).
+
+### Set up
+
+Create PyPI and Test PyPI accounts to test and upload packages.
+
+### Packaging
+
+See https://packaging.python.org/tutorials/packaging-projects/ for an overview and walk-through of PyPI packaging.
+
+Specifics for `spswarehouse`:
+
+- Only build the `sdist` package. Otherwise, `credentials.py` and potentially passwords will get distributed in the binary distribution.
+- If you need to include non-Python files, add them to `MANIFEST.in`.
+
+### Testing
+
+- Update version number in `setup.py`.
+- Create the package:
+`python setup.py sdist`
+- Upload to Test PyPI:
+`python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
+- Install on local machine to test: `pip install -i https://test.pypi.org/simple/`
+
+### Pushing a new package
+
+Make sure all of your changes are checked into the GitHub repository and your local repository is up-to-date before you do this.
+
+The steps are the same as in the above section, omitting the `test.pypi` URLs.
