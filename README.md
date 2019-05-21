@@ -1,11 +1,11 @@
 # spswarehouse
 
-## Prerequisites
+# Prerequisites
 
 - Anaconda & Python 3
 - Jupyter Notebook
 
-## Installation
+# Installation
 
 - To install, run: `pip install spswarehouse`
     - This can be done from `Anaconda Prompt` from the Start Menu.
@@ -14,7 +14,7 @@
 
 The files referred to in this `README` are in `<install-directory>/spswarehouse/`.
 
-### Set up dependencies
+## Set up dependencies
 
 - Change to the `spswarehouse` directory
     - `cd <install-directory>\spswarehouse`
@@ -23,14 +23,25 @@ The files referred to in this `README` are in `<install-directory>/spswarehouse/
 
 You can `exit` the Anaconda Prompt; the next step is more easily done in the File Explorer.
 
-### Set up credentials
+## Set up credentials
 
-To access the Snowflake data warehouse, you'll need to set up your credentials first. This file is in the
-`spswarehouse` directory.
+The default directory where this module is installed is `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`. Your credentials are in the `spswarehouse` subdirectory.
 
-- Default directory: `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`
 - Copy the `credentials.py.template` file to `credentials.py`.
+
+### Snowflake
+
+This allows you to access the Snowflake data warehouse.
+
 - Fill in your Snowflake `user` and `password`  credentials between quotation marks.
+
+### Google Sheets
+
+This allows you to access your Google spreadsheets.
+
+- Get the `private_key` for the Google Service account from your team.
+- In `credentials.py`, under `google_config` and `service-account`, fill in the `private_key` between quotation marks.
+- The first time you `import` the `GoogleSheets` module, the service account's email address will be printed, you will share any spreadsheets you want to access with that email address.
 
 # Usage
 
@@ -89,6 +100,45 @@ Warehouse.execute(sql)
 
  Now you can call `reflect()` and `upload_csv()`.
 
- ## GoogleSheet upload
+## Google Sheets
 
-TODO
+Make sure you've set up `credentials.py` first and shared your spreadsheet with the Google service account email. You can also get the email by running:
+
+```
+GoogleSheets.get_google_service_account_email()
+```
+
+`GoogleSheets` is really an instance of `gspread.Client`, so you use the entire
+[`gspread`](https://gspread.readthedocs.io/en/latest/) Python API.
+
+### Accessing data
+
+From Jupyter Notebook, open and run `googlesheets-example.ipynb` for a basic example on loading a spreadsheet and reading sheet data into `pandas.DataFrame`.
+
+### Uploading to warehouse
+
+Once you have a `DataFrame`, you can download data to a CSV file to your local machine and upload it to the warehouse using `table_utils`.
+
+### Column types
+
+# Developer notes
+
+## Google service account key
+
+This lets us use the Google Sheets API to access sheet data. It only has to be done once and added to `credentials.py.template`.
+
+- Use an existing Google Developer project, or create a new one: https://console.cloud.google.com
+- Enable the Google Sheets API
+  - Go to **API & Services** for the project, then **Libraries**.
+  - Search for "Google Sheets" and select the result.
+  - Click **Enable**.
+- Create the OAuth client credentials
+  - Go to **API & Services** for the project, then **Credentials**.
+  - Under **Create credentials**, select **Service account key**
+  - Choose an existing service account or create a new one to associate this key with.
+  - Create the key and download the key as a JSON file.
+- Copy OAuth client credentials to `credentials.py.template` in `google_client` under `service-account`.
+- **Delete the private_key** and leave just the quotation marks when you check in `credentials.template.py`.
+- You will need to distribute the private key securely so it can be added to `credentials.py`.
+
+## PyPI
