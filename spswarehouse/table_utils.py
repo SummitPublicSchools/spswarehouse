@@ -16,6 +16,8 @@ def upload_csv(
     upload_csv: SqlAlchemy Table, string -> void
 
     Uploads a CSV file to specified table.
+    If specified, uploads the range [start_index, end_index).
+
     Assumes that the table you're uploading to exists.
     '''
     upload_df(
@@ -35,16 +37,24 @@ def upload_df(
     upload_df: SqlAlchemy Table, pandas Dataframe -> void
 
     Uploads a pandas.DataFrame to specified table.
+    If specified, uploads the range [start_index, end_index).
+
     Assumes that the table you're uploading to exists.
     '''
-    end_index = len(df) if end_index is None else end_index
+    if end_index is None:
+        end_index = len(df)
 
     df = sanitize_df_for_upload(df)
-    
+
     print(str(end_index - start_index) + ' rows to insert')
+
     while start_index < end_index:
-        df_insert = df[start_index:start_index+INSERT_BATCH_SIZE]
-        values_to_insert = [ _build_dict_for_insert(row) for _, row in df_insert.iterrows() ]
+        end = min(start_index + INSERT_BATCH_SIZE, end_index)
+        df_insert = df[start_index:end]
+        values_to_insert = [
+            _build_dict_for_insert(row)
+            for _, row in df_insert.iterrows()
+        ]
 
         Warehouse.engine.execute(reflected_table.insert(), values_to_insert)
         print("Inserted {count} rows to {schema}.{table}".format(
@@ -52,7 +62,8 @@ def upload_df(
             schema=reflected_table.schema,
             table=reflected_table.name,
         ))
-        start_index += INSERT_BATCH_SIZE
+
+        start_index = end
 
 def _build_dict_for_insert(row):
     ret = {}
