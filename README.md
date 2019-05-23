@@ -111,6 +111,8 @@ Make sure you've set up `credentials.py` first and shared your spreadsheet with 
 GoogleSheets.get_google_service_account_email()
 ```
 
+The Info Team service account e-mail is `jupyter-sheets@sps-warehouse.iam.gserviceaccount.com`
+
 `GoogleSheets` is really an instance of `gspread.Client`, so you use the entire
 [`gspread`](https://gspread.readthedocs.io/en/latest/) Python API.
 
