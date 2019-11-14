@@ -5,7 +5,7 @@ from .credentials import snowflake_config
 from .warehouse import Warehouse
 
 ENCODING='utf-8'
-INSERT_BATCH_SIZE=50
+DEFAULT_BATCH_SIZE=200
 
 def sanitize_string(name):
     return name.translate(
@@ -110,6 +110,7 @@ def upload_to_warehouse(
     # Range
     start_index=0,
     end_index=None,
+    batch_size=DEFAULT_BATCH_SIZE,
 ):
     df = None
     if dataframe is not None:
@@ -121,13 +122,14 @@ def upload_to_warehouse(
     else:
         raise
 
-    _upload_df(reflected_table, df, start_index, end_index)
+    _upload_df(reflected_table, df, start_index, end_index, batch_size)
 
 def _upload_df(
     reflected_table,
     df,
     start_index,
     end_index,
+    batch_size,
 ):
     '''
     upload_df: SqlAlchemy Table, pandas Dataframe -> void
@@ -145,7 +147,7 @@ def _upload_df(
     print(str(end_index - start_index) + ' rows to insert')
 
     while start_index < end_index:
-        end = min(start_index + INSERT_BATCH_SIZE, end_index)
+        end = min(start_index + batch_size, end_index)
         df_insert = df[start_index:end]
         values_to_insert = [
             _build_dict_for_insert(row)
