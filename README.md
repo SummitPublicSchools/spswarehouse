@@ -23,6 +23,13 @@ The files referred to in this `README` are in `<install-directory>/spswarehouse/
 
 You can `exit` the Anaconda Prompt; the next step is more easily done in the File Explorer.
 
+## Updating to new version
+
+When a new version of spswarehouse is released, there are two steps:
+
+- `pip install --upgrade spswarehouse`
+- Redo the "Set up dependencies" section.
+
 ## Set up credentials
 
 The default directory where this module is installed is `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`. Your credentials are in the `spswarehouse` subdirectory.
