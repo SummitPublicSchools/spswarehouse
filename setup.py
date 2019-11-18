@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="spswarehouse",
-    version="0.0.5.3",
+    version="0.0.5.4",
     author="Harry Li Consulting, LLC",
     author_email="hcli.consulting@gmail.com",
     description="Summit Public Schools Snowflake warehouse",
