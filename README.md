@@ -110,7 +110,7 @@ If you want to explicitly name and type your columns, you can pass in the `colum
 
 See the documentation for `guess_col_types()` for best practices for types.
 
-## Google Sheets
+## Google Sheets & Google Drive
 
 Make sure you've set up `credentials.py` first and shared your spreadsheet with the Google service account email. You can also get the email by running:
 
@@ -120,12 +120,16 @@ GoogleSheets.get_google_service_account_email()
 
 The Info Team service account e-mail is `jupyter-sheets@sps-warehouse.iam.gserviceaccount.com`
 
-`GoogleSheets` is really an instance of `gspread.Client`, so you use the entire
+`GoogleSheets` is really an instance of `gspread.Client`, so you can use the entire
 [`gspread`](https://gspread.readthedocs.io/en/latest/) Python API.
+
+`GoogleDrive` is an instance of `pydrive.GoogleDrive`, so you can use the [`pydrive`](https://pythonhosted.org/PyDrive/) Python API.
 
 ### Accessing data
 
 From Jupyter Notebook, open and run `googlesheets-example.ipynb` for a basic example on loading a spreadsheet and reading sheet data into `pandas.DataFrame`.
+
+`googledrive-example.ipynb` contains basic examples of exploring Drive via Jupyter. Note that this class only handles files uploaded to Drive; it's not useful for handling Google Sheets, Google Docs, etc.
 
 ### Uploading to warehouse
 

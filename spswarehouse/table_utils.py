@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
+import os
 
 from .credentials import snowflake_config
 from .warehouse import Warehouse
+from .googledrive import GoogleDrive
 
 ENCODING='utf-8'
 DEFAULT_BATCH_SIZE=200
@@ -57,6 +59,7 @@ def create_table_stmt(
     dataframe=None, # pandas.DataFrame
     csv_filename=None, # string
     google_sheet=None, # gspread.models.Worksheet
+    google_drive_id=None, #string
 ):
     # Column names and types explicitly specified, use them as-is
     if columns is not None:
@@ -70,6 +73,12 @@ def create_table_stmt(
         df = pd.DataFrame(google_sheet.get_all_records())
     elif csv_filename is not None:
         df = pd.read_csv(csv_filename, encoding=ENCODING)
+    elif google_drive_id is not None:
+        filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
+        tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
+        tempFile.GetContentFile(filename)
+        df = pd.read_csv(filename, encoding=ENCODING)
+        os.remove(filename)
     else:
         raise
 
@@ -107,6 +116,7 @@ def upload_to_warehouse(
     dataframe=None,
     csv_filename=None,
     google_sheet=None,
+    google_drive_id=None,
     # Range
     start_index=0,
     end_index=None,
@@ -119,6 +129,12 @@ def upload_to_warehouse(
         df = pd.DataFrame(google_sheet.get_all_records())
     elif csv_filename is not None:
         df = pd.read_csv(csv_filename, encoding=ENCODING)
+    elif google_drive_id is not None:
+        filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
+        tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
+        tempFile.GetContentFile(filename)
+        df = pd.read_csv(filename, encoding=ENCODING)
+        os.remove(filename)
     else:
         raise
 
