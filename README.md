@@ -108,6 +108,8 @@ From Jupyter Notebook, open `snowflake-upload-example.ipynb` for a basic example
 
 If you want to explicitly name and type your columns, you can pass in the `columns` argument instead.
 
+Alternatively, if you want to force all columns to be strings, pass `force_string=True`. This works for both `create_table_stmt()` and `upload_to_warehouse()`. This does not work if you pass a dataframe.
+
 See the documentation for `guess_col_types()` for best practices for types.
 
 ## Google Sheets & Google Drive
