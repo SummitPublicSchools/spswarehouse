@@ -105,5 +105,4 @@ venv.bak/
 
 # Custom
 credentials.py
-*.ipynb
 *.pickle
