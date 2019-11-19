@@ -6,7 +6,7 @@ from .credentials import snowflake_config
 from .warehouse import Warehouse
 from .googledrive import GoogleDrive
 
-ENCODING='utf-8'
+DEFAULT_ENCODING='utf-8'
 DEFAULT_BATCH_SIZE=200
 
 def sanitize_string(name):
@@ -55,6 +55,7 @@ def create_table_stmt(
     comment='',
     # We'll use "columns" as-is
     columns=None, # {column name: column type}
+    encoding=DEFAULT_ENCODING, # text encoding, e.g. 'utf-8' or 'latin-1'
     # We'll try to guess what the column types are if you pass in one of the rest
     dataframe=None, # pandas.DataFrame
     csv_filename=None, # string
@@ -78,17 +79,17 @@ def create_table_stmt(
             df = pd.DataFrame(google_sheet.get_all_records())
     elif csv_filename is not None:
         if force_string:
-            df = pd.read_csv(csv_filename, encoding=ENCODING, dtype=str)
+            df = pd.read_csv(csv_filename, encoding=encoding, dtype=str)
         else:
-            df = pd.read_csv(csv_filename, encoding=ENCODING)
+            df = pd.read_csv(csv_filename, encoding=encoding)
     elif google_drive_id is not None:
         filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
         tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
         tempFile.GetContentFile(filename)
         if force_string:
-            df = pd.read_csv(filename, encoding=ENCODING, dtype=str)
+            df = pd.read_csv(filename, encoding=encoding, dtype=str)
         else:
-            df = pd.read_csv(filename, encoding=ENCODING)
+            df = pd.read_csv(filename, encoding=encoding)
         os.remove(filename)
     else:
         raise
@@ -133,6 +134,7 @@ def upload_to_warehouse(
     end_index=None,
     batch_size=DEFAULT_BATCH_SIZE,
     force_string=False, # doesn't do anything if dataframe passed
+    encoding=DEFAULT_ENCODING,
 ):
     df = None
     if dataframe is not None:
@@ -140,22 +142,22 @@ def upload_to_warehouse(
     elif google_sheet is not None:
         if force_string:
             google_sheet_values = google_sheet.get_all_values()
-            df = pd.DataFrame(google_sheet_values[1:],columns=google_sheet_values[0])
+            df = pd.DataFrame(google_sheet_values[1:], columns=google_sheet_values[0])
         else:
             df = pd.DataFrame(google_sheet.get_all_records())
     elif csv_filename is not None:
         if force_string:
-            df = pd.read_csv(csv_filename, encoding=ENCODING, dtype=str)
+            df = pd.read_csv(csv_filename, encoding=encoding, dtype=str)
         else:
-            df = pd.read_csv(csv_filename, encoding=ENCODING)
+            df = pd.read_csv(csv_filename, encoding=encoding)
     elif google_drive_id is not None:
         filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
         tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
         tempFile.GetContentFile(filename)
         if force_string:
-            df = pd.read_csv(filename, encoding=ENCODING, dtype=str)
+            df = pd.read_csv(filename, encoding=encoding, dtype=str)
         else:
-            df = pd.read_csv(filename, encoding=ENCODING)
+            df = pd.read_csv(filename, encoding=encoding)
         os.remove(filename)
     else:
         raise
