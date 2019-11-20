@@ -86,11 +86,15 @@ def create_table_stmt(
         filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
         tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
         tempFile.GetContentFile(filename)
-        if force_string:
-            df = pd.read_csv(filename, encoding=encoding, dtype=str)
-        else:
-            df = pd.read_csv(filename, encoding=encoding)
-        os.remove(filename)
+        try:
+            if force_string:
+                df = pd.read_csv(filename, encoding=encoding, dtype=str)
+            else:
+                df = pd.read_csv(filename, encoding=encoding)
+        except Exception as error:
+            raise error
+        finally:
+            os.remove(filename)
     else:
         raise
 
@@ -154,11 +158,15 @@ def upload_to_warehouse(
         filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
         tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
         tempFile.GetContentFile(filename)
-        if force_string:
-            df = pd.read_csv(filename, encoding=encoding, dtype=str)
-        else:
-            df = pd.read_csv(filename, encoding=encoding)
-        os.remove(filename)
+        try:
+            if force_string:
+                df = pd.read_csv(filename, encoding=encoding, dtype=str)
+            else:
+                df = pd.read_csv(filename, encoding=encoding)
+        except Exception as error:
+            raise error
+        finally:
+            os.remove(filename)
     else:
         raise
 
