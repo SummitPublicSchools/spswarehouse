@@ -93,12 +93,14 @@ The data sources you can upload from are:
 - pandas.DataFrame `dataframe`
 - CSV file `csv_filename`
 - Google Sheet `google_sheet`
+- Google Drive files `google_drive_id`
 
 The two major methods are `create_table_stmt` and `upload_to_warehouse`. Both support the above data sources as optional arguments:
 
  - `dataframe`
  - `csv_filename`
  - `google_sheet`
+ - `google_drive_id`
 
 From Jupyter Notebook, open `snowflake-upload-example.ipynb` for a basic example.
 
