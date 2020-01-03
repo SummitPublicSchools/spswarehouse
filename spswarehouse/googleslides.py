@@ -3,14 +3,13 @@ import pickle
 
 from .credentials import google_config
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+from googleapiclient.discovery import build
 
 from oauth2client.service_account import ServiceAccountCredentials
 
 def get_google_service_account_email():
     """
-    Returns the service account email to share Drive files with.
+    Returns the service account email to share slides with.
     """
     return google_config['service-account']['client_email']
 
@@ -18,10 +17,10 @@ def initialize_credentials():
     """
     initialize_credentials: -> oauth2client.service_account.ServiceAccountCredentials
 
-    Returns credentials that allows you to access your Google Drive &
-    Sheets using the Google Sheets API.
+    Returns credentials that allows you to access your Google Slides
+    using the Google Sheets API.
 
-    You still need to share spreadsheets with the service account email.
+    You still need to share slides with the service account email.
     """
 
     # This prevents us from erroring out trying to construct credentials
@@ -32,7 +31,7 @@ def initialize_credentials():
         print(
             "You're missing Google service account credentials",
             "in credentials.py.",
-            "To access your Google Drive data,",
+            "To access your Google Slides,",
             "fill out the Google service account information."
         )
         return None
@@ -42,7 +41,7 @@ def initialize_credentials():
         scopes=google_config['scopes'],
     )
     print(
-        'To access your Google Drive file, share the file with {email}'
+        'To access your Google Slides, share the file with {email}'
         .format(email=get_google_service_account_email())
     )
     return credentials
@@ -53,13 +52,11 @@ def create_client(credentials):
 
     Sets up Google Drive API access using credentials (see above).
     """
-    gauth = GoogleAuth()
-    gauth.credentials = credentials
-    drive = GoogleDrive(gauth)
-    return drive
+    slides = build('slides', 'v1', credentials=credentials)
+    return slides
 
 # Set up credentials
 credentials = initialize_credentials()
 
-# This is a wrapper for pydrive.GoogleDrive
-GoogleDrive = None if credentials is None else create_client(credentials)
+# This is a wrapper for gspread.Client
+GoogleSlides = None if credentials is None else create_client(credentials)

@@ -187,7 +187,7 @@ Specifics for `spswarehouse`:
 `python setup.py sdist`
 - Upload to Test PyPI:
 `python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
-- Install on local machine to test: `pip install spswarehouse -i https://test.pypi.org/simple/`
+- Install on local machine to test: `pip install spswarehouse==<insert version number> -i https://test.pypi.org/simple/`
 
 ### Pushing a new package
 
