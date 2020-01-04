@@ -2,8 +2,9 @@ import pandas as pd
 import numpy as np
 import os
 
-from .credentials import snowflake_config
-from .warehouse import Warehouse
+import logging
+
+from .warehouse import create_warehouse
 from .googledrive import GoogleDrive
 
 DEFAULT_ENCODING='utf-8'
@@ -51,7 +52,7 @@ def guess_col_types(df):
 
 def create_table_stmt(
     table_name,
-    schema=snowflake_config['schema'],
+    schema,
     comment='',
     # We'll use "columns" as-is
     columns=None, # {column name: column type}
@@ -187,12 +188,14 @@ def _upload_df(
 
     Assumes that the table you're uploading to exists.
     '''
+    Warehouse = create_warehouse()
+    
     if end_index is None:
         end_index = len(df)
 
     df = _sanitize_columns_for_upload(df)
 
-    print(str(end_index - start_index) + ' rows to insert')
+    logging.info(str(end_index - start_index) + ' rows to insert')
 
     while start_index < end_index:
         end = min(start_index + batch_size, end_index)
@@ -203,13 +206,15 @@ def _upload_df(
         ]
 
         Warehouse.engine.execute(reflected_table.insert(), values_to_insert)
-        print("Inserted {count} rows to {schema}.{table}".format(
+        logging.info("Inserted {count} rows to {schema}.{table}".format(
             count=len(df_insert),
             schema=reflected_table.schema,
             table=reflected_table.name,
         ))
 
         start_index = end
+        
+    Warehouse.close()
 
 def _build_dict_for_insert(row):
     ret = {}

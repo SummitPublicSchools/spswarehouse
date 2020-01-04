@@ -12,8 +12,8 @@ now = datetime.datetime.now
 timedelta = datetime.timedelta
 
 # from .googlesheets import GoogleSheets, get_google_service_account_email
-from .warehouse import describe, Warehouse
-from .table_names import public, wild_west
+from .warehouse import describe
+# from .table_names import public, wild_west
 
 from matplotlib import pyplot
 

@@ -1,7 +1,7 @@
 import os
 import pickle
 
-from .credentials import google_config
+# from .credentials import google_config
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
@@ -26,26 +26,27 @@ def initialize_credentials():
 
     # This prevents us from erroring out trying to construct credentials
     # from incomplete information.
-    service_account = google_config.get('service-account', {})
-    private_key = service_account.get('private_key', None)
-    if not private_key:
-        print(
-            "You're missing Google service account credentials",
-            "in credentials.py.",
-            "To access your Google Drive data,",
-            "fill out the Google service account information."
-        )
-        return None
+#     service_account = google_config.get('service-account', {})
+#     private_key = service_account.get('private_key', None)
+#     if not private_key:
+#         print(
+#             "You're missing Google service account credentials",
+#             "in credentials.py.",
+#             "To access your Google Drive data,",
+#             "fill out the Google service account information."
+#         )
+#         return None
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-        google_config['service-account'],
-        scopes=google_config['scopes'],
-    )
-    print(
-        'To access your Google Drive file, share the file with {email}'
-        .format(email=get_google_service_account_email())
-    )
-    return credentials
+#     credentials = ServiceAccountCredentials.from_json_keyfile_dict(
+#         google_config['service-account'],
+#         scopes=google_config['scopes'],
+#     )
+#     print(
+#         'To access your Google Drive file, share the file with {email}'
+#         .format(email=get_google_service_account_email())
+#     )
+#     return credentials
+    return None
 
 def create_client(credentials):
     """
