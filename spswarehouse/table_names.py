@@ -1,4 +1,4 @@
-# from .warehouse import Warehouse
+from .warehouse import Warehouse
 
 def initialize_schema_object(klass):
     schema_name = klass.schema_name

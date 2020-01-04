@@ -1,16 +1,12 @@
 import pandas
 
-from airflow.hooks.base_hook import BaseHook
+from .credentials import snowflake_config
 from sqlalchemy.engine.url import URL
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.engine import reflection
 from snowflake.sqlalchemy import VARIANT
 
 from datetime import date
-
-snowflake_conn_id = 'snowflake_default'
-snowflake_conn = BaseHook.get_connection(snowflake_conn_id)
-
 
 def describe(table):
     for c in table.columns:
@@ -74,7 +70,7 @@ class Warehouse:
         """
         return pandas.read_sql(sql, self.engine)
 
-    def reflect(self, table_or_view, schema):
+    def reflect(self, table_or_view, schema=snowflake_config['schema']):
         """
         reflect: table name, schema name (optional) -> SQLAlchemy Table object
         reflect: view name,  schema name (optional) -> SQLAlchemy Table object
@@ -108,28 +104,16 @@ class Warehouse:
         self.loaded_tables[name_with_schema] = table
 
         return table
-    
-    def close(self):
-        self.conn.close()
 
-
-extras_dict = snowflake_conn.extra_dejson
-schema = snowflake_conn.schema.lower() if isinstance(snowflake_conn.schema, str) else None
-
-def create_warehouse():
-    warehouse = Warehouse(
-        create_engine(
-            'snowflake://{user}:{password}@{account}/{db}/{schema}?warehouse={warehouse}'.format(
-                user=snowflake_conn.login,
-                password=snowflake_conn.password,
-                account=extras_dict['account'].lower(),
-                db=extras_dict['database'].lower(),
-                schema=schema,
-                warehouse=extras_dict['warehouse'].lower(),
-            ),
-            pool_size=1,
-        )
+Warehouse = Warehouse(
+    create_engine(
+        'snowflake://{user}:{password}@{account}/{db}/{schema}?warehouse={warehouse}'.format(
+            user=snowflake_config['user'],
+            password=snowflake_config['password'],
+            account=snowflake_config['account'],
+            db=snowflake_config['db'],
+            schema=snowflake_config['schema'],
+            warehouse=snowflake_config['warehouse']),
+        pool_size=1
     )
-    return warehouse
-
-    
+)
