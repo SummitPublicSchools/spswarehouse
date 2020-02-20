@@ -42,13 +42,11 @@ This allows you to access the Snowflake data warehouse.
 
 - Fill in your Snowflake `user` and `password`  credentials between quotation marks.
 
-### Google Sheets
+### Google
 
-This allows you to access your Google spreadsheets.
+This allows you to access your Google Apps.
 
-- Get the `private_key` for the Google Service account from your team.
-- In `credentials.py`, under `google_config` and `service-account`, fill in the `private_key` between quotation marks.
-- The first time you `import` the `GoogleSheets` module, the service account's email address will be printed, you will share any spreadsheets you want to access with that email address.
+- Fill in all the blank fields in `google_config.service_account`. See Developer Notes below if you need to generate credentials.
 
 # Usage
 
@@ -114,20 +112,23 @@ Alternatively, if you want to force all columns to be strings, pass `force_strin
 
 See the documentation for `guess_col_types()` for best practices for types.
 
-## Google Sheets & Google Drive
+## Google Functions
+### GoogleDrive, GoogleSheets, GoogleSlides
 
-Make sure you've set up `credentials.py` first and shared your spreadsheet with the Google service account email. You can also get the email by running:
+Make sure you've set up `credentials.py` first and shared your spreadsheet with the Google service account email. You can also get the email by running any of the following:
 
 ```
 GoogleSheets.get_google_service_account_email()
+GoogleDrive.get_google_service_account_email()
+GoogleSlides..get_google_service_account_email()
 ```
-
-The Info Team service account e-mail is `jupyter-sheets@sps-warehouse.iam.gserviceaccount.com`
 
 `GoogleSheets` is really an instance of `gspread.Client`, so you can use the entire
 [`gspread`](https://gspread.readthedocs.io/en/latest/) Python API.
 
 `GoogleDrive` is an instance of `pydrive.GoogleDrive`, so you can use the [`pydrive`](https://pythonhosted.org/PyDrive/) Python API.
+
+`GoogleSlides` builds directly on the Google Slides API (https://developers.google.com/resources/api-libraries/documentation/slides/v1/python/latest/)
 
 ### Accessing data
 
