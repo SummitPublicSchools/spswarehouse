@@ -35,6 +35,7 @@ When a new version of spswarehouse is released, there are two steps:
 The default directory where this module is installed is `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`. Your credentials are in the `spswarehouse` subdirectory.
 
 - Copy the `credentials.py.template` file to `credentials.py`.
+- Fill in `credentials.py` with the warehouse information and the Google Service Account information provided by your technical admin.
 
 ### Snowflake
 
