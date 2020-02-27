@@ -11,6 +11,7 @@
     - This can be done from `Anaconda Prompt` from the Start Menu.
 - Locate the install directory by running: `pip show pip | grep "Location:" | cut -d " " -f2`
     - If this doesn't work, run `pip show pip`, then look at the line "Location:".
+    - Take note of the install directory for the "Set up credentials" step.
 
 The files referred to in this `README` are in `<install-directory>/spswarehouse/`.
 
@@ -32,7 +33,9 @@ When a new version of spswarehouse is released, there are two steps:
 
 ## Set up credentials
 
-The default directory where this module is installed is `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`. Your credentials are in the `spswarehouse` subdirectory.
+- Navigate to the install directory.
+    - The default directory where this module is installed is `Users\<your name>\Anaconda3\Lib\site-packages\spswarehouse`.
+    - If you are using a custom environment, the directory will probably be `Users\<your name>\Anaconda3\envs\<env name>\Lib\site-packages\spswarehouse`.
 
 - Copy the `credentials.py.template` file to `credentials.py`.
 - Fill in `credentials.py` with the warehouse information and the Google Service Account information provided by your technical admin.
