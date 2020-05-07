@@ -27,6 +27,8 @@ class renamer():
             return "%s_%d" % (x, self.d[x])
 
 def sanitize_string(name):
+    if name[0].isdigit():
+        name = '_' + name
     return name.translate(
         {ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+ \n"}
     )
