@@ -10,15 +10,12 @@ DEFAULT_ENCODING='utf-8'
 DEFAULT_BATCH_SIZE=200
 
 # Copied from https://stackoverflow.com/questions/40774787/renaming-columns-in-a-pandas-dataframe-with-duplicate-column-names
-# (with a blank column rename added)
 # guess_col_types will break if you have duplicate column names
 class renamer():
     def __init__(self):
         self.d = dict()
 
     def __call__(self, x):
-        if x == '':
-            x = 'no_col_name_or_merged_column_header'
         if x not in self.d:
             self.d[x] = 0
             return x
@@ -27,7 +24,9 @@ class renamer():
             return "%s_%d" % (x, self.d[x])
 
 def sanitize_string(name):
-    if name[0].isdigit():
+    if name == '':
+        name = 'no_col_name_or_merged_column_header'
+    elif name[0].isdigit():
         name = '_' + name
     return name.translate(
         {ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+ \n"}
