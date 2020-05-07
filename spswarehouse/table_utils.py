@@ -9,6 +9,23 @@ from .googledrive import GoogleDrive
 DEFAULT_ENCODING='utf-8'
 DEFAULT_BATCH_SIZE=200
 
+# Copied from https://stackoverflow.com/questions/40774787/renaming-columns-in-a-pandas-dataframe-with-duplicate-column-names
+# (with a blank column rename added)
+# guess_col_types will break if you have duplicate column names
+class renamer():
+    def __init__(self):
+        self.d = dict()
+
+    def __call__(self, x):
+        if x == '':
+            x = 'no_col_name_or_merged_column_header'
+        if x not in self.d:
+            self.d[x] = 0
+            return x
+        else:
+            self.d[x] += 1
+            return "%s_%d" % (x, self.d[x])
+
 def sanitize_string(name):
     return name.translate(
         {ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+ \n"}
@@ -102,7 +119,8 @@ def create_table_stmt(
         raise
 
     df = _sanitize_columns_for_upload(df)
-
+    df = df.rename(columns=renamer())
+    
     return _create_table_stmt(
         table_name,
         schema,
