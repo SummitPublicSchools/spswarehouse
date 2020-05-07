@@ -5,7 +5,6 @@ import pickle
 from .credentials import google_config
 
 from oauth2client.service_account import ServiceAccountCredentials
-from gspread_dataframe import *
 
 def get_google_service_account_email():
     """
