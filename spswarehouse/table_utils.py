@@ -215,6 +215,7 @@ def _upload_df(
         end_index = len(df)
 
     df = _sanitize_columns_for_upload(df)
+    df = df.rename(columns=renamer())
 
     print(str(end_index - start_index) + ' rows to insert')
 
