@@ -11,7 +11,7 @@ DEFAULT_BATCH_SIZE=200
 
 def sanitize_string(name):
     return name.translate(
-        {ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+ "}
+        {ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+ \n"}
     )
 
 def guess_col_types(df):
@@ -61,7 +61,7 @@ def create_table_stmt(
     csv_filename=None, # string
     google_sheet=None, # gspread.models.Worksheet
     google_drive_id=None, #string
-    force_string=False, # boolean, doesn't do anything if dataframe passed
+    force_string=False, # boolean
 ):
     # Column names and types explicitly specified, use them as-is
     if columns is not None:
@@ -70,7 +70,10 @@ def create_table_stmt(
     # Convert everything to a dataframe and try to guess column types
     df = None
     if dataframe is not None:
-        df = dataframe
+        if force_string:
+            df = dataframe.astype(str)
+        else:
+            df = dataframe
     elif google_sheet is not None:
         if force_string:
             google_sheet_values = google_sheet.get_all_values()
@@ -137,12 +140,15 @@ def upload_to_warehouse(
     start_index=0,
     end_index=None,
     batch_size=DEFAULT_BATCH_SIZE,
-    force_string=False, # doesn't do anything if dataframe passed
+    force_string=False,
     encoding=DEFAULT_ENCODING,
 ):
     df = None
     if dataframe is not None:
-        df = dataframe
+        if force_string:
+            df = dataframe.astype(str)
+        else:
+            df = dataframe
     elif google_sheet is not None:
         if force_string:
             google_sheet_values = google_sheet.get_all_values()
