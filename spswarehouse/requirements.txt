@@ -9,4 +9,4 @@ seaborn
 google-api-python-client
 google-auth-oauthlib
 gspread
-pydrive
+PyDrive2

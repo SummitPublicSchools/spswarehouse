@@ -130,7 +130,7 @@ GoogleSlides..get_google_service_account_email()
 `GoogleSheets` is really an instance of `gspread.Client`, so you can use the entire
 [`gspread`](https://gspread.readthedocs.io/en/latest/) Python API.
 
-`GoogleDrive` is an instance of `pydrive.GoogleDrive`, so you can use the [`pydrive`](https://pythonhosted.org/PyDrive/) Python API.
+`GoogleDrive` is an instance of `pydrive2.GoogleDrive`, so you can use the [`PyDrive2`](https://iterative.github.io/PyDrive2/docs/build/html/index.html) Python API.
 
 `GoogleSlides` builds directly on the Google Slides API (https://developers.google.com/resources/api-libraries/documentation/slides/v1/python/latest/)
 
