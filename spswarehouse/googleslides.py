@@ -58,5 +58,5 @@ def create_client(credentials):
 # Set up credentials
 credentials = initialize_credentials()
 
-# This is a wrapper for gspread.Client
+# This is a wrapper for a standard Google Slides engine
 GoogleSlides = None if credentials is None else create_client(credentials)
