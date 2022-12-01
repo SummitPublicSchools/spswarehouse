@@ -29,7 +29,7 @@ def sanitize_string(name):
     elif name[0].isdigit():
         name = '_' + name
     return name.translate(
-        {ord(c): "_" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+ \n"}
+        {ord(c): "_" for c in "→!@#$%^&*()[]{};:,./<>?\|`~-=_+ \n"}
     )
 
 def guess_col_types(df):
