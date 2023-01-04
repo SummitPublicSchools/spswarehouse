@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import os
+import random
+import string
 
 from .credentials import snowflake_config
 from .warehouse import Warehouse
@@ -104,7 +106,8 @@ def create_table_stmt(
         else:
             df = pd.read_csv(csv_filename, encoding=encoding)
     elif google_drive_id is not None:
-        filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
+        letters = string.ascii_letters
+        filename = ''.join(random.choice(letters) for i in range(10)) + '.csv'
         tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
         tempFile.GetContentFile(filename)
         try:
@@ -180,7 +183,8 @@ def upload_to_warehouse(
         else:
             df = pd.read_csv(csv_filename, encoding=encoding)
     elif google_drive_id is not None:
-        filename = pd.util.testing.rands_array(10,1)[0] + '.csv'
+        letters = string.ascii_letters
+        filename = ''.join(random.choice(letters) for i in range(10)) + '.csv'
         tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
         tempFile.GetContentFile(filename)
         try:
