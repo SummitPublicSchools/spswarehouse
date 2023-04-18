@@ -13,6 +13,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 ADMIN_LOGIN_PAGE_PATH = 'admin/pw.html'
 ADMIN_HOME_PAGE_PATH = 'admin/home.html'
 ADMIN_URL_SCHEME = 'https://'
+STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
+
+"""
+TODO: Should this be a class that creates its own WebDriver? Might make it 
+harder for the end user to access it for doing their own custom code in PowerSchool,
+but it would eliminate the need to pass the user's WebDriver to all these functions.
+How would this work with Airflow?
+"""
 
 def log_into_powerschool_admin(driver: WebDriver, 
                                username: str, 
@@ -79,58 +87,53 @@ def ensure_on_desired_path(driver: WebDriver, desired_path: str):
 
 def switch_to_school(driver: WebDriver, 
                     school_name: str):
-    try:
-        ensure_on_desired_path(driver, ADMIN_HOME_PAGE_PATH)
+    ensure_on_desired_path(driver, ADMIN_HOME_PAGE_PATH)
 
-        logging.info("Waiting for School Picker")
-        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'school_picker_adminSchoolPicker_toggle_btn')))
-        logging.info("School Picker found. Click it.")
+    logging.info("Waiting for School Picker")
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'school_picker_adminSchoolPicker_toggle_btn')))
+    logging.info("School Picker found. Click it.")
 
-        elem.click()
+    elem.click()
 
-        time.sleep(1)
+    time.sleep(1)
 
-        logging.info("Waiting for School Search Field")
-        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'schoolSearchField_value')))
-        logging.info("Found School Search Field. Typing in school name.")
+    logging.info("Waiting for School Search Field")
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'schoolSearchField_value')))
+    logging.info("Found School Search Field. Typing in school name.")
 
-        elem.send_keys(school_name)
+    elem.send_keys(school_name)
 
-        time.sleep(1)
+    time.sleep(1)
 
-        logging.info("Looking for first school in list")
-        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//ul[@id='school_choices']/li[1]")))
+    logging.info("Looking for first school in list")
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//ul[@id='school_choices']/li[1]")))
 
-        logging.info("Found first school in results list. Clicking.")
-        elem.click()
-        logging.info("Click. Waiting for page to refresh.")
-        time.sleep(1)
+    logging.info("Found first school in results list. Clicking.")
+    elem.click()
+    logging.info("Click. Waiting for page to refresh.")
+    time.sleep(1)
 
-        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'school_picker_adminSchoolPicker_toggle_btn')))
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'school_picker_adminSchoolPicker_toggle_btn')))
 
-        elem.click()
-        time.sleep(1)
+    elem.click()
+    time.sleep(1)
 
-        selected_element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.list-item.selectable.selected')))
+    selected_element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.list-item.selectable.selected')))
 
-        school_element_text = selected_element.find_element(By.XPATH, ".//div").text
+    school_element_text = selected_element.find_element(By.XPATH, ".//div").text
 
-        actions = ActionChains(driver)
+    actions = ActionChains(driver)
 
-        if(school_name in school_element_text):
-            logging.info(f"Found the {school_name} in the school element text. Success!")
+    if(school_name in school_element_text):
+        logging.info(f"Found the {school_name} in the school element text. Success!")
 
-            logging.info(f"Pressing escape.")
-            actions.send_keys(Keys.ESCAPE).perform()
+        logging.info(f"Pressing escape to leave dropdown selection.")
+        actions.send_keys(Keys.ESCAPE).perform()
+    else:
+        raise Exception(f"Did not find {school_name} in the school element text.")
+    
+def navigate_to_state_reports_page(driver: WebDriver):
+    driver.get(ADMIN_URL_SCHEME + get_current_domain(driver) + '/' + STATE_REPORTS_PAGE_PATH)
 
-            return True
-        else:
-            logging.info(f"Did not find {school_name} in the school element text. Returning False.")
-
-            logging.info(f"Pressing escape.")
-            actions.send_keys(Keys.ESCAPE).perform()
-
-            return False
-    except:
-        logging.info(f"Selenium exception. Returning False.")
-        return False
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'ul li.selected')))
+    assert elem.text == 'State', "'State' tab is not selected"
