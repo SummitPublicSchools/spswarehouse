@@ -1,5 +1,5 @@
 import time
-from spswarehouse.powerschool.powerschool import *
+from spswarehouse.powerschool.powerschool import navigate_to_specific_state_report, download_latest_report_from_report_queue
 
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
-def download_calpads_student_incident_records_for_school(driver: WebDriver, report_start_date: str, report_end_date: str, destination_directory_path: str, file_postfix: str):
+def download_calpads_student_incident_records_for_school(driver: WebDriver, report_start_date: str, report_end_date: str, destination_directory_path: str, file_postfix: str, run_validations=True):
     navigate_to_specific_state_report(driver, "Student Incident Records (SINC)")
     
     # Enter specific parameters for this report
@@ -28,7 +28,10 @@ def download_calpads_student_incident_records_for_school(driver: WebDriver, repo
 
     elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'bypassValidation')))
     select = Select(elem)
-    select.select_by_visible_text("No")
+    if run_validations:
+        select.select_by_visible_text("No")
+    else:
+        select.select_by_visible_text("Yes")
 
     # Submit report
     elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'submitReportSDKRuntimeParams')))
