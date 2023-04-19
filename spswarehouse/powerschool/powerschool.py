@@ -89,34 +89,7 @@ def ensure_on_desired_path(driver: WebDriver, desired_path: str):
         driver.get('https://' + get_current_domain(driver) + "/" + desired_path)
         logging.info(f"Moved to {desired_path}")
 
-def switch_to_school(driver: WebDriver, 
-                    school_name: str):
-    ensure_on_desired_path(driver, ADMIN_HOME_PAGE_PATH)
-
-    logging.info("Waiting for School Picker")
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'school_picker_adminSchoolPicker_toggle_btn')))
-    logging.info("School Picker found. Click it.")
-
-    elem.click()
-
-    time.sleep(1)
-
-    logging.info("Waiting for School Search Field")
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'schoolSearchField_value')))
-    logging.info("Found School Search Field. Typing in school name.")
-
-    elem.send_keys(school_name)
-
-    time.sleep(1)
-
-    logging.info("Looking for first school in list")
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//ul[@id='school_choices']/li[1]")))
-
-    logging.info("Found first school in results list. Clicking.")
-    elem.click()
-    logging.info("Click. Waiting for page to refresh.")
-    time.sleep(1)
-
+def check_whether_desired_school_selected(driver, school_name: str) -> bool:
     elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'school_picker_adminSchoolPicker_toggle_btn')))
 
     elem.click()
@@ -126,15 +99,56 @@ def switch_to_school(driver: WebDriver,
 
     school_element_text = selected_element.find_element(By.XPATH, ".//div").text
 
+    result_message = f"Found the {school_name} in the school element text. Match!"
+    outcome = True
+
+    if(school_name not in school_element_text):
+        result_message = f"Did not find {school_name} in the school element text. No match."
+        outcome = False
+
+    logging.info(result_message)
+
+    logging.info(f"Pressing escape to leave dropdown selection.")
     actions = ActionChains(driver)
+    actions.send_keys(Keys.ESCAPE).perform()
+    
+    return outcome
 
-    if(school_name in school_element_text):
-        logging.info(f"Found the {school_name} in the school element text. Success!")
+def switch_to_school(driver: WebDriver, 
+                    school_name: str):
 
-        logging.info(f"Pressing escape to leave dropdown selection.")
-        actions.send_keys(Keys.ESCAPE).perform()
+    if check_whether_desired_school_selected(driver, school_name) == False:
+        logging.info(f"{school_name} is not already selected. Selecting now.")
+
+        ensure_on_desired_path(driver, ADMIN_HOME_PAGE_PATH)
+
+        logging.info("Waiting for School Picker")
+        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'school_picker_adminSchoolPicker_toggle_btn')))
+        logging.info("School Picker found. Click it.")
+
+        elem.click()
+
+        time.sleep(1)
+
+        logging.info("Waiting for School Search Field")
+        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'schoolSearchField_value')))
+        logging.info("Found School Search Field. Typing in school name.")
+
+        elem.send_keys(school_name)
+
+        time.sleep(1)
+
+        logging.info("Looking for first school in list")
+        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, "//ul[@id='school_choices']/li[1]")))
+
+        logging.info("Found first school in results list. Clicking.")
+        elem.click()
+        logging.info("Click. Waiting for page to refresh.")
+        time.sleep(1)
+        
+        assert check_whether_desired_school_selected(driver, school_name), "Failed to select desired school."
     else:
-        raise Exception(f"Did not find {school_name} in the school element text.")
+        logging.info(f"{school_name} is already selected. No action taken.")
     
 def navigate_to_state_reports_page(driver: WebDriver):
     driver.get(ADMIN_URL_SCHEME + get_current_domain(driver) + '/' + STATE_REPORTS_PAGE_PATH)
@@ -191,18 +205,18 @@ def download_latest_report_from_report_queue(driver: WebDriver, destination_dire
             
             # Download the first report in table
             queued_reports = driver.find_element(By.XPATH, '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')
-        except NoSuchElementException:
-            time.sleep(2)
+        except NoSuchElementException: # Because reports ARE running
+            time.sleep(5)
             WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
             driver.find_element(By.ID, 'prReloadButton').click()
             logging.info('PowerSchool report is not ready, refreshing and waiting.')
+            time.sleep(3)
         else:
             download_link = queued_reports.get_attribute('href')
             original_files_list = os.listdir(destination_directory_path)
             driver.get(download_link) #downloads the file
             logging.info('PowerSchool report downloaded.')
             break
-        time.sleep(10)
 
     wait_for_new_file_in_folder(destination_directory_path, original_files_list)
     rename_recent_file_in_dir(destination_directory_path, file_postfix)
