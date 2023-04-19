@@ -1,5 +1,10 @@
 import logging
 import time
+import os
+
+from ducttape.utils import (
+    get_most_recent_file_in_dir
+)
 
 # from selenium.webdriver.support.ui import Select
 # from selenium import webdriver
@@ -9,11 +14,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import NoSuchElementException
 
 ADMIN_LOGIN_PAGE_PATH = 'admin/pw.html'
 ADMIN_HOME_PAGE_PATH = 'admin/home.html'
 ADMIN_URL_SCHEME = 'https://'
 STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
+REPORT_QUEUE_PAGE_PATH = 'admin/reportqueue/prhome.html'
 
 """
 TODO: Should this be a class that creates its own WebDriver? Might make it 
@@ -47,10 +54,7 @@ def log_into_powerschool_admin(driver: WebDriver,
     driver.get(host_full)
     
     logging.info("Find the username field within the login page")
-    elem = (
-        WebDriverWait(driver, 30)
-        .until(EC.presence_of_element_located((By.ID, 'fieldUsername')))
-    )
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'fieldUsername')))
     
     logging.info("Clear any pre-filled values within the username field")
     elem.clear()
@@ -137,3 +141,69 @@ def navigate_to_state_reports_page(driver: WebDriver):
 
     elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'ul li.selected')))
     assert elem.text == 'State', "'State' tab is not selected"
+
+def navigate_to_specific_state_report(driver: WebDriver, report_link_text: str):
+    navigate_to_state_reports_page(driver)
+    
+    elem = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, f"{report_link_text}")))
+    elem.click()
+
+def wait_for_new_file_in_folder(folder_path, original_files, file_extension=None, max_attempts=20000):
+    """ Waits until a new file shows up in a folder. Should include file_extension for intended effect, but that's WIP
+    """
+    file_added = False
+    attempts = 0
+    while True and attempts < max_attempts:
+        for root, folders, files in os.walk(folder_path):
+            # break 'for' loop if files found
+            if len(files) > len(original_files):
+                    file_added = True
+                    break
+            else:
+                continue
+        # break 'while' loop if files found
+        if file_added:
+            # wait for download to complete fully after it's been added - hopefully 3 seconds is enough.
+            time.sleep(3)
+            break
+        attempts +=1
+
+def rename_recent_file_in_dir(folder, append_text):
+    """Gets most recent file in the folder and renames it with new_file_text"""
+
+    recent_file = get_most_recent_file_in_dir(folder)
+    recent_file = recent_file.replace('\\', '/')
+    new_file, file_ext = os.path.splitext(recent_file)
+    new_file += append_text
+    new_file += file_ext
+    os.rename(recent_file, new_file)
+
+def download_latest_report_from_report_queue(driver: WebDriver, destination_directory_path: str = '', file_postfix: str = ''):
+    """Navigates to the PowerSchool Report Queue, confirms the most recent report is done generating, and downloads it
+    """
+
+    ensure_on_desired_path(driver, REPORT_QUEUE_PAGE_PATH)
+
+    while True:
+        try:
+            # Confirm no reports are running
+            driver.find_element(By.XPATH, "//p[contains(text(), 'No reports running or pending!')]")
+            
+            # Download the first report in table
+            queued_reports = driver.find_element(By.XPATH, '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')
+        except NoSuchElementException:
+            time.sleep(2)
+            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+            driver.find_element(By.ID, 'prReloadButton').click()
+            logging.info('PowerSchool report is not ready, refreshing and waiting.')
+        else:
+            download_link = queued_reports.get_attribute('href')
+            original_files_list = os.listdir(destination_directory_path)
+            driver.get(download_link) #downloads the file
+            logging.info('PowerSchool report downloaded.')
+            break
+        time.sleep(10)
+
+    wait_for_new_file_in_folder(destination_directory_path, original_files_list)
+    rename_recent_file_in_dir(destination_directory_path, file_postfix)
+    logging.info('Successfully renamed the downloaded file.')
