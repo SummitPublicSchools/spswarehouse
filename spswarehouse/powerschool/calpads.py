@@ -13,14 +13,15 @@ def download_calpads_report_for_school(driver: WebDriver, school_full_name: str,
 
     if(report_name == "Student Incident Records (SINC)"):
         download_calpads_report_for_school_student_incident_records_sinc(driver, file_postfix, destination_directory_path, 
-                                                             report_start_date=report_parameters['report_start_date'],
-                                                             report_end_date=report_parameters['report_end_date']
-                                                             )
-    elif(report_name == "Student Incident Results Records (SIRS)"):
-        download_calpads_report_for_school_student_incident_results_records_sirs(driver, file_postfix, destination_directory_path, 
-                                                             report_start_date=report_parameters['report_start_date'],
-                                                             report_end_date=report_parameters['report_end_date']
-                                                             )
+                                                            report_start_date=report_parameters['report_start_date'],
+                                                            report_end_date=report_parameters['report_end_date']
+                                                            )
+    elif(report_name in ("Student Incident Results Records (SIRS)", "Student Offense Records (SOFF)")):
+        download_calpads_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(driver, file_postfix, destination_directory_path, 
+                                                            report_name = report_name,
+                                                            report_start_date=report_parameters['report_start_date'],
+                                                            report_end_date=report_parameters['report_end_date']
+                                                            )
     else:
         raise Exception("CALPADS report name not supported")
 
@@ -58,10 +59,10 @@ def download_calpads_report_for_school_student_incident_records_sinc(driver: Web
     download_latest_report_from_report_queue(driver, destination_directory_path, file_postfix)
 
 
-def download_calpads_report_for_school_student_incident_results_records_sirs(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
-                                                        report_start_date: str, report_end_date: str):
+def download_calpads_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
+                                                        report_name: str, report_start_date: str, report_end_date: str):
     
-    navigate_to_specific_state_report(driver, "Student Incident Results Records (SIRS)")
+    navigate_to_specific_state_report(driver, report_name)
     
     # Enter specific parameters for this report
     powerschool_report_helper_type_in_element_by_id(driver, 'reportStartDate', report_start_date)

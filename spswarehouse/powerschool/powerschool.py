@@ -195,9 +195,11 @@ def rename_recent_file_in_dir(folder, append_text):
 def download_latest_report_from_report_queue(driver: WebDriver, destination_directory_path: str = '', file_postfix: str = ''):
     """Navigates to the PowerSchool Report Queue, confirms the most recent report is done generating, and downloads it
     """
+    # Pause briefly to give a just-submitted report time to get into the queue
+    time.sleep(1)
 
     ensure_on_desired_path(driver, REPORT_QUEUE_PAGE_PATH)
-
+    
     while True:
         try:
             # Confirm no reports are running
