@@ -20,7 +20,8 @@ ADMIN_LOGIN_PAGE_PATH = 'admin/pw.html'
 ADMIN_HOME_PAGE_PATH = 'admin/home.html'
 ADMIN_URL_SCHEME = 'https://'
 STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
-REPORT_QUEUE_PAGE_PATH = 'admin/reportqueue/prhome.html'
+REPORT_QUEUE_REPORTWORKS_PAGE_PATH = 'admin/reportqueue/prhome.html'
+REPORT_QUEUE_SYSTEM_PAGE_PATH = 'admin/reportqueue/home.html'
 
 """
 TODO: Should this be a class that creates its own WebDriver? Might make it 
@@ -192,13 +193,13 @@ def rename_recent_file_in_dir(folder, append_text):
     new_file += file_ext
     os.rename(recent_file, new_file)
 
-def download_latest_report_from_report_queue(driver: WebDriver, destination_directory_path: str = '', file_postfix: str = ''):
-    """Navigates to the PowerSchool Report Queue, confirms the most recent report is done generating, and downloads it
+def download_latest_report_from_report_queue_reportworks(driver: WebDriver, destination_directory_path: str = '', file_postfix: str = ''):
+    """Navigates to the PowerSchool Report Queue (ReportWorks), confirms the most recent report is done generating, and downloads it
     """
     # Pause briefly to give a just-submitted report time to get into the queue
     time.sleep(1)
 
-    ensure_on_desired_path(driver, REPORT_QUEUE_PAGE_PATH)
+    ensure_on_desired_path(driver, REPORT_QUEUE_REPORTWORKS_PAGE_PATH)
     
     while True:
         try:
@@ -219,6 +220,41 @@ def download_latest_report_from_report_queue(driver: WebDriver, destination_dire
             driver.get(download_link) #downloads the file
             logging.info('PowerSchool report downloaded.')
             break
+
+    wait_for_new_file_in_folder(destination_directory_path, original_files_list)
+    rename_recent_file_in_dir(destination_directory_path, file_postfix)
+    logging.info('Successfully renamed the downloaded file.')
+
+def download_latest_report_from_report_queue_system(driver: WebDriver, destination_directory_path: str = '', file_postfix: str = ''):
+    """Navigates to the PowerSchool Report Queue (System), confirms the most recent report is done generating, and downloads it
+    """
+    # Pause briefly to give a just-submitted report time to get into the queue
+    time.sleep(1)
+
+    ensure_on_desired_path(driver, REPORT_QUEUE_SYSTEM_PAGE_PATH)
+
+    while True:
+        try:
+            # Try to find a running report
+            driver.find_element(By.XPATH, "//td[text()='Running']")
+
+            # If yes, keep going here
+            time.sleep(5)
+            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+            driver.find_element(By.ID, 'prReloadButton').click()
+            logging.info('PowerSchool report is not ready, refreshing and waiting.')
+            time.sleep(3)
+        except NoSuchElementException: # Because all reports are done running
+            break
+
+    top_completed_report_view_link = driver.find_element(By.XPATH, '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[5]/a')
+    top_completed_report_view_link.click()
+
+    download_link = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Click to Download Result File')))
+    download_link.click()
+    logging.info('Downloading PowerSchool report.')
+
+    original_files_list = os.listdir(destination_directory_path)
 
     wait_for_new_file_in_folder(destination_directory_path, original_files_list)
     rename_recent_file_in_dir(destination_directory_path, file_postfix)
