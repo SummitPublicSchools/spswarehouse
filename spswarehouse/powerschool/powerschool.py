@@ -206,8 +206,12 @@ def download_latest_report_from_report_queue_reportworks(driver: WebDriver, dest
             # Confirm no reports are running
             driver.find_element(By.XPATH, "//p[contains(text(), 'No reports running or pending!')]")
             
-            # Download the first report in table
-            queued_reports = driver.find_element(By.XPATH, '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')
+            # There is occasional flakiness where the "No reports running or pending!" message shows up but the 
+            # latest report is not in the list for downloading yet, so refresh the page one more time.
+            time.sleep(1)
+            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+            driver.find_element(By.ID, 'prReloadButton').click()
+            time.sleep(1)
         except NoSuchElementException: # Because reports ARE running
             time.sleep(5)
             WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
@@ -215,6 +219,8 @@ def download_latest_report_from_report_queue_reportworks(driver: WebDriver, dest
             logging.info('PowerSchool report is not ready, refreshing and waiting.')
             time.sleep(3)
         else:
+            # Download the first report in table
+            queued_reports = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')))
             download_link = queued_reports.get_attribute('href')
             original_files_list = os.listdir(destination_directory_path)
             driver.get(download_link) #downloads the file
@@ -224,6 +230,8 @@ def download_latest_report_from_report_queue_reportworks(driver: WebDriver, dest
     wait_for_new_file_in_folder(destination_directory_path, original_files_list)
     rename_recent_file_in_dir(destination_directory_path, file_postfix)
     logging.info('Successfully renamed the downloaded file.')
+
+    return True
 
 def download_latest_report_from_report_queue_system(driver: WebDriver, destination_directory_path: str = '', file_postfix: str = ''):
     """Navigates to the PowerSchool Report Queue (System), confirms the most recent report is done generating, and downloads it
@@ -250,12 +258,22 @@ def download_latest_report_from_report_queue_system(driver: WebDriver, destinati
     top_completed_report_view_link = driver.find_element(By.XPATH, '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[5]/a')
     top_completed_report_view_link.click()
 
-    download_link = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Click to Download Result File')))
-    download_link.click()
-    logging.info('Downloading PowerSchool report.')
+    try:
+        # Look for a result file link
+        download_link = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.LINK_TEXT, 'Click to Download Result File')))
+        download_link.click()
+        logging.info('Downloading PowerSchool report.')
 
-    original_files_list = os.listdir(destination_directory_path)
+        original_files_list = os.listdir(destination_directory_path)
 
-    wait_for_new_file_in_folder(destination_directory_path, original_files_list)
-    rename_recent_file_in_dir(destination_directory_path, file_postfix)
-    logging.info('Successfully renamed the downloaded file.')
+        wait_for_new_file_in_folder(destination_directory_path, original_files_list)
+        rename_recent_file_in_dir(destination_directory_path, file_postfix)
+        logging.info('Successfully renamed the downloaded file.')
+
+        return True
+    except:
+        # If no result file link is found, look for a confirmation that no file was generated
+        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//h1[text()='No records found']")))
+        logging.info('PowerSchool reports "No records found"')
+
+        return False
