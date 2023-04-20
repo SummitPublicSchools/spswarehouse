@@ -32,6 +32,13 @@ def download_calpads_report_for_school(driver: WebDriver, school_full_name: str,
                                                             report_start_date=report_parameters['report_start_date'],
                                                             report_end_date=report_parameters['report_end_date']
                                                             )
+    elif(report_name == "Student Program Records"):
+        download_calpads_report_for_school_student_program_records(driver, file_postfix, destination_directory_path, 
+                                                            report_name = report_name,
+                                                            report_start_date=report_parameters['report_start_date'],
+                                                            report_end_date=report_parameters['report_end_date'],
+                                                            submission_type=report_parameters['submission_type']
+                                                            )
     else:
         raise Exception("CALPADS report name not supported")
 
@@ -105,6 +112,31 @@ def download_calpads_report_for_school_student_absence_summary(driver: WebDriver
     powerschool_report_helper_type_in_element_by_name(driver, 'StartDate', report_start_date)
     powerschool_report_helper_type_in_element_by_name(driver, 'EndDate', report_end_date)
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'adaFlag', 'Yes') # Defaulting to 'Yes'
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'Yes') # Only bypassing validations is supported by this tool
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'schoolGroup', '[No Group Selected]') # Defaulting to "No Group Selected" because school should already be chosen
+    
+    # Submit report
+    powerschool_report_helper_click_element_by_id(driver, 'btnSubmit')
+
+    # Download report zipfile
+    download_latest_report_from_report_queue_system(driver, destination_directory_path, file_postfix)
+
+    return False
+
+def download_calpads_report_for_school_student_program_records(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
+                                                        report_name: str, report_start_date: str, report_end_date: str, submission_type: str):
+    
+    navigate_to_specific_state_report(driver, report_name)
+    
+    # Enter specific parameters for this report
+    powerschool_report_helper_type_in_element_by_name(driver, 'startDate', report_start_date)
+    powerschool_report_helper_type_in_element_by_name(driver, 'endDate', report_end_date)
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'selectProgs', submission_type)
+
+    # I believe 'Non-submission mode (all records)' is the one we want to use for repeated submissions, but 
+    # there's also 'Replacement Submission Mode' which has a different flow after clicking Submit.
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'submissionMode', 'Non-submission mode (all records)') 
+
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'Yes') # Only bypassing validations is supported by this tool
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'schoolGroup', '[No Group Selected]') # Defaulting to "No Group Selected" because school should already be chosen
     
