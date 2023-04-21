@@ -64,7 +64,7 @@ def log_into_powerschool_admin(driver: WebDriver,
     elem.send_keys(username)
     
     logging.info("Find the password field within the HTML page")
-    elem = driver.find_element_by_id('fieldPassword')
+    elem = driver.find_element(By.ID, 'fieldPassword')
     
     logging.info("Type your PowerSchool password")
     elem.send_keys(password)
