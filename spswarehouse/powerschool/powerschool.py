@@ -272,8 +272,13 @@ def download_latest_report_from_report_queue_system(driver: WebDriver, destinati
 
         return True
     except:
-        # If no result file link is found, look for a confirmation that no file was generated
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//h1[text()='No records found']")))
-        logging.info('PowerSchool reports "No records found"')
-
-        return False
+        try:
+            # If no result file link is found, look for a confirmation that no file was generated
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//h1[text()='No records found']")))
+            logging.info('PowerSchool reports "No records found"')
+            return False
+        except:
+            # TODO: Check for the SCSC validation errors page and download it appropriately
+            logging.info(f"Unable to confirm results. Please check manually for postfix {file_postfix}.")
+            driver.back()
+            return False

@@ -10,39 +10,44 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-def download_calpads_report_for_school(driver: WebDriver, school_full_name: str, report_name: str, file_postfix: str, destination_directory_path: str, report_parameters: dict):
+def download_calpads_report_for_school(driver: WebDriver, school_full_name: str, report_name: str, file_postfix: str, destination_directory_path: str, report_parameters: dict, validation_only_run: bool=False):
     switch_to_school(driver, school_full_name)
 
     if(report_name == "Student Incident Records (SINC)"):
         return download_calpads_report_for_school_student_incident_records_sinc(driver, file_postfix, destination_directory_path, 
                                                             report_start_date=report_parameters['report_start_date'],
-                                                            report_end_date=report_parameters['report_end_date']
+                                                            report_end_date=report_parameters['report_end_date'],
+                                                            validation_only_run=validation_only_run,
                                                             )
     elif(report_name in ("Student Incident Results Records (SIRS)", "Student Offense Records (SOFF)")):
         return download_calpads_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(driver, file_postfix, destination_directory_path, 
                                                             report_name = report_name,
                                                             report_start_date=report_parameters['report_start_date'],
-                                                            report_end_date=report_parameters['report_end_date']
+                                                            report_end_date=report_parameters['report_end_date'],
+                                                            validation_only_run=validation_only_run,
                                                             )
     elif(report_name == "Student Absence Summary"):
         return download_calpads_report_for_school_student_absence_summary(driver, file_postfix, destination_directory_path, 
                                                             report_name = report_name,
                                                             report_start_date=report_parameters['report_start_date'],
-                                                            report_end_date=report_parameters['report_end_date']
+                                                            report_end_date=report_parameters['report_end_date'],
+                                                            validation_only_run=validation_only_run,
                                                             )
     elif(report_name == "Student Program Records"):
         return download_calpads_report_for_school_student_program_records(driver, file_postfix, destination_directory_path, 
                                                             report_name = report_name,
                                                             report_start_date=report_parameters['report_start_date'],
                                                             report_end_date=report_parameters['report_end_date'],
-                                                            submission_type=report_parameters['submission_type']
+                                                            submission_type=report_parameters['submission_type'],
+                                                            validation_only_run=validation_only_run,
                                                             )
     elif(report_name == "Course Section Records"):
         return download_calpads_report_for_school_course_section_records(driver, file_postfix, destination_directory_path, 
                                                             report_name = report_name,
                                                             report_start_date=report_parameters['report_start_date'],
                                                             report_end_date=report_parameters['report_end_date'],
-                                                            submission_type=report_parameters['submission_type']
+                                                            submission_type=report_parameters['submission_type'],
+                                                            validation_only_run=validation_only_run,
                                                             )
     elif(report_name == "Student Course Section Records"):
         return download_calpads_report_for_school_student_course_section_records(driver, file_postfix, destination_directory_path, 
@@ -50,7 +55,8 @@ def download_calpads_report_for_school(driver: WebDriver, school_full_name: str,
                                                             report_start_date=report_parameters['report_start_date'],
                                                             report_end_date=report_parameters['report_end_date'],
                                                             submission_type=report_parameters['submission_type'],
-                                                            eoy_store_code_list=report_parameters['eoy_store_code_list']
+                                                            eoy_store_code_list=report_parameters['eoy_store_code_list'],
+                                                            validation_only_run=validation_only_run,
                                                             )            
     else:
         raise Exception("CALPADS report name not supported")
@@ -81,7 +87,7 @@ def powerschool_report_helper_click_element_by_id(driver: WebDriver, element_id:
     elem.click()
 
 def download_calpads_report_for_school_student_incident_records_sinc(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
-                                                        report_start_date: str, report_end_date: str):
+                                                        report_start_date: str, report_end_date: str, validation_only_run: bool=False):
     
     navigate_to_specific_state_report(driver, "Student Incident Records (SINC)")
     
@@ -90,7 +96,7 @@ def download_calpads_report_for_school_student_incident_records_sinc(driver: Web
     powerschool_report_helper_type_in_element_by_id(driver, 'reportEndDate', report_end_date)
     powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'reportMode', 'Submission mode') # Only 'Submission mode' is supported by this tool
     time.sleep(1) # Give page time to react
-    powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'bypassValidation', 'Yes') # Only bypassing validations is supported by this tool
+    powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'bypassValidation', 'No' if validation_only_run else 'Yes')
 
     # Submit report
     powerschool_report_helper_click_element_by_id(driver, 'submitReportSDKRuntimeParams')
@@ -99,14 +105,14 @@ def download_calpads_report_for_school_student_incident_records_sinc(driver: Web
     return download_latest_report_from_report_queue_reportworks(driver, destination_directory_path, file_postfix)
 
 def download_calpads_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
-                                                        report_name: str, report_start_date: str, report_end_date: str):
+                                                        report_name: str, report_start_date: str, report_end_date: str, validation_only_run: bool=False):
     
     navigate_to_specific_state_report(driver, report_name)
     
     # Enter specific parameters for this report
     powerschool_report_helper_type_in_element_by_id(driver, 'reportStartDate', report_start_date)
     powerschool_report_helper_type_in_element_by_id(driver, 'reportEndDate', report_end_date)
-    powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'bypassValidation', 'Yes') # Only bypassing validations is supported by this tool
+    powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'bypassValidation', 'No' if validation_only_run else 'Yes')
     
     # Submit report
     powerschool_report_helper_click_element_by_id(driver, 'submitReportSDKRuntimeParams')
@@ -115,7 +121,7 @@ def download_calpads_report_for_school_student_incident_results_records_sirs_or_
     return download_latest_report_from_report_queue_reportworks(driver, destination_directory_path, file_postfix)
 
 def download_calpads_report_for_school_student_absence_summary(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
-                                                        report_name: str, report_start_date: str, report_end_date: str):
+                                                        report_name: str, report_start_date: str, report_end_date: str, validation_only_run: bool=False):
     
     navigate_to_specific_state_report(driver, report_name)
     
@@ -123,7 +129,7 @@ def download_calpads_report_for_school_student_absence_summary(driver: WebDriver
     powerschool_report_helper_type_in_element_by_name(driver, 'StartDate', report_start_date)
     powerschool_report_helper_type_in_element_by_name(driver, 'EndDate', report_end_date)
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'adaFlag', 'Yes') # Defaulting to 'Yes'
-    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'Yes') # Only bypassing validations is supported by this tool
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'No' if validation_only_run else 'Yes')
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'schoolGroup', '[No Group Selected]') # Defaulting to "No Group Selected" because school should already be chosen
     
     # Submit report
@@ -133,7 +139,7 @@ def download_calpads_report_for_school_student_absence_summary(driver: WebDriver
     return download_latest_report_from_report_queue_system(driver, destination_directory_path, file_postfix)
 
 def download_calpads_report_for_school_student_program_records(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
-                                                        report_name: str, report_start_date: str, report_end_date: str, submission_type: str):
+                                                        report_name: str, report_start_date: str, report_end_date: str, submission_type: str, validation_only_run: bool=False):
     
     navigate_to_specific_state_report(driver, report_name)
     
@@ -146,9 +152,9 @@ def download_calpads_report_for_school_student_program_records(driver: WebDriver
     # there's also 'Replacement Submission Mode' which has a different flow after clicking Submit.
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'submissionMode', 'Non-submission mode (all records)') 
 
-    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'Yes') # Only bypassing validations is supported by this tool
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'No' if validation_only_run else 'Yes')
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'schoolGroup', '[No Group Selected]') # Defaulting to "No Group Selected" because school should already be chosen
-    
+
     # Submit report
     powerschool_report_helper_click_element_by_id(driver, 'btnSubmit')
 
@@ -156,7 +162,7 @@ def download_calpads_report_for_school_student_program_records(driver: WebDriver
     return download_latest_report_from_report_queue_system(driver, destination_directory_path, file_postfix)
 
 def download_calpads_report_for_school_course_section_records(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
-                                                        report_name: str, report_start_date: str, report_end_date: str, submission_type: str):
+                                                        report_name: str, report_start_date: str, report_end_date: str, submission_type: str, validation_only_run: bool=False):
     
     navigate_to_specific_state_report(driver, report_name)
     
@@ -166,7 +172,7 @@ def download_calpads_report_for_school_course_section_records(driver: WebDriver,
     time.sleep(1) 
     powerschool_report_helper_type_in_element_by_id(driver, 'startDate', report_start_date)
     powerschool_report_helper_type_in_element_by_id(driver, 'endDate', report_end_date)
-    powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'bypassValidation', 'Yes') # Only bypassing validations is supported by this tool
+    powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'bypassValidation', 'No' if validation_only_run else 'Yes')
     powerschool_report_helper_select_visible_text_in_element_by_id(driver, 'selectCourseCode', 'No') # Do not "Include Records For Course Code 1000"
 
     # Submit report
@@ -177,7 +183,7 @@ def download_calpads_report_for_school_course_section_records(driver: WebDriver,
 
 def download_calpads_report_for_school_student_course_section_records(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
                                                         report_name: str, report_start_date: str, report_end_date: str, submission_type: str,
-                                                        eoy_store_code_list: str):
+                                                        eoy_store_code_list: str, validation_only_run: bool=False):
     
     navigate_to_specific_state_report(driver, report_name)
     
@@ -190,7 +196,7 @@ def download_calpads_report_for_school_student_course_section_records(driver: We
     powerschool_report_helper_type_in_element_by_name(driver, 'startDate', report_start_date)
     powerschool_report_helper_type_in_element_by_name(driver, 'endDate', report_end_date)
 
-    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'Yes') # Only bypassing validations is supported by this tool
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'No' if validation_only_run else 'Yes')
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'schoolGroup', '[No Group Selected]') # Defaulting to "No Group Selected" because school should already be chosen
     
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'selectCourseCode', 'No') # Do not "Include Records For Course Code 1000"
