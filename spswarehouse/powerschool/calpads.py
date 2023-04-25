@@ -10,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
-def download_calpads_report_for_school(driver: WebDriver, school_full_name: str, report_name: str, file_postfix: str, destination_directory_path: str, report_parameters: dict, validation_only_run: bool=False):
+def download_calpads_report_for_school(driver: WebDriver, school_full_name: str, school_subdistrict_name: str, report_name: str, file_postfix: str, destination_directory_path: str, report_parameters: dict, validation_only_run: bool=False):
     switch_to_school(driver, school_full_name)
 
     if(report_name == "Student Incident Records (SINC)"):
@@ -56,6 +56,7 @@ def download_calpads_report_for_school(driver: WebDriver, school_full_name: str,
                                                             report_end_date=report_parameters['report_end_date'],
                                                             submission_type=report_parameters['submission_type'],
                                                             eoy_store_code_list=report_parameters['eoy_store_code_list'],
+                                                            school_subdistrict_name=school_subdistrict_name,
                                                             validation_only_run=validation_only_run,
                                                             )            
     else:
@@ -183,8 +184,10 @@ def download_calpads_report_for_school_course_section_records(driver: WebDriver,
 
 def download_calpads_report_for_school_student_course_section_records(driver: WebDriver, file_postfix: str, destination_directory_path: str, 
                                                         report_name: str, report_start_date: str, report_end_date: str, submission_type: str,
-                                                        eoy_store_code_list: str, validation_only_run: bool=False):
+                                                        eoy_store_code_list: str, school_subdistrict_name:str, validation_only_run: bool=False):
     
+    # This report needs to be run from the District Office level in order to properly generate LEA IDs without dropping leading zeros
+    switch_to_school(driver, 'District Office')
     navigate_to_specific_state_report(driver, report_name)
     
     # Enter specific parameters for this report
@@ -197,9 +200,9 @@ def download_calpads_report_for_school_student_course_section_records(driver: We
     powerschool_report_helper_type_in_element_by_name(driver, 'endDate', report_end_date)
 
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'bypass_validation', 'No' if validation_only_run else 'Yes')
-    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'schoolGroup', '[No Group Selected]') # Defaulting to "No Group Selected" because school should already be chosen
-    
     powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'selectCourseCode', 'No') # Do not "Include Records For Course Code 1000"
+
+    powerschool_report_helper_select_visible_text_in_element_by_name(driver, 'subDistrict', school_subdistrict_name)
 
     # Submit report
     powerschool_report_helper_click_element_by_id(driver, 'btnSubmit')
