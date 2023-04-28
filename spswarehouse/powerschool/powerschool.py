@@ -7,7 +7,7 @@ from ducttape.utils import (
 )
 
 from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
@@ -235,6 +235,45 @@ def navigate_to_specific_state_report(driver: WebDriver, report_link_text: str):
     navigate_to_state_reports_page(driver)
     
     elem = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, f"{report_link_text}")))
+    elem.click()
+
+def powerschool_report_helper_type_in_element_by_id(driver: WebDriver, element_id: str, input_to_type: str):
+    """
+    Waits for an element by ID, clears it, and types in the input.
+    """
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+    elem.clear()
+    elem.send_keys(input_to_type)
+
+def powerschool_report_helper_type_in_element_by_name(driver: WebDriver, element_name: str, input_to_type: str):
+    """
+    Waits for an element by name, clears it, and types in the input.
+    """
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+    elem.clear()
+    elem.send_keys(input_to_type)
+
+def powerschool_report_helper_select_visible_text_in_element_by_id(driver: WebDriver, element_id: str, text_to_select: str):
+    """
+    Waits for an element by ID and selects it by specified text.
+    """
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+    select = Select(elem)
+    select.select_by_visible_text(text_to_select)
+
+def powerschool_report_helper_select_visible_text_in_element_by_name(driver: WebDriver, element_name: str, text_to_select: str):
+    """
+    Waits for an element by name and selects it by specified text.
+    """
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+    select = Select(elem)
+    select.select_by_visible_text(text_to_select)
+
+def powerschool_report_helper_click_element_by_id(driver: WebDriver, element_id: str):
+    """
+    Waits for an element by ID and clicks it.
+    """
+    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
     elem.click()
 
 def wait_for_new_file_in_folder(folder_path, original_files, max_attempts=20000):
