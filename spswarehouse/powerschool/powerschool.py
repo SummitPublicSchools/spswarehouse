@@ -6,8 +6,6 @@ from ducttape.utils import (
     get_most_recent_file_in_dir
 )
 
-# from selenium.webdriver.support.ui import Select
-# from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -22,13 +20,6 @@ ADMIN_URL_SCHEME = 'https://'
 STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
 REPORT_QUEUE_REPORTWORKS_PAGE_PATH = 'admin/reportqueue/prhome.html'
 REPORT_QUEUE_SYSTEM_PAGE_PATH = 'admin/reportqueue/home.html'
-
-"""
-TODO: Should this be a class that creates its own WebDriver? Might make it 
-harder for the end user to access it for doing their own custom code in PowerSchool,
-but it would eliminate the need to pass the user's WebDriver to all these functions.
-How would this work with Airflow?
-"""
 
 def log_into_powerschool_admin(driver: WebDriver, 
                                username: str, 
@@ -71,6 +62,14 @@ def log_into_powerschool_admin(driver: WebDriver,
     
     logging.info("Press enter to submit your credentials and complete your login.")
     elem.send_keys(Keys.RETURN)
+
+    try:
+        logging.info("Waiting for 'Start Page' element to be visible to confirm successful login")
+        elem = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, "//h1[text()='Start Page']")))
+
+        logging.info("Successful login confirmed!")
+    except:
+        raise Exception("Unable to confirm successful login to PowerSchool. Please check your credentials.")
 
 def get_current_domain(driver: WebDriver):
     """
