@@ -303,8 +303,9 @@ def get_most_recent_file_in_dir(folder_path):
         A string with the filename of the most recently changed file in the
         folder.
     """
-    # * means all if need specific format then *.csv
     list_of_files = os.listdir(folder_path)
+    for index, file in enumerate(list_of_files):
+        list_of_files[index] = folder_path + '/' + file
     latest_file = max(list_of_files, key=os.path.getctime)
     return latest_file
 
