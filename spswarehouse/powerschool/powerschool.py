@@ -4,6 +4,8 @@ import os
 
 from ..credentials import powerschool_config
 
+from ducttape.utils import DriverBuilder
+
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
@@ -19,464 +21,484 @@ STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
 REPORT_QUEUE_REPORTWORKS_PAGE_PATH = 'admin/reportqueue/prhome.html'
 REPORT_QUEUE_SYSTEM_PAGE_PATH = 'admin/reportqueue/home.html'
 
-def log_into_powerschool_admin(driver: WebDriver, username: str=None, password: str=None, 
-    host: str=None):
+class PowerSchool:
     """
-    Using the supplied Selenium webdriver, log into PowerSchool Admin
-    with the given username, password, and host. If no credentials are 
-    provided, pull them from the credentials.py file.
-    
-    Arguments:
-        driver (webdriver.Chrome()): a Selenium-powered Chrome Window
-        username (str): the PowerSchool Admin username
-        password (str): the PowerSchool Admin password
-        host (str): the PowerSchool Admin login-page
+    This class is an abstraction for interacting with the PowerSchool Admin user 
+    interface via Selenium.
+    """
+
+    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, download_location: str='.'):
+        if username is None: 
+            self.username = powerschool_config['username']
+        else:
+            self.username = username
+
+        if password is None:
+            password = powerschool_config['password']
+        else:
+            self.password = password
+
+        if host is None:
+            host = powerschool_config['host']
+        else:
+            self.host = host
+
+        # TODO: Do we need: download_location=working_directory_path, 
+        self.driver = DriverBuilder().get_driver(headless=headless, download_location=download_location)
         
-    Returns:
-        None: Selenium will log you into PowerSchool Admin
-    """
-    if username is None: 
-        username = powerschool_config['username']
-    if password is None:
-        password = powerschool_config['password']
-    if host is None:
-        host = powerschool_config['host']
+        self._log_into_powerschool_admin()
 
-    logging.info("Create webpage URL for PowerSchool Admin")
-    host_full = host + "/" + ADMIN_LOGIN_PAGE_PATH
-    logging.info(f"The webpage url is: {host_full}")
-    
-    logging.info("Go to webpage URL for PowerSchool Admin")
-    driver.get(host_full)
-    
-    logging.info("Find the username field within the login page")
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 'fieldUsername')))
-    
-    logging.info("Clear any pre-filled values within the username field")
-    elem.clear()
-    
-    logging.info("Type your PowerSchool username")
-    elem.send_keys(username)
-    
-    logging.info("Find the password field within the HTML page")
-    elem = driver.find_element(By.ID, 'fieldPassword')
-    
-    logging.info("Type your PowerSchool password")
-    elem.send_keys(password)
-    
-    logging.info("Press enter to submit your credentials and complete your login.")
-    elem.send_keys(Keys.RETURN)
+    def quit(self):
+        self.driver.quit()
 
-    try:
-        logging.info("Waiting for 'Start Page' element to be visible to confirm successful login")
-        elem = WebDriverWait(driver, 30).until(EC.visibility_of_element_located((By.XPATH, 
-            "//h1[text()='Start Page']")))
+    def _log_into_powerschool_admin(self):
+        """
+        Log into PowerSchool Admin and confirm the login was successful.
+        
+        Parameters:
+        n/a
+            
+        Returns:
+        n/a
+        """
+        
+        logging.info("Create webpage URL for PowerSchool Admin")
+        host_full = self.host + "/" + ADMIN_LOGIN_PAGE_PATH
+        logging.info(f"The webpage url is: {host_full}")
+        
+        logging.info("Go to webpage URL for PowerSchool Admin")
+        self.driver.get(host_full)
+        
+        logging.info("Find the username field within the login page")
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 'fieldUsername')))
+        
+        logging.info("Clear any pre-filled values within the username field")
+        elem.clear()
+        
+        logging.info("Type your PowerSchool username")
+        elem.send_keys(self.username)
+        
+        logging.info("Find the password field within the HTML page")
+        elem = self.driver.find_element(By.ID, 'fieldPassword')
+        
+        logging.info("Type your PowerSchool password")
+        elem.send_keys(self.password)
+        
+        logging.info("Press enter to submit your credentials and complete your login.")
+        elem.send_keys(Keys.RETURN)
 
-        logging.info("Successful login confirmed!")
-    except:
-        raise Exception("Unable to confirm successful login to PowerSchool. Please check your \
-            credentials.")
+        try:
+            logging.info("Waiting for 'Start Page' element to be visible to confirm successful login")
+            elem = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.XPATH, 
+                "//h1[text()='Start Page']")))
 
-def get_current_domain(driver: WebDriver):
-    """
-    Retrieves the current domain.
-    
-    Parameters:
-    driver: The Selenium WebDriver
+            logging.info("Successful login confirmed!")
+        except:
+            raise Exception("Unable to confirm successful login to PowerSchool. Please check your \
+                credentials.")
 
-    Returns:
-    str: The current domain
-    """
+    def _get_current_domain(self):
+        """
+        Retrieves the current domain.
+        
+        Parameters:
+        self
 
-    return driver.current_url[8:].split("/",1)[:1][0]
+        Returns:
+        str: The current domain
+        """
 
-def get_current_path(driver: WebDriver):
-    """
-    Retrieves the current path, minus the 'https://'.
-    
-    Parameters:
-    driver: The Selenium WebDriver
+        return self.driver.current_url[8:].split("/",1)[:1][0]
 
-    Returns:
-    str: The current path
-    """
+    def _get_current_path(self):
+        """
+        Retrieves the current path, minus the 'https://'.
+        
+        Parameters:
+        self
 
-    return driver.current_url[8:].split("/",1)[1:][0]
+        Returns:
+        str: The current path
+        """
 
-def ensure_on_desired_path(driver: WebDriver, desired_path: str):
-    """
-    Checks whether the WebDriver is on the desired path. If not, navigates there.
+        return self.driver.current_url[8:].split("/",1)[1:][0]
 
-    Parameters:
-    driver: The Selenium WebDriver
-    desired_path: The path to be checked against
+    def ensure_on_desired_path(self, desired_path: str):
+        """
+        Checks whether the WebDriver is on the desired path. If not, navigates there.
 
-    Returns:
-    n/a
-    """
+        Parameters:
+        self
+        desired_path: The path to be checked against
 
-    current_path = get_current_path(driver)
+        Returns:
+        n/a
+        """
 
-    logging.info(f"The current path is: {current_path}")
+        current_path = self._get_current_path()
 
-    if(current_path == desired_path):
-        logging.info("The current path is the desired path. No action taken.")
-    else:
-        logging.info(f"This does not match {desired_path}, so going to that path")
-        driver.get('https://' + get_current_domain(driver) + "/" + desired_path)
-        logging.info(f"Moved to {desired_path}")
+        logging.info(f"The current path is: {current_path}")
 
-def check_whether_desired_school_selected(driver, school_name: str) -> bool:
-    """
-    Checks whether the specified school is currently selected in PowerSchool but
-    takes no action either way.
+        if(current_path == desired_path):
+            logging.info("The current path is the desired path. No action taken.")
+        else:
+            logging.info(f"This does not match {desired_path}, so going to that path")
+            self.driver.get('https://' + self._get_current_domain(self.driver) + "/" + desired_path)
+            logging.info(f"Moved to {desired_path}")
 
-    Parameters:
-    driver: The Selenium WebDriver
-    school_name: The school name for selecting from the drop-down in the upper-right of the user 
-    interface. Should be the complete school name to avoid incorrect partial matches.
+    def check_whether_desired_school_selected(self, school_name: str) -> bool:
+        """
+        Checks whether the specified school is currently selected in PowerSchool but
+        takes no action either way.
 
-    Returns:
-    bool: True indicates the desired school is selected, and False indicates it is not.
-    """
-
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 
-        'school_picker_adminSchoolPicker_toggle_btn')))
-
-    elem.click()
-    time.sleep(1)
-
-    selected_element = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
-        '.list-item.selectable.selected')))
-
-    school_element_text = selected_element.find_element(By.XPATH, ".//div").text
-
-    result_message = f"Found the {school_name} in the school element text. Match!"
-    outcome = True
-
-    if(school_name not in school_element_text):
-        result_message = f"Did not find {school_name} in the school element text. No match."
-        outcome = False
-
-    logging.info(result_message)
-
-    logging.info(f"Pressing escape to leave dropdown selection.")
-    actions = ActionChains(driver)
-    actions.send_keys(Keys.ESCAPE).perform()
-    
-    return outcome
-
-def switch_to_school(driver: WebDriver, school_name: str):
-    """
-    Switches to a specified school in PowerSchool.
-
-    Parameters:
-    driver: The Selenium WebDriver
-    school_name: The school name for selecting from the drop-down in the upper-right of the user 
+        Parameters:
+        self
+        school_name: The school name for selecting from the drop-down in the upper-right of the user 
         interface. Should be the complete school name to avoid incorrect partial matches.
 
-    Returns:
-    n/a
-    """
+        Returns:
+        bool: True indicates the desired school is selected, and False indicates it is not.
+        """
 
-    if check_whether_desired_school_selected(driver, school_name) == False:
-        logging.info(f"{school_name} is not already selected. Selecting now.")
-
-        ensure_on_desired_path(driver, ADMIN_HOME_PAGE_PATH)
-
-        logging.info("Waiting for School Picker")
-        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 
             'school_picker_adminSchoolPicker_toggle_btn')))
-        logging.info("School Picker found. Click it.")
 
         elem.click()
-
         time.sleep(1)
 
-        logging.info("Waiting for School Search Field")
-        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, 
-            'schoolSearchField_value')))
-        logging.info("Found School Search Field. Typing in school name.")
+        selected_element = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
+            '.list-item.selectable.selected')))
 
-        elem.send_keys(school_name)
+        school_element_text = selected_element.find_element(By.XPATH, ".//div").text
 
-        time.sleep(1)
+        result_message = f"Found the {school_name} in the school element text. Match!"
+        outcome = True
 
-        logging.info("Looking for first school in list")
-        elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, 
-            "//ul[@id='school_choices']/li[1]")))
+        if(school_name not in school_element_text):
+            result_message = f"Did not find {school_name} in the school element text. No match."
+            outcome = False
 
-        logging.info("Found first school in results list. Clicking.")
-        elem.click()
-        logging.info("Click. Waiting for page to refresh.")
-        time.sleep(1)
+        logging.info(result_message)
+
+        logging.info(f"Pressing escape to leave dropdown selection.")
+        actions = ActionChains(self.driver)
+        actions.send_keys(Keys.ESCAPE).perform()
         
-        assert check_whether_desired_school_selected(driver, school_name), "Failed to select \
-            desired school."
-    else:
-        logging.info(f"{school_name} is already selected. No action taken.")
-    
-def navigate_to_state_reports_page(driver: WebDriver):
-    """
-    Navigates to the state reports page in PowerSchool.
+        return outcome
 
-    Parameters:
-    driver: The Selenium WebDriver
-    
-    Returns:
-    n/a
-    """
+    def switch_to_school(self, school_name: str):
+        """
+        Switches to a specified school in PowerSchool.
 
-    driver.get(ADMIN_URL_SCHEME + get_current_domain(driver) + '/' + STATE_REPORTS_PAGE_PATH)
+        Parameters:
+        self
+        school_name: The school name for selecting from the drop-down in the upper-right of the user 
+            interface. Should be the complete school name to avoid incorrect partial matches.
 
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
-        'ul li.selected')))
-    assert elem.text == 'State', "'State' tab is not selected"
+        Returns:
+        n/a
+        """
 
-def navigate_to_specific_state_report(driver: WebDriver, report_link_text: str):
-    """
-    Navigates to the state reports page in PowerSchool and clicks on the report containing
-    the report_link_text string.
+        if self.check_whether_desired_school_selected(school_name) == False:
+            logging.info(f"{school_name} is not already selected. Selecting now.")
 
-    Parameters:
-    driver: The Selenium WebDriver
-    report_link_text: The string to uniquely identify the report. Can be partial text.
+            self.ensure_on_desired_path(ADMIN_HOME_PAGE_PATH)
 
-    Returns:
-    n/a
-    """
-    navigate_to_state_reports_page(driver)
-    
-    elem = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
-        f"{report_link_text}")))
-    elem.click()
+            logging.info("Waiting for School Picker")
+            elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 
+                'school_picker_adminSchoolPicker_toggle_btn')))
+            logging.info("School Picker found. Click it.")
 
-def powerschool_report_helper_type_in_element_by_id(driver: WebDriver, element_id: str, 
-    input_to_type: str):
-    """
-    Waits for an element by ID, clears it, and types in the input.
-    """
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
-    elem.clear()
-    elem.send_keys(input_to_type)
+            elem.click()
 
-def powerschool_report_helper_type_in_element_by_name(driver: WebDriver, element_name: str, 
-    input_to_type: str):
-    """
-    Waits for an element by name, clears it, and types in the input.
-    """
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
-    elem.clear()
-    elem.send_keys(input_to_type)
+            time.sleep(1)
 
-def powerschool_report_helper_select_visible_text_in_element_by_id(driver: WebDriver, 
-    element_id: str, text_to_select: str):
-    """
-    Waits for an element by ID and selects it by specified text.
-    """
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
-    select = Select(elem)
-    select.select_by_visible_text(text_to_select)
+            logging.info("Waiting for School Search Field")
+            elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 
+                'schoolSearchField_value')))
+            logging.info("Found School Search Field. Typing in school name.")
 
-def powerschool_report_helper_select_visible_text_in_element_by_name(driver: WebDriver, 
-    element_name: str, text_to_select: str):
-    """
-    Waits for an element by name and selects it by specified text.
-    """
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
-    select = Select(elem)
-    select.select_by_visible_text(text_to_select)
+            elem.send_keys(school_name)
 
-def powerschool_report_helper_click_element_by_id(driver: WebDriver, element_id: str):
-    """
-    Waits for an element by ID and clicks it.
-    """
-    elem = WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
-    elem.click()
+            time.sleep(1)
 
-def get_most_recent_file_in_dir(folder_path):
-    """Returns the most recently changed file in a folder.
+            logging.info("Looking for first school in list")
+            elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, 
+                "//ul[@id='school_choices']/li[1]")))
 
-    Args:
-        folder_path: The path to the folder to search
-    Returns:
-        A string with the filename of the most recently changed file in the
-        folder.
-    """
-    list_of_files = os.listdir(folder_path)
-    for index, file in enumerate(list_of_files):
-        list_of_files[index] = folder_path + '/' + file
-    latest_file = max(list_of_files, key=os.path.getctime)
-    return latest_file
-
-def wait_for_new_file_in_folder(folder_path, original_files, max_attempts=20000):
-    """
-    Waits until a new file shows up in a folder. Loops until that is true or max_attempts is 
-    reached.
-
-    Parameters:
-    folder_path: The folder being monitored.
-    original_files: The list of files originally in the folder, before the new one is added.
-    max_attmepts: Optional parameter that sets how many loops the function will do.
-
-    Returns:
-    n/a
-    """
-    file_added = False
-    attempts = 0
-    while True and attempts < max_attempts:
-        for root, folders, files in os.walk(folder_path):
-            # break 'for' loop if files found
-            if len(files) > len(original_files):
-                file_added = True
-                break
-            else:
-                continue
-        # break 'while' loop if files found
-        if file_added:
-            # wait for download to complete fully after it's been added - hopefully 3 seconds 
-            #    is enough.
-            time.sleep(3)
-            break
-        attempts +=1
-
-def rename_recent_file_in_dir(folder, append_text):
-    """
-    Gets the most recent file in a folder and appends text to its filename.
-
-    Parameters:
-    folder: The path of the folder
-    append_text: The text to appended to the filename before the extension.
-
-    Returns:
-    n/a
-    """
-
-    recent_file = get_most_recent_file_in_dir(folder)
-    recent_file = recent_file.replace('\\', '/')
-    new_file, file_ext = os.path.splitext(recent_file)
-    new_file += append_text
-    new_file += file_ext
-    os.rename(recent_file, new_file)
-
-def download_latest_report_from_report_queue_reportworks(driver: WebDriver, 
-    destination_directory_path: str = '', file_postfix: str = ''):
-    """
-    Navigates to the PowerSchool Report Queue (ReportWorks), confirms the most recent report is 
-    done generating, and downloads it.
-
-    Parameters:
-    driver: A Selenium WebDriver
-    destination_directory_path: Where to download the PowerSchool report to.
-    file_postfix: Optional postfix to attach to the end of the downloaded file's filename.
-
-    Returns:
-    bool: True once successfully downloads the report. Otherwise, function keeps looping.
-    """
-
-    # Pause briefly to give a just-submitted report time to get into the queue
-    time.sleep(1)
-
-    ensure_on_desired_path(driver, REPORT_QUEUE_REPORTWORKS_PAGE_PATH)
-    
-    while True:
-        # TODO: Add a counter so this function can't get stuck in an infinte loop.
-        try:
-            # Confirm no reports are running
-            driver.find_element(By.XPATH, "//p[contains(text(), 'No reports running or pending!')]")
+            logging.info("Found first school in results list. Clicking.")
+            elem.click()
+            logging.info("Click. Waiting for page to refresh.")
+            time.sleep(1)
             
-            # There is occasional flakiness where the "No reports running or pending!" message 
-            #    shows up but the latest report is not in the list for downloading yet, so refresh 
-            #    the page one more time.
-            time.sleep(1)
-            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
-            driver.find_element(By.ID, 'prReloadButton').click()
-            time.sleep(1)
-        except NoSuchElementException: # Because reports ARE running
-            time.sleep(5)
-            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
-            driver.find_element(By.ID, 'prReloadButton').click()
-            logging.info('PowerSchool report is not ready, refreshing and waiting.')
-            time.sleep(3)
+            assert self.check_whether_desired_school_selected(school_name), "Failed to select \
+                desired school."
         else:
-            # Download the first report in table
-            queued_reports = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
-                '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')))
-            download_link = queued_reports.get_attribute('href')
-            original_files_list = os.listdir(destination_directory_path)
-            driver.get(download_link) #downloads the file
-            logging.info('PowerSchool report downloaded.')
-            break
+            logging.info(f"{school_name} is already selected. No action taken.")
+    
+    def navigate_to_state_reports_page(self):
+        """
+        Navigates to the state reports page in PowerSchool.
 
-    wait_for_new_file_in_folder(destination_directory_path, original_files_list)
-    rename_recent_file_in_dir(destination_directory_path, file_postfix)
-    logging.info('Successfully renamed the downloaded file.')
+        Parameters:
+        self
+        
+        Returns:
+        n/a
+        """
 
-    return True
+        self.driver.get(ADMIN_URL_SCHEME + self._get_current_domain() + '/' + STATE_REPORTS_PAGE_PATH)
 
-def download_latest_report_from_report_queue_system(driver: WebDriver,
-    destination_directory_path: str = '', file_postfix: str = ''):
-    """
-    Navigates to the PowerSchool Report Queue (System), confirms the most recent report is done 
-    generating, and downloads it.
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
+            'ul li.selected')))
+        assert elem.text == 'State', "'State' tab is not selected"
 
-    Parameters:
-    driver: A Selenium WebDriver
-    destination_directory_path: Where to download the PowerSchool report to.
-    file_postfix: Optional postfix to attach to the end of the downloaded file's filename.
+    def navigate_to_specific_state_report(self, report_link_text: str):
+        """
+        Navigates to the state reports page in PowerSchool and clicks on the report containing
+        the report_link_text string.
 
-    Returns:
-    bool: True if successfully downloads a report, or False if it cannot, either because the 
-        report generated no results from the previously-submitted parameters or the report
-        download page is in a format this function does not handle.
-    """
-    # Pause briefly to give a just-submitted report time to get into the queue
-    time.sleep(1)
+        Parameters:
+        self
+        report_link_text: The string to uniquely identify the report. Can be partial text.
 
-    ensure_on_desired_path(driver, REPORT_QUEUE_SYSTEM_PAGE_PATH)
+        Returns:
+        n/a
+        """
+        self.navigate_to_state_reports_page()
+        
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
+            f"{report_link_text}")))
+        elem.click()
 
-    while True:
-        try:
-            # Try to find a running report
-            driver.find_element(By.XPATH, "//td[text()='Running']")
+    def powerschool_report_helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
+        """
+        Waits for an element by ID, clears it, and types in the input.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+        elem.clear()
+        elem.send_keys(input_to_type)
 
-            # If yes, keep going here
-            time.sleep(5)
-            WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
-            driver.find_element(By.ID, 'prReloadButton').click()
-            logging.info('PowerSchool report is not ready, refreshing and waiting.')
-            time.sleep(3)
-        except NoSuchElementException: # Because all reports are done running
-            break
+    def powerschool_report_helper_type_in_element_by_name(self, element_name: str, input_to_type: str):
+        """
+        Waits for an element by name, clears it, and types in the input.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+        elem.clear()
+        elem.send_keys(input_to_type)
 
-    top_completed_report_view_link = driver.find_element(By.XPATH, 
-        '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[5]/a')
-    top_completed_report_view_link.click()
+    def powerschool_report_helper_select_visible_text_in_element_by_id(self, element_id: str, 
+        text_to_select: str):
+        """
+        Waits for an element by ID and selects it by specified text.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+        select = Select(elem)
+        select.select_by_visible_text(text_to_select)
 
-    try:
-        # Look for a result file link
-        download_link = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.LINK_TEXT, 
-            'Click to Download Result File')))
-        download_link.click()
-        logging.info('Downloading PowerSchool report.')
+    def powerschool_report_helper_select_visible_text_in_element_by_name(self, element_name: str, 
+        text_to_select: str):
+        """
+        Waits for an element by name and selects it by specified text.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+        select = Select(elem)
+        select.select_by_visible_text(text_to_select)
 
-        original_files_list = os.listdir(destination_directory_path)
+    def powerschool_report_helper_click_element_by_id(self, element_id: str):
+        """
+        Waits for an element by ID and clicks it.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+        elem.click()
 
-        wait_for_new_file_in_folder(destination_directory_path, original_files_list)
-        rename_recent_file_in_dir(destination_directory_path, file_postfix)
+    def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '', 
+        file_postfix: str = ''):
+        """
+        Navigates to the PowerSchool Report Queue (ReportWorks), confirms the most recent report is 
+        done generating, and downloads it.
+
+        Parameters:
+        self
+        destination_directory_path: Where to download the PowerSchool report to.
+        file_postfix: Optional postfix to attach to the end of the downloaded file's filename.
+
+        Returns:
+        bool: True once successfully downloads the report. Otherwise, function keeps looping.
+        """
+
+        # Pause briefly to give a just-submitted report time to get into the queue
+        time.sleep(1)
+
+        self.ensure_on_desired_path(REPORT_QUEUE_REPORTWORKS_PAGE_PATH)
+        
+        while True:
+            # TODO: Add a counter so this function can't get stuck in an infinte loop.
+            try:
+                # Confirm no reports are running
+                self.driver.find_element(By.XPATH, "//p[contains(text(), 'No reports running or pending!')]")
+                
+                # There is occasional flakiness where the "No reports running or pending!" message 
+                #    shows up but the latest report is not in the list for downloading yet, so refresh 
+                #    the page one more time.
+                time.sleep(1)
+                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+                self.driver.find_element(By.ID, 'prReloadButton').click()
+                time.sleep(1)
+            except NoSuchElementException: # Because reports ARE running
+                time.sleep(5)
+                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+                self.driver.find_element(By.ID, 'prReloadButton').click()
+                logging.info('PowerSchool report is not ready, refreshing and waiting.')
+                time.sleep(3)
+            else:
+                # Download the first report in table
+                queued_reports = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
+                    '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')))
+                download_link = queued_reports.get_attribute('href')
+                original_files_list = os.listdir(destination_directory_path)
+                self.driver.get(download_link) #downloads the file
+                logging.info('PowerSchool report downloaded.')
+                break
+
+        self._wait_for_new_file_in_folder(destination_directory_path, original_files_list)
+        self._rename_recent_file_in_dir(destination_directory_path, file_postfix)
         logging.info('Successfully renamed the downloaded file.')
 
         return True
-    except:
+
+    def download_latest_report_from_report_queue_system(self, destination_directory_path: str = '', 
+        file_postfix: str = ''):
+        """
+        Navigates to the PowerSchool Report Queue (System), confirms the most recent report is done 
+        generating, and downloads it.
+
+        Parameters:
+        driver: A Selenium WebDriver
+        destination_directory_path: Where to download the PowerSchool report to.
+        file_postfix: Optional postfix to attach to the end of the downloaded file's filename.
+
+        Returns:
+        bool: True if successfully downloads a report, or False if it cannot, either because the 
+            report generated no results from the previously-submitted parameters or the report
+            download page is in a format this function does not handle.
+        """
+        # Pause briefly to give a just-submitted report time to get into the queue
+        time.sleep(1)
+
+        self.ensure_on_desired_path(REPORT_QUEUE_SYSTEM_PAGE_PATH)
+
+        while True:
+            try:
+                # Try to find a running report
+                self.driver.find_element(By.XPATH, "//td[text()='Running']")
+
+                # If yes, keep going here
+                time.sleep(5)
+                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+                self.driver.find_element(By.ID, 'prReloadButton').click()
+                logging.info('PowerSchool report is not ready, refreshing and waiting.')
+                time.sleep(3)
+            except NoSuchElementException: # Because all reports are done running
+                break
+
+        top_completed_report_view_link = self.driver.find_element(By.XPATH, 
+            '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[5]/a')
+        top_completed_report_view_link.click()
+
         try:
-            # If no result file link is found, look for a confirmation that no file was generated
-            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, 
-                "//h1[text()='No records found']")))
-            logging.info('PowerSchool reports "No records found"')
-            return False
+            # Look for a result file link
+            download_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.LINK_TEXT, 
+                'Click to Download Result File')))
+            download_link.click()
+            logging.info('Downloading PowerSchool report.')
+
+            original_files_list = os.listdir(destination_directory_path)
+
+            self._wait_for_new_file_in_folder(destination_directory_path, original_files_list)
+            self._rename_recent_file_in_dir(destination_directory_path, file_postfix)
+            logging.info('Successfully renamed the downloaded file.')
+
+            return True
         except:
-            # TODO: Check for the SCSC validation errors page and download it appropriately
-            logging.info(f"Unable to confirm results. Please check manually for postfix \
-                {file_postfix}.")
-            driver.back()
-            return False
+            try:
+                # If no result file link is found, look for a confirmation that no file was generated
+                WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.XPATH, 
+                    "//h1[text()='No records found']")))
+                logging.info('PowerSchool reports "No records found"')
+                return False
+            except:
+                # TODO: Check for the SCSC validation errors page and download it appropriately
+                logging.info(f"Unable to confirm results. Please check manually for postfix \
+                    {file_postfix}.")
+                self.driver.back()
+                return False
+
+    def _get_most_recent_file_in_dir(self, folder_path):
+        """Returns the most recently changed file in a folder.
+
+        Args:
+            self
+            folder_path: The path to the folder to search
+        Returns:
+            A string with the filename of the most recently changed file in the
+            folder.
+        """
+
+        list_of_files = os.listdir(folder_path)
+        for index, file in enumerate(list_of_files):
+            list_of_files[index] = folder_path + '/' + file
+        latest_file = max(list_of_files, key=os.path.getctime)
+        return latest_file
+
+    def _wait_for_new_file_in_folder(self, folder_path, original_files, max_attempts=20000):
+        """
+        Waits until a new file shows up in a folder. Loops until that is true or max_attempts is 
+        reached.
+
+        Parameters:
+        self
+        folder_path: The folder being monitored.
+        original_files: The list of files originally in the folder, before the new one is added.
+        max_attmepts: Optional parameter that sets how many loops the function will do.
+
+        Returns:
+        n/a
+        """
+        file_added = False
+        attempts = 0
+        while True and attempts < max_attempts:
+            for root, folders, files in os.walk(folder_path):
+                # break 'for' loop if files found
+                if len(files) > len(original_files):
+                    file_added = True
+                    break
+                else:
+                    continue
+            # break 'while' loop if files found
+            if file_added:
+                # wait for download to complete fully after it's been added - hopefully 3 seconds 
+                #    is enough.
+                time.sleep(3)
+                break
+            attempts +=1
+
+    def _rename_recent_file_in_dir(self, folder, append_text):
+        """
+        Gets the most recent file in a folder and appends text to its filename.
+
+        Parameters:
+        self
+        folder: The path of the folder
+        append_text: The text to appended to the filename before the extension.
+
+        Returns:
+        n/a
+        """
+
+        recent_file = self._get_most_recent_file_in_dir(folder)
+        recent_file = recent_file.replace('\\', '/')
+        new_file, file_ext = os.path.splitext(recent_file)
+        new_file += append_text
+        new_file += file_ext
+        os.rename(recent_file, new_file)
