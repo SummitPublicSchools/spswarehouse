@@ -10,14 +10,14 @@ class PowerSchoolCALPADS(PowerSchool):
     def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, download_location: str='.'):
         super().__init__(username, password, host, headless, download_location)
 
-    def download_calpads_report_for_school(self, school_full_name: str, report_name: str, 
+    def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, report_name: str, 
             school_subdistrict_name: str, file_postfix: str, destination_directory_path: str, 
             report_parameters: dict, validation_only_run: bool=False):
         """
         Switches to the desired school in PowerSchool and calls the function to generate the desired
-        report. Note: This function currently only supports EOY reports. Fall 1 and Fall 2 reports
-        should not use this function until it is expanded to differentiate based on the CALPADS
-        submission window.
+        report for the specified submission window. Note: This function currently only supports EOY reports
+        and some All Year reports. Fall 1 and Fall 2 reports should not use this function until it is
+        expanded.
         """
 
         # The SCSC report needs to be run from the District Office level in order to properly generate 
@@ -27,61 +27,109 @@ class PowerSchoolCALPADS(PowerSchool):
         else:
             super().switch_to_school(school_full_name)
 
-        if(report_name == "Student Incident Records (SINC)"):
-            return self._download_calpads_report_for_school_student_incident_records_sinc(
-                report_name=report_name, 
-                file_postfix=file_postfix, 
-                destination_directory_path=destination_directory_path, 
-                report_parameters=report_parameters,
-                validation_only_run=validation_only_run
-                )
-        elif(report_name in ("Student Incident Results Records (SIRS)", "Student Offense Records (SOFF)")):
-            return self._download_calpads_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(
-                report_name=report_name,
-                file_postfix=file_postfix, 
-                destination_directory_path=destination_directory_path, 
-                report_parameters=report_parameters,
-                validation_only_run=validation_only_run
-                )
-        elif(report_name == "Student Absence Summary"):
-            return self._download_calpads_report_for_school_student_absence_summary(
-                report_name=report_name,
-                file_postfix=file_postfix, 
-                destination_directory_path=destination_directory_path, 
-                report_parameters=report_parameters,
-                validation_only_run=validation_only_run
-                )
-        elif(report_name == "Student Program Records"):
-            return self._download_calpads_report_for_school_student_program_records(
-                report_name=report_name,
-                file_postfix=file_postfix, 
-                destination_directory_path=destination_directory_path, 
-                report_parameters=report_parameters,
-                validation_only_run=validation_only_run
-                )
-        elif(report_name == "Course Section Records"):
-            return self._download_calpads_report_for_school_course_section_records(
-                report_name=report_name,
-                file_postfix=file_postfix, 
-                destination_directory_path=destination_directory_path, 
-                report_parameters=report_parameters,
-                validation_only_run=validation_only_run
-                )
-        elif(report_name == "Student Course Section Records"):
-            return self._download_calpads_report_for_school_student_course_section_records(
-                report_name=report_name,
-                file_postfix=file_postfix, 
-                destination_directory_path=destination_directory_path, 
-                report_parameters=report_parameters,
-                # The below is an additional parameter compared to the function calls earlier in the 
-                #   if-else tree
-                school_subdistrict_name=school_subdistrict_name, 
-                validation_only_run=validation_only_run,
-                )
+        if(submission_window == 'EOY'):
+            if(report_name == "Student Incident Records (SINC)"):
+                return self._download_calpads_eoy_report_for_school_student_incident_records_sinc(
+                    report_name=report_name, 
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    validation_only_run=validation_only_run
+                    )
+            elif(report_name in ("Student Incident Results Records (SIRS)", "Student Offense Records (SOFF)")):
+                return self._download_calpads_eoy_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(
+                    report_name=report_name,
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    validation_only_run=validation_only_run
+                    )
+            elif(report_name == "Student Absence Summary"):
+                return self._download_calpads_eoy_report_for_school_student_absence_summary(
+                    report_name=report_name,
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    validation_only_run=validation_only_run
+                    )
+            elif(report_name == "Student Program Records"):
+                return self._download_calpads_eoy_report_for_school_student_program_records(
+                    report_name=report_name,
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    validation_only_run=validation_only_run
+                    )
+            elif(report_name == "Course Section Records"):
+                return self._download_calpads_eoy_report_for_school_course_section_records(
+                    report_name=report_name,
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    validation_only_run=validation_only_run
+                    )
+            elif(report_name == "Student Course Section Records"):
+                return self._download_calpads_eoy_report_for_school_student_course_section_records(
+                    report_name=report_name,
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    # The below is an additional parameter compared to the function calls earlier in the 
+                    #   if-else tree
+                    school_subdistrict_name=school_subdistrict_name, 
+                    validation_only_run=validation_only_run,
+                    )
+            else:
+                raise Exception("CALPADS EOY report name not supported")
+        elif(submission_window == 'All Year'):
+            if(report_name == 'SSID Enrollment Records'):
+                return self._download_calpads_all_year_report_for_ssid_enrollment_records_senr(
+                    report_name=report_name,
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    validation_only_run=validation_only_run,
+                    )
+            else:
+                raise Exception("CALPADS All Year report name not supported")
         else:
-            raise Exception("CALPADS report name not supported")
+            raise Exception("Submission window name not supported")
+        
 
-    def _download_calpads_report_for_school_student_incident_records_sinc(self, file_postfix: str, 
+    # All Year Reports #################
+
+    def _download_calpads_all_year_report_for_ssid_enrollment_records_senr(self, file_postfix: str, 
+        destination_directory_path: str, report_name: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the SSID Enrollment Records (SENR) report in PowerSchool and downloads it.
+        """
+        super().navigate_to_specific_state_report(report_name)
+        
+        # Enter specific parameters for this report
+        super().powerschool_report_helper_type_in_element_by_name('StartDate', 
+            report_parameters['report_start_date'])
+        super().powerschool_report_helper_type_in_element_by_name('EndDate', 
+            report_parameters['report_end_date'])
+        super().powerschool_report_helper_select_visible_text_in_element_by_name('submissionMode', 
+            'Non-submission mode (all records)') # Only 'Non-submission mode' is supported by this tool
+        time.sleep(1) # Give page time to react
+        super().powerschool_report_helper_select_visible_text_in_element_by_name('ssidOption', 
+            report_parameters['student_selection_filter'])
+        super().powerschool_report_helper_select_visible_text_in_element_by_name('bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+
+        # Submit report
+        super().powerschool_report_helper_click_element_by_id('btnSubmit')
+
+        # Download report zipfile
+        return super().download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+
+
+    # EOY Reports ######################
+
+    def _download_calpads_eoy_report_for_school_student_incident_records_sinc(self, file_postfix: str, 
         destination_directory_path: str, report_name: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
@@ -107,7 +155,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return super().download_latest_report_from_report_queue_reportworks(destination_directory_path, 
             file_postfix)
 
-    def _download_calpads_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(
+    def _download_calpads_eoy_report_for_school_student_incident_results_records_sirs_or_student_offense_records_soff(
         self, file_postfix: str, destination_directory_path: str, report_name: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
@@ -131,7 +179,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return super().download_latest_report_from_report_queue_reportworks(destination_directory_path, 
             file_postfix)
 
-    def _download_calpads_report_for_school_student_absence_summary(self, file_postfix: str, 
+    def _download_calpads_eoy_report_for_school_student_absence_summary(self, file_postfix: str, 
         destination_directory_path: str, report_name: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
@@ -159,7 +207,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return super().download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
-    def _download_calpads_report_for_school_student_program_records(self, file_postfix: str, 
+    def _download_calpads_eoy_report_for_school_student_program_records(self, file_postfix: str, 
         destination_directory_path: str, report_name: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
@@ -194,7 +242,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return super().download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
-    def _download_calpads_report_for_school_course_section_records(self, file_postfix: str, 
+    def _download_calpads_eoy_report_for_school_course_section_records(self, file_postfix: str, 
         destination_directory_path: str, report_name: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
@@ -224,7 +272,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return super().download_latest_report_from_report_queue_reportworks(destination_directory_path, 
             file_postfix)
 
-    def download_calpads_report_for_school_student_course_section_records(self, 
+    def download_calpads_eoy_report_for_school_student_course_section_records(self, 
         file_postfix: str, destination_directory_path: str, report_name: str, report_parameters: dict, 
         school_subdistrict_name:str, validation_only_run: bool=False):
         """
