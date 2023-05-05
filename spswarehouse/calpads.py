@@ -18,8 +18,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
-from .utils import DriverBuilder
-from ..credentials import calpads_config
+from ducttape.utils import DriverBuilder
+from .credentials import calpads_config
 
 class CALPADS():
     
