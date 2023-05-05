@@ -244,7 +244,7 @@ class PowerSchool:
         """
         self.navigate_to_state_reports_page()
 
-        self.powerschool_report_helper_click_element_by_partial_link_text(report_link_text)
+        self.helper_click_element_by_partial_link_text(report_link_text)
 
     def helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
         """
