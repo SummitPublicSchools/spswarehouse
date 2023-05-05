@@ -74,7 +74,9 @@ class PowerSchool:
     interface via Selenium.
     """
 
-    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, download_location: str='.'):
+    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, 
+        download_location: str='.'):
+        
         if username is None: 
             self.username = powerschool_config['username']
         else:
@@ -143,8 +145,8 @@ class PowerSchool:
         elem.click()
         time.sleep(1)
 
-        selected_element = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
-            '.list-item.selectable.selected')))
+        selected_element = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((
+            By.CSS_SELECTOR, '.list-item.selectable.selected')))
 
         school_element_text = selected_element.find_element(By.XPATH, ".//div").text
 
@@ -258,7 +260,8 @@ class PowerSchool:
         """
         Waits for an element by name, clears it, and types in the input.
         """
-        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
+            element_name)))
         elem.clear()
         elem.send_keys(input_to_type)
 
@@ -276,7 +279,8 @@ class PowerSchool:
         """
         Waits for an element by name and selects it by specified text.
         """
-        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
+            element_name)))
         select = Select(elem)
         select.select_by_visible_text(text_to_select)
 
@@ -336,8 +340,8 @@ class PowerSchool:
                 time.sleep(3)
             else:
                 # Download the first report in table
-                queued_reports = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
-                    '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')))
+                queued_reports = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((
+                    By.XPATH, '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')))
                 download_link = queued_reports.get_attribute('href')
                 original_files_list = os.listdir(destination_directory_path)
                 self.driver.get(download_link) #downloads the file
@@ -391,8 +395,8 @@ class PowerSchool:
 
         try:
             # Look for a result file link
-            download_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.LINK_TEXT, 
-                'Click to Download Result File')))
+            download_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((
+                By.LINK_TEXT, 'Click to Download Result File')))
             download_link.click()
             logging.info('Downloading PowerSchool report.')
 
@@ -453,7 +457,8 @@ class PowerSchool:
         self.driver.get(host_full)
         
         logging.info("Find the username field within the login page")
-        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 'fieldUsername')))
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 
+            'fieldUsername')))
         
         logging.info("Clear any pre-filled values within the username field")
         elem.clear()

@@ -1,90 +1,103 @@
 import time
 from spswarehouse.powerschool.powerschool import PowerSchool
 
+PS_REPORT_LINK_TEXT = {
+    'SINC': 'Student Incident Records (SINC)',
+    'SIRS': 'Student Incident Results Records (SIRS)',
+    'SOFF': 'Student Offense Records (SOFF)',
+    'STAS': 'Student Absence Summary',
+    'SPRG': 'Student Program Records',
+    'CRSC': 'Course Section Records',
+    'SCSC': 'Student Course Section Records',
+    'SENR': 'SSID Enrollment Records',
+}
+
 class PowerSchoolCALPADS(PowerSchool):
     """
     This class extends the PowerSchool class in order to download CALPADS
     reports.
     """
     
-    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, download_location: str='.'):
+    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, 
+        download_location: str='.'):
+        
         super().__init__(username, password, host, headless, download_location)
 
-    def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, report_name: str, 
-            school_subdistrict_name: str, file_postfix: str, destination_directory_path: str, 
-            report_parameters: dict, validation_only_run: bool=False):
+    def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, 
+        calpads_report_abbreviation: str, ps_school_subdistrict_name: str, file_postfix: str, 
+        destination_directory_path: str, report_parameters: dict, validation_only_run: bool=False):
         """
         Switches to the desired school in PowerSchool and calls the function to generate the desired
-        report for the specified submission window. Note: This function currently only supports EOY reports
-        and some All Year reports. Fall 1 and Fall 2 reports should not use this function until it is
-        expanded.
+        report for the specified submission window. Note: This function currently only supports EOY 
+        reports and some All Year reports. Fall 1 and Fall 2 reports should not use this function until 
+        it is expanded.
         """
 
         # The SCSC report needs to be run from the District Office level in order to properly generate 
         #   LEA IDs without dropping leading zeros
-        if report_name == "Student Course Section Records":
+        if calpads_report_abbreviation == "SCSC":
             self.switch_to_school('District Office')
         else:
             self.switch_to_school(school_full_name)
 
         if(submission_window == 'EOY'):
-            if(report_name == "Student Incident Records (SINC)"):
+            if(calpads_report_abbreviation == "SINC"):
                 return self._download_eoy_report_for_student_incident_records_sinc(
-                    report_name=report_name, 
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
                     validation_only_run=validation_only_run
                     )
-            elif(report_name in ("Student Incident Results Records (SIRS)", "Student Offense Records (SOFF)")):
+            elif(calpads_report_abbreviation in ('SIRS', 'SOFF')):
                 return self._download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff(
-                    report_name=report_name,
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
                     validation_only_run=validation_only_run
                     )
-            elif(report_name == "Student Absence Summary"):
+            elif(calpads_report_abbreviation == 'STAS'):
                 return self._download_eoy_report_for_student_absence_summary_stas(
-                    report_name=report_name,
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
                     validation_only_run=validation_only_run
                     )
-            elif(report_name == "Student Program Records"):
+            elif(calpads_report_abbreviation == 'SPRG'):
                 return self._download_eoy_report_for_student_program_records_sprg(
-                    report_name=report_name,
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
                     validation_only_run=validation_only_run
                     )
-            elif(report_name == "Course Section Records"):
+            elif(calpads_report_abbreviation == 'CRSC'):
                 return self._download_eoy_report_for_course_section_records_crsc(
-                    report_name=report_name,
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
                     validation_only_run=validation_only_run
                     )
-            elif(report_name == "Student Course Section Records"):
+            elif(calpads_report_abbreviation == 'SCSC'):
                 return self._download_eoy_report_for_student_course_section_records_scsc(
-                    report_name=report_name,
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
                     # The below is an additional parameter compared to the function calls earlier in the 
                     #   if-else tree
-                    school_subdistrict_name=school_subdistrict_name, 
+                    ps_school_subdistrict_name=ps_school_subdistrict_name, 
                     validation_only_run=validation_only_run,
                     )
             else:
                 raise Exception("CALPADS EOY report name not supported")
         elif(submission_window == 'All Year'):
-            if(report_name == 'SSID Enrollment Records'):
+            if(calpads_report_abbreviation == 'SENR'):
                 return self._download_all_year_report_for_ssid_enrollment_records_senr(
-                    report_name=report_name,
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
@@ -100,12 +113,12 @@ class PowerSchoolCALPADS(PowerSchool):
     # All Year Reports #################
 
     def _download_all_year_report_for_ssid_enrollment_records_senr(self, file_postfix: str, 
-        destination_directory_path: str, report_name: str, report_parameters: dict, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
         Switches to the SSID Enrollment Records (SENR) report in PowerSchool and downloads it.
         """
-        self.navigate_to_specific_state_report(report_name)
+        self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
         self.helper_type_in_element_by_name('StartDate', 
@@ -131,12 +144,12 @@ class PowerSchoolCALPADS(PowerSchool):
     # EOY Reports ######################
 
     def _download_eoy_report_for_student_incident_records_sinc(self, file_postfix: str, 
-        destination_directory_path: str, report_name: str, report_parameters: dict, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
         Switches to the Student Incident Records (SINC) report in PowerSchool and downloads it.
         """
-        self.navigate_to_specific_state_report(report_name)
+        self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
         self.helper_type_in_element_by_id('reportStartDate', 
@@ -157,13 +170,13 @@ class PowerSchoolCALPADS(PowerSchool):
             file_postfix)
 
     def _download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff(
-        self, file_postfix: str, destination_directory_path: str, report_name: str, report_parameters: dict, 
-        validation_only_run: bool=False):
+        self, file_postfix: str, destination_directory_path: str, ps_report_link_text: str, 
+        report_parameters: dict, validation_only_run: bool=False):
         """
         Switches to the Student Incident Results Records (SIRS) or Student Offense Records (SOFF) 
         report in PowerSchool and downloads it.
         """
-        self.navigate_to_specific_state_report(report_name)
+        self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
         self.helper_type_in_element_by_id('reportStartDate', 
@@ -181,12 +194,12 @@ class PowerSchoolCALPADS(PowerSchool):
             file_postfix)
 
     def _download_eoy_report_for_student_absence_summary_stas(self, file_postfix: str, 
-        destination_directory_path: str, report_name: str, report_parameters: dict, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
         Switches to the Student Absence Summary (STAS) report in PowerSchool and downloads it.
         """
-        self.navigate_to_specific_state_report(report_name)
+        self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
         self.helper_type_in_element_by_name('StartDate', 
@@ -209,12 +222,12 @@ class PowerSchoolCALPADS(PowerSchool):
             file_postfix)
 
     def _download_eoy_report_for_student_program_records_sprg(self, file_postfix: str, 
-        destination_directory_path: str, report_name: str, report_parameters: dict, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
         Switches to the Student Program Records (SPRG) report in PowerSchool and downloads it.
         """
-        self.navigate_to_specific_state_report(report_name)
+        self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
         self.helper_type_in_element_by_name('startDate', 
@@ -244,12 +257,12 @@ class PowerSchoolCALPADS(PowerSchool):
             file_postfix)
 
     def _download_eoy_report_for_course_section_records_crsc(self, file_postfix: str, 
-        destination_directory_path: str, report_name: str, report_parameters: dict, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
         Switches to the Course Section Completion (CRSC) report in PowerSchool and downloads it.
         """
-        self.navigate_to_specific_state_report(report_name)
+        self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
         self.helper_select_visible_text_in_element_by_id('submission', 
@@ -273,13 +286,13 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
             file_postfix)
 
-    def _download_eoy_report_for_student_course_section_records_scsc(self, 
-        file_postfix: str, destination_directory_path: str, report_name: str, report_parameters: dict, 
-        school_subdistrict_name:str, validation_only_run: bool=False):
+    def _download_eoy_report_for_student_course_section_records_scsc(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        ps_school_subdistrict_name:str, validation_only_run: bool=False):
         """
         Switches to the Student Course Completion (SCSC) report in PowerSchool and downloads it.
         """
-        self.navigate_to_specific_state_report(report_name)
+        self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
         self.helper_select_visible_text_in_element_by_name('submission', 
@@ -302,7 +315,7 @@ class PowerSchoolCALPADS(PowerSchool):
             'No') # Do not "Include Records For Course Code 1000"
 
         self.helper_select_visible_text_in_element_by_name('subDistrict', 
-            school_subdistrict_name)
+            ps_school_subdistrict_name)
 
         # Submit report
         self.helper_click_element_by_id('btnSubmit')
