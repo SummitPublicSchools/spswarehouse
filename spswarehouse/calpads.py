@@ -1,5 +1,3 @@
-# This file assumes the URL for CALPADS is www.calpads.org
-
 # Code adapted from original code by Yusuph in the dops-calpad repo
 
 # Author: Howard Shen
@@ -23,33 +21,46 @@ from .credentials import calpads_config
 
 class CALPADS():
     
-    def __init__(self, config=None, username=None, password=None):
+    def __init__(self, config=None, username=None, password=None, host=None):
         """
         By default, the class will pull the username and password from the
         credentials file in the module. You can override the credentials file
         by passing either a config dictionary or both a username and password.
         
         Parameters:
-        config: A dictionary containing both a username and password key. Optional.
+        config: A dictionary containing a username and password key. Optional.
             Supercedes the username and password in credentials.py in this module.
             Also supercedes a username and password combo passed to this function in
-            addition to the config.
+            addition to the config.  May also contain a host key that will supercede
+            both the host parameter and the host from credentials.py
         username: A CALPADS username, which should be in the form of an email address.
             Must be paired with a password. Supercedes credentials.py.
         password: Password for the given CALPADS username. Must be paired with a username
             Supercedes credntials.py
+        host: The URL for CALPADS, in the format `https://www.calpads.org`. Optional.
+            Supercedes the host from credentials.py
         """
         
+        self.host = None
         if config is not None:
             self.username = config['username']
             self.password = config['password']
+            if 'host' in config:
+                self.host = config['host']
         elif username is not None and password is not None:
             self.username = username
             self.password = password
         else:
             self.username = calpads_config['username']
             self.password = calpads_config['password']
-    
+        
+        if self.host is None and host is not None:
+            self.host = host
+        elif self.host is None:
+            self.host = calpads_config['host']
+        else:
+            pass
+               
         self.driver = DriverBuilder().get_driver()
         self._login_to_calpads()
 
@@ -73,7 +84,7 @@ class CALPADS():
         """
         
         self._select_lea(lea)
-        self.driver.get('https://www.calpads.org/FileSubmission/FileUpload')
+        self.driver.get(f'{self.host}/FileSubmission/FileUpload')
 #         self.driver.refresh()
         
         try:
@@ -127,7 +138,7 @@ class CALPADS():
         error_details (DataFrame): Returns a dataframe of error details, False if unable to find error details, True if file posted.
         """
         self._select_lea(lea)
-        self.driver.get('https://www.calpads.org/FileSubmission/')
+        self.driver.get(f'{self.host}/FileSubmission/')
         try:
             file_elem = WebDriverWait(self.driver, 5).until(
                 EC.presence_of_element_located((By.ID, 'FileType'))
@@ -264,7 +275,7 @@ class CALPADS():
         self._select_lea(lea)
         
         academic_year_string = f"{academic_year-1}-{academic_year}"
-        self.driver.get(f"https://www.calpads.org/StateReporting/Certification?AcademicYear={academic_year_string}&Snapshot={submission_name}")
+        self.driver.get(f"{self.host}/StateReporting/Certification?AcademicYear={academic_year_string}&Snapshot={submission_name}")
         
         try:
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((
@@ -431,7 +442,7 @@ class CALPADS():
             raise RuntimeError("Impossible part of error_and_warn_count if-elif-else reached.")
         
     def _login_to_calpads(self):
-        self.driver.get('https://www.calpads.org')
+        self.driver.get(self.host)
         try:
             WebDriverWait(self.driver, 7).until(EC.presence_of_element_located((
                 By.XPATH,
