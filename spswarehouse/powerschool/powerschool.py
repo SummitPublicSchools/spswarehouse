@@ -97,81 +97,11 @@ class PowerSchool:
     def quit(self):
         self.driver.quit()
 
-    def _log_into_powerschool_admin(self):
-        """
-        Log into PowerSchool Admin and confirm the login was successful.
-        
-        Parameters:
-        n/a
-            
-        Returns:
-        n/a
-        """
-        
-        logging.info("Create webpage URL for PowerSchool Admin")
-        host_full = self.host + "/" + ADMIN_LOGIN_PAGE_PATH
-        logging.info(f"The webpage url is: {host_full}")
-        
-        logging.info("Go to webpage URL for PowerSchool Admin")
-        self.driver.get(host_full)
-        
-        logging.info("Find the username field within the login page")
-        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 'fieldUsername')))
-        
-        logging.info("Clear any pre-filled values within the username field")
-        elem.clear()
-        
-        logging.info("Type your PowerSchool username")
-        elem.send_keys(self.username)
-        
-        logging.info("Find the password field within the HTML page")
-        elem = self.driver.find_element(By.ID, 'fieldPassword')
-        
-        logging.info("Type your PowerSchool password")
-        elem.send_keys(self.password)
-        
-        logging.info("Press enter to submit your credentials and complete your login.")
-        elem.send_keys(Keys.RETURN)
-
-        try:
-            logging.info("Waiting for 'Start Page' element to be visible to confirm successful login")
-            elem = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.XPATH, 
-                "//h1[text()='Start Page']")))
-
-            logging.info("Successful login confirmed!")
-        except:
-            raise Exception("Unable to confirm successful login to PowerSchool. Please check your \
-                credentials.")
-
-    def _get_current_domain(self):
-        """
-        Retrieves the current domain.
-        
-        Parameters:
-        self
-
-        Returns:
-        str: The current domain
-        """
-
-        return self.driver.current_url[8:].split("/",1)[:1][0]
-
-    def _get_current_path(self):
-        """
-        Retrieves the current path, minus the 'https://'.
-        
-        Parameters:
-        self
-
-        Returns:
-        str: The current path
-        """
-
-        return self.driver.current_url[8:].split("/",1)[1:][0]
-
     def ensure_on_desired_path(self, desired_path: str):
         """
         Checks whether the WebDriver is on the desired path. If not, navigates there.
+        When using this function, consider a WebDriverWait afterwards to confirm the
+        desired page has loaded.
 
         Parameters:
         self
@@ -190,7 +120,8 @@ class PowerSchool:
         else:
             logging.info(f"This does not match {desired_path}, so going to that path")
             self.driver.get('https://' + self._get_current_domain(self.driver) + "/" + desired_path)
-            logging.info(f"Moved to {desired_path}")
+            time.sleep(3) # Give new page time to load
+            logging.info(f"Moved to {desired_path}.")
 
     def check_whether_desired_school_selected(self, school_name: str) -> bool:
         """
@@ -312,12 +243,10 @@ class PowerSchool:
         n/a
         """
         self.navigate_to_state_reports_page()
-        
-        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
-            f"{report_link_text}")))
-        elem.click()
 
-    def powerschool_report_helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
+        self.powerschool_report_helper_click_element_by_partial_link_text(report_link_text)
+
+    def helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
         """
         Waits for an element by ID, clears it, and types in the input.
         """
@@ -325,7 +254,7 @@ class PowerSchool:
         elem.clear()
         elem.send_keys(input_to_type)
 
-    def powerschool_report_helper_type_in_element_by_name(self, element_name: str, input_to_type: str):
+    def helper_type_in_element_by_name(self, element_name: str, input_to_type: str):
         """
         Waits for an element by name, clears it, and types in the input.
         """
@@ -333,7 +262,7 @@ class PowerSchool:
         elem.clear()
         elem.send_keys(input_to_type)
 
-    def powerschool_report_helper_select_visible_text_in_element_by_id(self, element_id: str, 
+    def helper_select_visible_text_in_element_by_id(self, element_id: str, 
         text_to_select: str):
         """
         Waits for an element by ID and selects it by specified text.
@@ -342,7 +271,7 @@ class PowerSchool:
         select = Select(elem)
         select.select_by_visible_text(text_to_select)
 
-    def powerschool_report_helper_select_visible_text_in_element_by_name(self, element_name: str, 
+    def helper_select_visible_text_in_element_by_name(self, element_name: str, 
         text_to_select: str):
         """
         Waits for an element by name and selects it by specified text.
@@ -351,11 +280,19 @@ class PowerSchool:
         select = Select(elem)
         select.select_by_visible_text(text_to_select)
 
-    def powerschool_report_helper_click_element_by_id(self, element_id: str):
+    def helper_click_element_by_id(self, element_id: str):
         """
         Waits for an element by ID and clicks it.
         """
         elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+        elem.click()
+
+    def helper_click_element_by_partial_link_text(self, partial_link_text: str):
+        """
+        Waits for an element by partial link text and clicks it.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
+            f"{partial_link_text}")))
         elem.click()
 
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '', 
@@ -496,6 +433,78 @@ class PowerSchool:
             list_of_files[index] = folder_path + '/' + file
         latest_file = max(list_of_files, key=os.path.getctime)
         return latest_file
+    
+    def _log_into_powerschool_admin(self):
+        """
+        Log into PowerSchool Admin and confirm the login was successful.
+        
+        Parameters:
+        n/a
+            
+        Returns:
+        n/a
+        """
+        
+        logging.info("Create webpage URL for PowerSchool Admin")
+        host_full = self.host + "/" + ADMIN_LOGIN_PAGE_PATH
+        logging.info(f"The webpage url is: {host_full}")
+        
+        logging.info("Go to webpage URL for PowerSchool Admin")
+        self.driver.get(host_full)
+        
+        logging.info("Find the username field within the login page")
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 'fieldUsername')))
+        
+        logging.info("Clear any pre-filled values within the username field")
+        elem.clear()
+        
+        logging.info("Type your PowerSchool username")
+        elem.send_keys(self.username)
+        
+        logging.info("Find the password field within the HTML page")
+        elem = self.driver.find_element(By.ID, 'fieldPassword')
+        
+        logging.info("Type your PowerSchool password")
+        elem.send_keys(self.password)
+        
+        logging.info("Press enter to submit your credentials and complete your login.")
+        elem.send_keys(Keys.RETURN)
+
+        try:
+            logging.info("Waiting for 'Start Page' element to be visible to confirm successful login")
+            elem = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located((By.XPATH, 
+                "//h1[text()='Start Page']")))
+
+            logging.info("Successful login confirmed!")
+        except:
+            raise Exception("Unable to confirm successful login to PowerSchool. Please check your \
+                credentials.")
+
+    def _get_current_domain(self):
+        """
+        Retrieves the current domain.
+        
+        Parameters:
+        self
+
+        Returns:
+        str: The current domain
+        """
+
+        return self.driver.current_url[8:].split("/",1)[:1][0]
+
+    def _get_current_path(self):
+        """
+        Retrieves the current path, minus the 'https://'.
+        
+        Parameters:
+        self
+
+        Returns:
+        str: The current path
+        """
+
+        return self.driver.current_url[8:].split("/",1)[1:][0]
 
     def _wait_for_new_file_in_folder(self, folder_path, original_files, max_attempts=20000):
         """
