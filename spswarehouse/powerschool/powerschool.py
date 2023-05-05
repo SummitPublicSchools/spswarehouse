@@ -2,7 +2,13 @@ import logging
 import time
 import os
 
-from ..credentials import powerschool_config
+from spswarehouse.credentials import powerschool_config
+
+from ducttape.utils import (
+    DriverBuilder,
+    get_most_recent_file_in_dir,
+)
+    
 
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome import webdriver as chrome_webdriver
@@ -19,54 +25,6 @@ ADMIN_URL_SCHEME = 'https://'
 STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
 REPORT_QUEUE_REPORTWORKS_PAGE_PATH = 'admin/reportqueue/prhome.html'
 REPORT_QUEUE_SYSTEM_PAGE_PATH = 'admin/reportqueue/home.html'
-
-class DriverBuilder:
-    """A set of function used to instantiate a Chrome Selenium Webdriver"""
-    def get_driver(self, download_location=None, headless=False, window_size=(1400, 900),
-                   chrome_option_prefs=None):
-        """
-        Convenience function for creating a chrome driver.
-        :param download_location: A path to where files should be downloaded. Can be absolute or relative.
-        :param headless: A boolean for whether the chromedriver should run without GUI.
-        :param window_size: A tuple of l x w for the browser window
-        :param chrome_option_prefs: A dict() of any options for to apply to the driver using
-        the chrome options class. See http://chromedriver.chromium.org/capabilities and
-        https://chromium.googlesource.com/chromium/src/+/master/chrome/common/pref_names.cc
-        :return: A selenium web driver.
-        """
-
-        driver = self._get_chrome_driver(download_location, headless, chrome_option_prefs)
-
-        driver.set_window_size(*window_size)
-
-        return driver
-
-    def _get_chrome_driver(self, download_location, headless, chrome_option_prefs):
-        chrome_options = chrome_webdriver.Options()
-        prefs = {}
-        if download_location:
-            dl_prefs = {'download.default_directory': os.path.abspath(download_location),
-                        'download.prompt_for_download': False,
-                        'download.directory_upgrade': True,
-                        'safebrowsing.enabled': False,
-                        'safebrowsing.disable_download_protection': True}
-
-            prefs.update(dl_prefs)
-
-        if chrome_option_prefs:
-            prefs.update(chrome_option_prefs)
-        chrome_options.add_experimental_option('prefs', prefs)
-        
-        # when run from a Docker container
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--disable-dev-shm-usage')
-
-        if headless:
-            chrome_options.add_argument("--headless")
-
-        driver = Chrome(options=chrome_options)
-
-        return driver
 
 class PowerSchool:
     """
@@ -420,23 +378,6 @@ class PowerSchool:
                     {file_postfix}.")
                 self.driver.back()
                 return False
-
-    def get_most_recent_file_in_dir(self, folder_path):
-        """Returns the most recently changed file in a folder.
-
-        Args:
-            self
-            folder_path: The path to the folder to search
-        Returns:
-            A string with the filename of the most recently changed file in the
-            folder.
-        """
-
-        list_of_files = os.listdir(folder_path)
-        for index, file in enumerate(list_of_files):
-            list_of_files[index] = folder_path + '/' + file
-        latest_file = max(list_of_files, key=os.path.getctime)
-        return latest_file
     
     def _log_into_powerschool_admin(self):
         """
@@ -556,7 +497,7 @@ class PowerSchool:
         n/a
         """
 
-        recent_file = self.get_most_recent_file_in_dir(folder)
+        recent_file = get_most_recent_file_in_dir(folder)
         recent_file = recent_file.replace('\\', '/')
         new_file, file_ext = os.path.splitext(recent_file)
         new_file += append_text

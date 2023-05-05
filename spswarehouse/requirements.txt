@@ -8,3 +8,4 @@ google-api-python-client==1.12.11
 google-auth-oauthlib==0.7.1
 gspread==5.7.2
 PyDrive2==1.15.0
+ducttape==0.25.2

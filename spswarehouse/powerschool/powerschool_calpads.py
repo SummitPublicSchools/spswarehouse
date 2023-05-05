@@ -1,5 +1,5 @@
 import time
-from spswarehouse.powerschool.powerschool import PowerSchool
+from .powerschool import PowerSchool
 
 PS_REPORT_LINK_TEXT = {
     'SINC': 'Student Incident Records (SINC)',
