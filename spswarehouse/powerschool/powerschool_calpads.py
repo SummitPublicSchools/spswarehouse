@@ -1,4 +1,7 @@
 import time
+from datetime import datetime, date
+import pandas as pd
+
 from spswarehouse.powerschool.powerschool import PowerSchool
 
 PS_REPORT_LINK_TEXT = {
@@ -10,7 +13,29 @@ PS_REPORT_LINK_TEXT = {
     'CRSC': 'Course Section Records',
     'SCSC': 'Student Course Section Records',
     'SENR': 'SSID Enrollment Records',
+    'SELA': 'Student EL Acquisition Records',
 }
+
+
+# Used for making the standard modifications to the Student English Language Acquistion (SELA) upload file; column #'s from the CALPADS file specifications
+SELA_COLUMN_NAMES = [
+    'Record Type Code', # 12.01
+    'Transaction Type Code', # 12.02
+    'Local Record ID', #12.03
+    'Reporting LEA', #12.04
+    'School of Attendance', #12.05
+    'Academic Year ID', #12.06
+    'SSID', #12.07
+    'Student Legal First Name', #12.08
+    'Student Legal Last Name', #12.09
+    'Student Birth Date', #12.10
+    'Student Gender Code', #12.11
+    'Local Student ID', #12.12
+    'English Language Acquisition Status Code', #12.13
+    'English Language Acquisition Status Start Date', #12.14
+    'Primary Language Code', #12.15
+    'Correction Reason Code', #12.16
+]
 
 class PowerSchoolCALPADS(PowerSchool):
     """
@@ -101,7 +126,14 @@ class PowerSchoolCALPADS(PowerSchool):
                     file_postfix=file_postfix, 
                     destination_directory_path=destination_directory_path, 
                     report_parameters=report_parameters,
-
+                    validation_only_run=validation_only_run,
+                    )
+            elif(calpads_report_abbreviation == 'SELA'):
+                return self._download_all_year_report_for_student_english_language_acquisition_records_sela(
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
                     validation_only_run=validation_only_run,
                     )
             else:
@@ -132,6 +164,58 @@ class PowerSchoolCALPADS(PowerSchool):
             report_parameters['student_selection_filter'])
         self.helper_select_visible_text_in_element_by_name('bypass_validation', 
             'No' if validation_only_run else 'Yes')
+
+        # Submit report
+        self.helper_click_element_by_id('btnSubmit')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+    
+    def _download_all_year_report_for_student_english_language_acquisition_records_sela(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the Student English Language Acquisition (SELA) report in 
+        PowerSchool and downloads it.
+
+        IMPORTANT NOTE: You need to run the remove_sela_records_beginning_before_report_start_date()
+        function on the final text file to filter out any records whose start
+        dates are before your intended report start date. PowerSchool's
+        filtering does not work properly for this.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+
+        # SELA requires some very specific setup to export in a way that CALPADS will accept. Specifically,
+        #   you can only include students that are currently rostered to you in CALPADS, so this function
+        #   will only pull currently enrolled students or students who were enrolled on the report end date
+        #   if that date is in the past. Usually, the report end date will be the last day of school, so this
+        #   will enable submissions after the school year has ended.
+
+        report_end_date_datetime_object = datetime.strptime(report_parameters['report_end_date'], '%m/%d/%Y').date()
+        today_datetime_object = date.today()
+
+        if today_datetime_object > report_end_date_datetime_object:
+            date_for_report = report_parameters['report_end_date']
+        else:
+            date_for_report = today_datetime_object.strftime('%m/%d/%Y')
+        
+        # Enter specific parameters for this report
+        self.helper_type_in_element_by_name('startDate', date_for_report)
+        self.helper_type_in_element_by_name('endDate', date_for_report)
+
+        self.helper_type_in_element_by_name('status_start_date', '') # Make sure this field is cleared
+        self.helper_type_in_element_by_name('status_end_date', '') # Make sure this field is cleared
+
+        self.helper_select_visible_text_in_element_by_name('deltaOff', # Unclear why this is the element name
+            'Non-submission mode (all records)') # Only 'Non-submission mode' is supported by this tool
+        time.sleep(1) # Give page time to react
+
+        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+        
+        # Below defaults to "No Group Selected" because school should already be chosen
+        self.helper_select_visible_text_in_element_by_name('schoolGroup', '[No Group Selected]') 
 
         # Submit report
         self.helper_click_element_by_id('btnSubmit')
@@ -326,3 +410,29 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
+    
+    # Helper Functions #################
+
+    def remove_sela_records_beginning_before_report_start_date(self, sela_file_path: str, 
+        report_start_date: str):
+        """
+        Take the SELA file at the provided path, filter so it contains only the
+        records with an ELA status start date greater than or equal to the report
+        start date, and return the path to the modified file.
+        """
+
+        # Load existing upload file
+        df_to_edit = pd.read_csv(sela_file_path, sep='^', header=None, names=SELA_COLUMN_NAMES, dtype=str, encoding='ansi')
+
+        # Convert report_start_date to a string in the format of 'YYYYMMDD' to match the upload file column
+        report_start_date_object = datetime.strptime(report_start_date, '%m/%d/%Y')
+        reformatted_report_start_date_string = report_start_date_object.strftime('%Y%m%d')
+
+        # Keep only records greater than or equal to the report_start_date
+        filtered_df = df_to_edit[df_to_edit['English Language Acquisition Status Start Date'] >= reformatted_report_start_date_string]
+
+        # Output new upload file
+        updated_file_path = sela_file_path.replace('.txt', '_modified.txt')
+        filtered_df.to_csv(updated_file_path, sep='^', header=False, index=False, na_rep='')
+
+        return updated_file_path
