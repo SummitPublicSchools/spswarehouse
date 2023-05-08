@@ -197,9 +197,11 @@ class PowerSchoolCALPADS(PowerSchool):
         
         The proper fix is to only include records that start when a student is enrolled
         with you, but that would be complicated to do through the PowerSchool UI. Summit
-        will likely solve this issue through a query to our internal data warehouse.
-        If this is a problem for you, you may want to do something similar or explicitly
-        exclude records that you manually identiy as having this problem.
+        will likely solve this issue by manually setting any impacted English Language
+        Acquisition statuses to have a start date in PowerSchool of before the school year 
+        begins. That way, they'll be excluded from this tool. If this is a problem for you, 
+        you may want to do something similar or find a way to pull enrollment data into 
+        your code to do additional filtering on the upload file.
         """
         self.navigate_to_specific_state_report(ps_report_link_text)
 
