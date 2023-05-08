@@ -8,13 +8,17 @@ import os
 import pandas as pd
 import time
 
-from datetime import datetime
+from datetime import date, datetime
 
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    ElementNotInteractableException
+)
 
 from ducttape.utils import DriverBuilder
 from .credentials import calpads_config
