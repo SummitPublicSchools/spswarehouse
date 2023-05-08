@@ -455,7 +455,7 @@ def remove_sela_records_beginning_before_report_start_date(sela_file_path: str,
     """
 
     # Load existing upload file
-    df_to_edit = pd.read_csv(sela_file_path, sep='^', header=None, names=SELA_COLUMN_NAMES, dtype=str, encoding='ansi')
+    df_to_edit = pd.read_csv(sela_file_path, sep='^', header=None, names=SELA_COLUMN_NAMES, dtype=str, encoding='cp1252')
 
     # Convert report_start_date to a string in the format of 'YYYYMMDD' to match the upload file column
     report_start_date_object = datetime.strptime(report_start_date, '%m/%d/%Y')
