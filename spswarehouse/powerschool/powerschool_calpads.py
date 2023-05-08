@@ -413,6 +413,35 @@ class PowerSchoolCALPADS(PowerSchool):
     
     # Helper Functions #################
 
+    def swap_value_in_column_of_calpads_file(self, file_path: str, column_names_of_file: list, column_name_for_swap: str, existing_value: str, new_value: str):
+        """
+        Opens a CALPADS upload file, looks for the existing_value in the provided column and replaces it
+        with the new_value. Writes the new file to the same folder but with "_modified" added to the
+        filename. Returns the new file path.
+
+        Parameters:
+        file_path: The path of the file that needs to be modified.
+        column_names_of_file: A list storing the CALPADS column names for the relevant file. Needs to be 
+            in order and exactly matching the number of columns in the file. File specifications available at: https://www.cde.ca.gov/ds/sp/cl/systemdocs.asp
+        column_name_for_swap: The name of the column being modified.
+        existing_value: The existing value in that column that needs to be swapped out.
+        new_value: The value that will replace the existing_value.
+
+        Returns:
+        str: The path of the modified file
+        """
+
+        df_to_edit = pd.read_csv(file_path, sep='^', header=None, names=column_names_of_file, dtype=str)
+
+        df_to_edit.loc[df_to_edit[column_name_for_swap] == existing_value, column_name_for_swap] = new_value
+
+        df_to_edit.fillna('', inplace=True)
+
+        updated_file_path = file_path.replace('.txt', '_modified.txt')
+        df_to_edit.to_csv(updated_file_path, sep='^', header=False, index=False, na_rep='')
+
+        return updated_file_path
+
     def remove_sela_records_beginning_before_report_start_date(self, sela_file_path: str, 
         report_start_date: str):
         """
