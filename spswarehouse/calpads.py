@@ -28,6 +28,7 @@ class CALPADS():
         password=None,
         host=None,
         download_location="./",
+        headless=True,
     ):
         """
         By default, the class will pull the username and password from the
@@ -49,6 +50,7 @@ class CALPADS():
         download_location: The local folder that you want to save files too. Defaults
             to whatever the current folder is. (Not currently used, but functionality
             planned.)
+        headless: Selenium headless value. Default to True.
         """
         
         self.host = None
@@ -71,8 +73,8 @@ class CALPADS():
         else:
             pass
                
-        self.driver = DriverBuilder().get_driver()
         self._login_to_calpads()
+        self.driver = DriverBuilder().get_driver(headless=headless)
 
     def quit(self):
         self.driver.quit()
