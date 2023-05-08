@@ -9,3 +9,5 @@ google-auth-oauthlib==0.7.1
 gspread==5.7.2
 PyDrive2==1.15.0
 ducttape==0.25.2
+# This probably works with selenium==3.141.0 too, but is not as thoroughly tested
+selenium==4.7.2
