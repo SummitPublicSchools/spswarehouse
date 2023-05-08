@@ -1,7 +1,7 @@
 # Code adapted from original code by Yusuph in the dops-calpad repo
 
 # Author: Howard Shen
-# Last Edited 4/24/2023
+# Last Edited 5/8/2023
 
 import logging
 import os
@@ -36,7 +36,7 @@ class CALPADS():
         username: A CALPADS username, which should be in the form of an email address.
             Must be paired with a password. Supercedes credentials.py.
         password: Password for the given CALPADS username. Must be paired with a username
-            Supercedes credntials.py
+            Supercedes credentials.py
         host: The URL for CALPADS, in the format `https://www.calpads.org`. Optional.
             Supercedes the host from credentials.py
         """
