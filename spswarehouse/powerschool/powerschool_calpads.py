@@ -179,10 +179,27 @@ class PowerSchoolCALPADS(PowerSchool):
         Switches to the Student English Language Acquisition (SELA) report in 
         PowerSchool and downloads it.
 
-        IMPORTANT NOTE: You need to run the remove_sela_records_beginning_before_report_start_date()
+        IMPORTANT NOTE #1: You need to run the remove_sela_records_beginning_before_report_start_date()
         function on the final text file to filter out any records whose start
         dates are before your intended report start date. PowerSchool's
         filtering does not work properly for this.
+
+        IMPORTANT NOTE #2: There is an edge case that this code and PowerSchool 
+        are not equipped to handle. If you have a student who received an English
+        Language Acquisition status at another district before your report_start_date
+        and you store that status in PowerSchool, there is no easy way to decline to
+        report that record to CALPADS. But if you do report that record, CALPADS will
+        reject it and your whole upload file. 
+        
+        For instance, if a student enrolled at another district and received a TBD 
+        status in September and then they joined your district in October, if you 
+        enter that TBD status into PowerSchool, the SELA file will error out in CALPADS.
+        
+        The proper fix is to only include records that start when a student is enrolled
+        with you, but that would be complicated to do through the PowerSchool UI. Summit
+        will likely solve this issue through a query to our internal data warehouse.
+        If this is a problem for you, you may want to do something similar or explicitly
+        exclude records that you manually identiy as having this problem.
         """
         self.navigate_to_specific_state_report(ps_report_link_text)
 
