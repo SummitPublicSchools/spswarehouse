@@ -55,16 +55,16 @@ class CALPADS():
         
         self.host = None
         if config is not None:
-            self.username = config['username']
-            self.password = config['password']
+            username = config['username']
+            password = config['password']
             if 'host' in config:
                 self.host = config['host']
         elif username is not None and password is not None:
-            self.username = username
-            self.password = password
+            username = username
+            password = password
         else:
-            self.username = calpads_config['username']
-            self.password = calpads_config['password']
+            username = calpads_config['username']
+            password = calpads_config['password']
         
         if self.host is None and host is not None:
             self.host = host
@@ -73,8 +73,8 @@ class CALPADS():
         else:
             pass
                
-        self._login_to_calpads()
         self.driver = DriverBuilder().get_driver(headless=headless)
+        self._login_to_calpads(username, password)
 
     def quit(self):
         self.driver.quit()
@@ -542,7 +542,7 @@ class CALPADS():
         else:
             raise RuntimeError("Impossible part of error_and_warn_count if-elif-else reached.")
         
-    def _login_to_calpads(self):
+    def _login_to_calpads(self, username, password):
         self.driver.get(self.host)
         try:
             WebDriverWait(self.driver, 7).until(EC.presence_of_element_located((
@@ -556,9 +556,9 @@ class CALPADS():
             logging.info("Was unable to reach the login page. Check the browser: {}".format(self.driver.title))
             return False
         user = self.driver.find_element(By.ID, "Username")
-        user.send_keys(self.username)
+        user.send_keys(username)
         pw = self.driver.find_element(By.ID, "Password")
-        pw.send_keys(self.password)
+        pw.send_keys(password)
         agreement = self.driver.find_element(By.ID, "AgreementConfirmed")
         self.driver.execute_script("arguments[0].click();", agreement)
         btn = self.driver.find_element(
