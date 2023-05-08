@@ -21,7 +21,14 @@ from .credentials import calpads_config
 
 class CALPADS():
     
-    def __init__(self, config=None, username=None, password=None, host=None):
+    def __init__(
+        self,
+        config=None,
+        username=None,
+        password=None,
+        host=None,
+        download_location="./",
+    ):
         """
         By default, the class will pull the username and password from the
         credentials file in the module. You can override the credentials file
@@ -39,6 +46,9 @@ class CALPADS():
             Supercedes credentials.py
         host: The URL for CALPADS, in the format `https://www.calpads.org`. Optional.
             Supercedes the host from credentials.py
+        download_location: The local folder that you want to save files too. Defaults
+            to whatever the current folder is. (Not currently used, but functionality
+            planned.)
         """
         
         self.host = None
