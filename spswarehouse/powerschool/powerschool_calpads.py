@@ -1,5 +1,5 @@
-import time
 from datetime import datetime, date
+import time
 import pandas as pd
 
 from spswarehouse.powerschool.powerschool import PowerSchool
