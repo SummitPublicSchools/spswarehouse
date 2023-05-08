@@ -239,7 +239,7 @@ class CALPADS():
         logging.info("Successfully collected all errors from file submission error details for the {} {} extract.".format(submitted_date_string, submission_type))
         return submitted_date_string, job_results_df, all_error_details
     
-    def get_certification_status(self, lea, academic_year, submission_name):
+    def get_certification_status(self, lea, academic_year, submission_name, **kwargs):
         """
         Retrieves the status of a Certification window.
 
@@ -250,6 +250,12 @@ class CALPADS():
             this is the year when the school year ends)
         submission_name: The name of the certification window. As of this edit, the certification windows are
             Fall1, Fall2, EOY1, EOY2, EOY3, and EOY4.
+        optional arguments (kwargs):
+            rollover_date: Applies only to EOY3. An ISO format string (YYYY-MM-DD) representing the expected
+                rollover date of your SIS. The SIS rollover is when exit dates and exit codes get put on 
+                enrollment records. Prior to this, CALPADS will return CERT131 errors for every actively enrolled
+                student. This function will begin scraping CERT131 the day after the rollover date.
+                If you do not pass a rollover date, CERT131 will be scraped.
 
         Returns:
         cert_status (Boolean): Returns False if the certification window isn't open yet; returns True if it is.
@@ -272,10 +278,23 @@ class CALPADS():
             error_table_num = 0
             warning_table_num = 1
         
+        # CERT131 is somewhat meaningless prior to the end of the year
+        if submission_name == 'EOY3':
+            try:
+                rollover_date = date.fromisoformat(kwargs['rollover_date'])
+                cert131_flag = date.today() > rollover_date
+                logging.info(f"Today is {date.today()}, Rollover date is {rollover_date}, CERT131 = {cert131_flag}")
+            except KeyError:
+                # KeyError means rollover_date was not passed as an argument
+                logging.info("No rollover date passed; scraping CERT131")
+                cert131_flag = True
+        else:
+            cert131_flag = True
+        
         self._select_lea(lea)
         
         academic_year_string = f"{academic_year-1}-{academic_year}"
-        self.driver.get(f"{self.host}/StateReporting/Certification?AcademicYear={academic_year_string}&Snapshot={submission_name}")
+        self.driver.get(f"https://www.calpads.org/StateReporting/Certification?AcademicYear={academic_year_string}&Snapshot={submission_name}")
         
         try:
             WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((
@@ -320,6 +339,11 @@ class CALPADS():
                 
                 for i in range(len(errors_table)):
                     error_id = errors_table["Message ID"][i]
+
+                    if error_id == 'CERT131' and not cert131_flag:
+                        logging.info("Skipping CERT131")
+                        continue
+                        
                     logging.info(f"Getting list for {error_id}")
                     show_button = self.driver.find_element(
                         By.XPATH,
