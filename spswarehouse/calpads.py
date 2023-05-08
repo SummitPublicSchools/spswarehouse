@@ -331,7 +331,7 @@ class CALPADS():
             try:
                 WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((
                     By.XPATH,
-                    '/html/body/div/main/div/div[2]/div[5]/div[1]/div[1]/div/ul/li/div/div/div/table/tbody/tr/td[4]/a'
+                    f'/html/body/div/main/div/div[2]/div[{data_div_num}]/div[1]/div[1]/div/ul/li/div/div/div/table/tbody/tr/td[4]/a'
                 )))
                 # Error list should be the second table
                 errors_table = pd.read_html(self.driver.page_source)[error_table_num]
@@ -399,7 +399,7 @@ class CALPADS():
             try:
                 WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((
                     By.XPATH,
-                    '/html/body/div/main/div/div[2]/div[5]/div[1]/div[2]/div/ul/li/div/div/div/table/tbody/tr/td[4]/a'
+                    f'/html/body/div/main/div/div[2]/div[{data_div_num}]/div[1]/div[2]/div/ul/li/div/div/div/table/tbody/tr/td[4]/a'
                 )))
                 # Warning list should be the third table
                 warnings_table = pd.read_html(self.driver.page_source)[warning_table_num]
