@@ -411,57 +411,61 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
     
-    # Helper Functions #################
+# Helper Functions #################
 
-    def swap_value_in_column_of_calpads_file(self, file_path: str, column_names_of_file: list, column_name_for_swap: str, existing_value: str, new_value: str):
-        """
-        Opens a CALPADS upload file, looks for the existing_value in the provided column and replaces it
-        with the new_value. Writes the new file to the same folder but with "_modified" added to the
-        filename. Returns the new file path.
+#    Note: These functions are intentionally not in the class, because one may want to access
+#    them separately from downloading files from PowerSchool.
 
-        Parameters:
-        file_path: The path of the file that needs to be modified.
-        column_names_of_file: A list storing the CALPADS column names for the relevant file. Needs to be 
-            in order and exactly matching the number of columns in the file. File specifications available at: https://www.cde.ca.gov/ds/sp/cl/systemdocs.asp
-        column_name_for_swap: The name of the column being modified.
-        existing_value: The existing value in that column that needs to be swapped out.
-        new_value: The value that will replace the existing_value.
+def swap_value_in_column_of_calpads_file(file_path: str, column_names_of_file: list, 
+    column_name_for_swap: str, existing_value: str, new_value: str):
+    """
+    Opens a CALPADS upload file, looks for the existing_value in the provided column and replaces it
+    with the new_value. Writes the new file to the same folder but with "_modified" added to the
+    filename. Returns the new file path.
 
-        Returns:
-        str: The path of the modified file
-        """
+    Parameters:
+    file_path: The path of the file that needs to be modified.
+    column_names_of_file: A list storing the CALPADS column names for the relevant file. Needs to be 
+        in order and exactly matching the number of columns in the file. File specifications available at: https://www.cde.ca.gov/ds/sp/cl/systemdocs.asp
+    column_name_for_swap: The name of the column being modified.
+    existing_value: The existing value in that column that needs to be swapped out.
+    new_value: The value that will replace the existing_value.
 
-        df_to_edit = pd.read_csv(file_path, sep='^', header=None, names=column_names_of_file, dtype=str)
+    Returns:
+    str: The path of the modified file
+    """
 
-        df_to_edit.loc[df_to_edit[column_name_for_swap] == existing_value, column_name_for_swap] = new_value
+    df_to_edit = pd.read_csv(file_path, sep='^', header=None, names=column_names_of_file, dtype=str)
 
-        df_to_edit.fillna('', inplace=True)
+    df_to_edit.loc[df_to_edit[column_name_for_swap] == existing_value, column_name_for_swap] = new_value
 
-        updated_file_path = file_path.replace('.txt', '_modified.txt')
-        df_to_edit.to_csv(updated_file_path, sep='^', header=False, index=False, na_rep='')
+    df_to_edit.fillna('', inplace=True)
 
-        return updated_file_path
+    updated_file_path = file_path.replace('.txt', '_modified.txt')
+    df_to_edit.to_csv(updated_file_path, sep='^', header=False, index=False, na_rep='')
 
-    def remove_sela_records_beginning_before_report_start_date(self, sela_file_path: str, 
-        report_start_date: str):
-        """
-        Take the SELA file at the provided path, filter so it contains only the
-        records with an ELA status start date greater than or equal to the report
-        start date, and return the path to the modified file.
-        """
+    return updated_file_path
 
-        # Load existing upload file
-        df_to_edit = pd.read_csv(sela_file_path, sep='^', header=None, names=SELA_COLUMN_NAMES, dtype=str, encoding='ansi')
+def remove_sela_records_beginning_before_report_start_date(sela_file_path: str, 
+    report_start_date: str):
+    """
+    Take the SELA file at the provided path, filter so it contains only the
+    records with an ELA status start date greater than or equal to the report
+    start date, and return the path to the modified file.
+    """
 
-        # Convert report_start_date to a string in the format of 'YYYYMMDD' to match the upload file column
-        report_start_date_object = datetime.strptime(report_start_date, '%m/%d/%Y')
-        reformatted_report_start_date_string = report_start_date_object.strftime('%Y%m%d')
+    # Load existing upload file
+    df_to_edit = pd.read_csv(sela_file_path, sep='^', header=None, names=SELA_COLUMN_NAMES, dtype=str, encoding='ansi')
 
-        # Keep only records greater than or equal to the report_start_date
-        filtered_df = df_to_edit[df_to_edit['English Language Acquisition Status Start Date'] >= reformatted_report_start_date_string]
+    # Convert report_start_date to a string in the format of 'YYYYMMDD' to match the upload file column
+    report_start_date_object = datetime.strptime(report_start_date, '%m/%d/%Y')
+    reformatted_report_start_date_string = report_start_date_object.strftime('%Y%m%d')
 
-        # Output new upload file
-        updated_file_path = sela_file_path.replace('.txt', '_modified.txt')
-        filtered_df.to_csv(updated_file_path, sep='^', header=False, index=False, na_rep='')
+    # Keep only records greater than or equal to the report_start_date
+    filtered_df = df_to_edit[df_to_edit['English Language Acquisition Status Start Date'] >= reformatted_report_start_date_string]
 
-        return updated_file_path
+    # Output new upload file
+    updated_file_path = sela_file_path.replace('.txt', '_modified.txt')
+    filtered_df.to_csv(updated_file_path, sep='^', header=False, index=False, na_rep='')
+
+    return updated_file_path
