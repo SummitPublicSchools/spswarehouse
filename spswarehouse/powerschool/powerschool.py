@@ -36,23 +36,23 @@ class PowerSchool:
         download_location: str='.'):
         
         if username is None: 
-            self.username = powerschool_config['username']
+            username = powerschool_config['username']
         else:
-            self.username = username
+            username = username
 
         if password is None:
             password = powerschool_config['password']
         else:
-            self.password = password
+            password = password
 
         if host is None:
-            host = powerschool_config['host']
+            self.host = powerschool_config['host']
         else:
             self.host = host
 
         self.driver = DriverBuilder().get_driver(headless=headless, download_location=download_location)
         
-        self._log_into_powerschool_admin()
+        self._log_into_powerschool_admin(username, password)
 
     def quit(self):
         self.driver.quit()
@@ -379,7 +379,7 @@ class PowerSchool:
                 self.driver.back()
                 return False
     
-    def _log_into_powerschool_admin(self):
+    def _log_into_powerschool_admin(self, username, password):
         """
         Log into PowerSchool Admin and confirm the login was successful.
         
@@ -405,13 +405,13 @@ class PowerSchool:
         elem.clear()
         
         logging.info("Type your PowerSchool username")
-        elem.send_keys(self.username)
+        elem.send_keys(username)
         
         logging.info("Find the password field within the HTML page")
         elem = self.driver.find_element(By.ID, 'fieldPassword')
         
         logging.info("Type your PowerSchool password")
-        elem.send_keys(self.password)
+        elem.send_keys(password)
         
         logging.info("Press enter to submit your credentials and complete your login.")
         elem.send_keys(Keys.RETURN)
