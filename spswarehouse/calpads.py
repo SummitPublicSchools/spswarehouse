@@ -337,6 +337,32 @@ class CALPADS():
                 errors_table = pd.read_html(self.driver.page_source)[error_table_num]
                 error_df = pd.DataFrame()
                 
+                error_list_has_next = self.driver.find_element(
+                    By.XPATH,
+                    '//*[@id="RequiredGrid_FATAL"]/div/a[3]'
+                )
+                while 'disabled' not in error_list_has_next.get_attribute('class'):
+                    logging.info("Getting next page of errors list")
+                    try:
+                        error_list_has_next.click()
+                    except ElementNotInteractableException:
+                        banner = self.driver.find_element(
+                            By.XPATH,
+                            '//*[@id="CertificationErrorSummary"]/li/a'
+                        )
+                        banner.click()
+                        error_list_has_next.click()
+                    time.sleep(2)
+                    errors_table = pd.concat(
+                        [errors_table, pd.read_html(self.driver.page_source)[error_table_num]],
+                        axis=0,
+                        ignore_index=True
+                    )
+                    error_list_has_next = self.driver.find_element(
+                        By.XPATH,
+                        '//*[@id="RequiredGrid_FATAL"]/div/a[3]'
+                    )
+                
                 for i in range(len(errors_table)):
                     error_id = errors_table["Message ID"][i]
 
@@ -345,11 +371,17 @@ class CALPADS():
                         continue
                         
                     logging.info(f"Getting list for {error_id}")
-                    show_button = self.driver.find_element(
-                        By.XPATH,
-                        f"/html/body/div/main/div/div[2]/div[{data_div_num}]/div[1]/div[1]/div/ul/li/div/div/div/table/tbody/tr[{i+1}]/td[4]/a"
+                    error_dropdown = self.driver.find_element(
+                        By.ID,
+                        'CertificationEditQuery_ChildErrorCategory'
                     )
-                    self.driver.execute_script("arguments[0].click()", show_button)
+                    error_select = Select(error_dropdown)
+                    error_select.select_by_value(error_id)
+                    apply_button = self.driver.find_element(
+                        By.XPATH,
+                        '//*[@id="certDetails"]/div[1]/div[3]/div/div/form/div[3]/button'
+                    )
+                    apply_button.click()
                     
                     try:
                         WebDriverWait(self.driver, 15).until(EC.text_to_be_present_in_element(
@@ -405,14 +437,47 @@ class CALPADS():
                 warnings_table = pd.read_html(self.driver.page_source)[warning_table_num]
                 warning_df = pd.DataFrame()
                 
+                warning_list_has_next = self.driver.find_element(
+                    By.XPATH,
+                    '//*[@id="RequiredGrid_WARN"]/div/a[3]'
+                )
+                while 'disabled' not in warning_list_has_next.get_attribute('class'):
+                    logging.info("Getting next page of warnings list")
+                    try:
+                        warning_list_has_next.click()
+                    except ElementNotInteractableException:
+                        banner = self.driver.find_element(
+                            By.XPATH,
+                            '//*[@id="CertificationWarnSummary"]/li/a'
+                        )
+                        banner.click()
+                        warning_list_has_next.click()
+                    time.sleep(2)
+                    warnings_table = pd.concat(
+                        [warnings_table, pd.read_html(self.driver.page_source)[warning_table_num]],
+                        axis=0,
+                        ignore_index=True
+                    )
+                    warning_list_has_next = self.driver.find_element(
+                        By.XPATH,
+                        '//*[@id="RequiredGrid_WARN"]/div/a[3]'
+                    )
+                
                 for i in range(len(warnings_table)):
                     warning_id = warnings_table["Message ID"][i]
+                        
                     logging.info(f"Getting list for {warning_id}")
-                    show_button = self.driver.find_element(
-                        By.XPATH,
-                        f"/html/body/div/main/div/div[2]/div[{data_div_num}]/div[1]/div[2]/div/ul/li/div/div/div/table/tbody/tr[{i+1}]/td[4]/a"
+                    warning_dropdown = self.driver.find_element(
+                        By.ID,
+                        'CertificationEditQuery_ChildErrorCategory'
                     )
-                    self.driver.execute_script("arguments[0].click()", show_button)
+                    warning_select = Select(warning_dropdown)
+                    warning_select.select_by_value(warning_id)
+                    apply_button = self.driver.find_element(
+                        By.XPATH,
+                        '//*[@id="certDetails"]/div[1]/div[3]/div/div/form/div[3]/button'
+                    )
+                    apply_button.click()
                     
                     try:
                         WebDriverWait(self.driver, 15).until(EC.text_to_be_present_in_element(
