@@ -260,6 +260,27 @@ class PowerSchool:
             f"{partial_link_text}")))
         elem.click()
 
+    def helper_ensure_checkbox_is_checked_by_name(self, checkbox_name: str):
+        """
+        Waits for a checkbox element by name and clicks it if it is not already selected.
+        """
+        checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
+            f"//input[@type='checkbox' and @name='{checkbox_name}']")))
+        
+        if checkbox.is_selected() == False:
+            checkbox.click()
+    
+    def helper_ensure_checkbox_is_unchecked_by_name(self, checkbox_name: str):
+        """
+        Waits for a checkbox element by name and clicks it if it is already selected, to make
+        sure it is not checked.
+        """
+        checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
+            f"//input[@type='checkbox' and @name='{checkbox_name}']")))
+        
+        if checkbox.is_selected():
+            checkbox.click()
+
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '', 
         file_postfix: str = ''):
         """
