@@ -261,17 +261,22 @@ class PowerSchoolCALPADS(PowerSchool):
         there are occasionally needs for updating SINF outside of Fall 1, such as for Pandemic
         EBT benefits.
 
+        Uploading an updated SINF file does not seem to close out existing Demographics and
+        Address  records, except when the "Effective Start Date" is greater than the most 
+        recent "Effective Start Date" in CALPADS. Thus, the "Make Effective Start Date Match 
+        Enrollment Start Date" checkbox (described just below) should mean existing records
+        just get updated, rather than new records being created.
+
         Important notes about how the SINF report parameters in PowerSchool work:
         - The "Check for Fall Submission" checkbox means it will only submit records for students
         enrolled on the Census Date that you enter. This function intentionally does not use
         this setting, so it will guarantee that box is not checked.
         - The "Make Effective Start Date Match Enrollment Start Date" will give all records the 
-        start date that you supply, except when a student enrolled after that start date. In that
-        case, it will use their enrollment date as that student record's start date.
+        student's enrollment date for the year as the start date.
         - The "Start Date" will be the date at which the report looks for enrollments, and it will
         report data for any student enrolled any time up to the "End Date". The "Effective Start
-        Date" in the final file will be the "Start Date" entered here (or the enrollment start
-        date, if later).
+        Date" in the final file will be the student's enrollment date for the year, so long as the
+        "Make Effective Start Date Match Enrollment Start Date" box is checked.
         - The "End Date" cannot be greater than the current date for this report, so this function
         will enter the report_end_date or the current date, whichever is earlier.
         - The "Include Students' Preferred Names (If Different From Legal)" will include data in
@@ -314,7 +319,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
     
-    
+
     # EOY Reports ######################
 
     def _download_eoy_report_for_student_incident_records_sinc(self, file_postfix: str, 
