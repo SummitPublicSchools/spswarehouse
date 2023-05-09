@@ -150,12 +150,16 @@ class CALPADS():
         submission_type: The four letter code, in all caps, for the file type you're 
             uploading
         max_wait: The maximum number of minutes to wait if the submission is still processing.
-            Default is 5 minutes.
+            Default is 5 minutes. Must be at least 1.
 
         Returns:
         submitted_date_string (string): ISO formate date of the submission whose errors were checked. Returns None if the file submission can't be found for whatever reason
         error_details (DataFrame): Returns a dataframe of error details, False if unable to find error details, True if file posted.
         """
+
+        if(max_wait < 1):
+            raise Exception('max_wait parameter must be 1 or more.')
+
         self._select_lea(lea)
         self.driver.get(f'{self.host}/FileSubmission/')
         try:
@@ -191,23 +195,23 @@ class CALPADS():
         submitted_datetime = datetime.strptime(date_text, "%m/%d/%Y %I:%M:%S %p")
         submitted_date_string = submitted_datetime.date().isoformat()
 
-        file_status = self.driver.find_element(
-            By.XPATH,
-            '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[8]'
-        ).text
-
         for i in range(max_wait):
+            file_status = self.driver.find_element(
+                By.XPATH,
+                '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[8]'
+            ).text
             if file_status in ['Posted', 'Failed', 'Rejected']:
+                logging.info('Found final job results. Storing them.')
                 job_results_df = pd.read_html(self.driver.page_source)[0].head(1)
                 break
             else:
-                time.sleep(60)
-                self.driver.refresh()
-                time.sleep(3)
-                file_status = self.driver.find_element(
-                    By.XPATH,
-                    '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[8]'
-                ).text
+                if((i+1)< max_wait):
+                    logging.info(f'Try #{i+1}: Did not find finished job. Will try again in 60 seconds.')
+                    time.sleep(60)
+                    self.driver.refresh()
+                    time.sleep(3)
+                else:
+                    logging.info(f'Try #{i+1}: Did not find finished job.')
 
         # Branch based on file status
         if file_status == 'Posted':
@@ -223,7 +227,7 @@ class CALPADS():
             )
             view_errors.click()
         else:
-            logging.info(f"{submitted_date_string} {submission_type} not complete after {max_wait} minutes.")
+            logging.info(f"{submitted_date_string} {submission_type} not complete after {max_wait} minute{'s' if max_wait > 1 else ''}.")
             return submitted_date_string, False, False
 
         try:
@@ -231,7 +235,7 @@ class CALPADS():
                 By.XPATH,
                 '//*[@id="main"]/div/div[2]/header/h1'), 'View Submission Details'
             ))
-            time.sleep(2) # The file errors takes a moment to load
+            time.sleep(10) # The file errors takes a moment to load; extended from 2 to 10 seconds after some rejected files didn't have errors captured
         except TimeoutException as t:
             logging.info('Something went wrong with loading the submission error details page.')
             return submitted_date_string, job_results_df, False
