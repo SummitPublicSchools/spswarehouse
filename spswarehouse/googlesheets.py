@@ -2,7 +2,10 @@ import gspread
 import os
 import pickle
 
-from .credentials import google_config
+try:
+    from .credentials import google_config
+except ModuleNotFoundError:
+    print("No credentials file found in spswarehouse. This could cause issues.")
 
 from oauth2client.service_account import ServiceAccountCredentials
 

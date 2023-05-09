@@ -4,7 +4,6 @@ import os
 import random
 import string
 
-from .credentials import snowflake_config
 from .warehouse import Warehouse
 from .googledrive import GoogleDrive
 
@@ -71,7 +70,7 @@ def guess_col_types(df):
 
 def create_table_stmt(
     table_name,
-    schema=snowflake_config['schema'],
+    schema,
     comment='',
     # We'll use "columns" as-is
     columns=None, # {column name: column type}

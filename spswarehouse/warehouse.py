@@ -1,6 +1,10 @@
 import pandas
 
-from .credentials import snowflake_config
+try:
+    from .credentials import snowflake_config
+except ModuleNotFoundError:
+    print("No credentials file found in spswarehouse. This could cause issues.")
+    
 from sqlalchemy.engine.url import URL
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.engine import reflection

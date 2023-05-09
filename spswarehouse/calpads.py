@@ -21,7 +21,10 @@ from selenium.common.exceptions import (
 )
 
 from ducttape.utils import DriverBuilder
-from .credentials import calpads_config
+try:
+    from .credentials import calpads_config
+except ModuleNotFoundError:
+    print("No credentials file found in spswarehouse. This could cause issues.")
 
 class CALPADS():
     

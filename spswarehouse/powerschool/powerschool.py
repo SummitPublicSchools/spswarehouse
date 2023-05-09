@@ -2,7 +2,10 @@ import logging
 import time
 import os
 
-from spswarehouse.credentials import powerschool_config
+try:
+    from spswarehouse.credentials import powerschool_config
+except ModuleNotFoundError:
+    print("No credentials file found in spswarehouse. This could cause issues.")
 
 from ducttape.utils import (
     DriverBuilder,

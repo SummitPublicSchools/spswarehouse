@@ -1,7 +1,10 @@
 import os
 import pickle
 
-from .credentials import google_config
+try:
+    from .credentials import google_config
+except ModuleNotFoundError:
+    print("No credentials file found in spswarehouse. This could cause issues.")
 
 from pydrive2.auth import GoogleAuth
 from pydrive2.drive import GoogleDrive
