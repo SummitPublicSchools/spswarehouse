@@ -2,7 +2,7 @@ from datetime import datetime, date
 import time
 import pandas as pd
 
-from spswarehouse.powerschool.powerschool import PowerSchool
+from .powerschool import PowerSchool
 
 PS_REPORT_LINK_TEXT = {
     'SINC': 'Student Incident Records (SINC)',
@@ -14,8 +14,8 @@ PS_REPORT_LINK_TEXT = {
     'SCSC': 'Student Course Section Records',
     'SENR': 'SSID Enrollment Records',
     'SELA': 'Student EL Acquisition Records',
+    'SINF': 'Student Information Records',
 }
-
 
 # Used for making the standard modifications to the Student English Language Acquistion (SELA) upload file; column #'s from the CALPADS file specifications
 SELA_COLUMN_NAMES = [
@@ -136,6 +136,14 @@ class PowerSchoolCALPADS(PowerSchool):
                     report_parameters=report_parameters,
                     validation_only_run=validation_only_run,
                     )
+            elif(calpads_report_abbreviation == 'SINF'):
+                return self._download_all_year_report_for_student_information_records_sinf(
+                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
+                    file_postfix=file_postfix, 
+                    destination_directory_path=destination_directory_path, 
+                    report_parameters=report_parameters,
+                    validation_only_run=validation_only_run,
+                    )
             else:
                 raise Exception("CALPADS All Year report name not supported")
         else:
@@ -243,7 +251,70 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
+    def _download_all_year_report_for_student_information_records_sinf(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the Student Information Records (SINF) report in PowerSchool and downloads it.
+        This function assumes that the export will be run repeatedly over the course of the year
+        and therefore doesn't use the "Check for Fall Submission" functionality. This is because
+        there are occasionally needs for updating SINF outside of Fall 1, such as for Pandemic
+        EBT benefits.
 
+        Important notes about how the SINF report parameters in PowerSchool work:
+        - The "Check for Fall Submission" checkbox means it will only submit records for students
+        enrolled on the Census Date that you enter. This function intentionally does not use
+        this setting, so it will guarantee that box is not checked.
+        - The "Make Effective Start Date Match Enrollment Start Date" will give all records the 
+        start date that you supply, except when a student enrolled after that start date. In that
+        case, it will use their enrollment date as that student record's start date.
+        - The "Start Date" will be the date at which the report looks for enrollments, and it will
+        report data for any student enrolled any time up to the "End Date". The "Effective Start
+        Date" in the final file will be the "Start Date" entered here (or the enrollment start
+        date, if later).
+        - The "End Date" cannot be greater than the current date for this report, so this function
+        will enter the report_end_date or the current date, whichever is earlier.
+        - The "Include Students' Preferred Names (If Different From Legal)" will include data in
+        those fields if "Yes" is selected. For student privacy reasons, defaulting to "No" here is 
+        preferred, especially for students whose lived name may differ from their legal name.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        # Enter specific parameters for this report
+        self.helper_ensure_checkbox_is_unchecked_by_name('SubmissionType')
+        time.sleep(1) # Give page time to react
+
+        self.helper_ensure_checkbox_is_checked_by_name('effectiveStartDate')
+
+        self.helper_type_in_element_by_name('StartDate', 
+            report_parameters['report_start_date'])
+        
+        # If the provided report_end_date is in the future, use today's date instead
+        end_date_string = report_parameters['report_end_date']
+        report_end_date_object = datetime.strptime(end_date_string, '%m/%d/%Y').date()
+        current_date = date.today()
+        if report_end_date_object > current_date:
+            end_date_string = current_date.strftime("%m/%d/%Y")
+        self.helper_type_in_element_by_name('EndDate', end_date_string)
+
+        self.helper_select_visible_text_in_element_by_name('deltaOff',
+            'Non-submission mode (all records)') # Only 'Non-submission mode' is supported by this tool
+        time.sleep(1) # Give page time to react
+
+        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+        
+        # See note in function definition
+        self.helper_select_visible_text_in_element_by_name('includePreferredName', 'No')
+
+        # Submit report
+        self.helper_click_element_by_id('btnSubmit')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+    
+    
     # EOY Reports ######################
 
     def _download_eoy_report_for_student_incident_records_sinc(self, file_postfix: str, 
