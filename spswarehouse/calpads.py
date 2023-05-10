@@ -154,6 +154,7 @@ class CALPADS():
 
         Returns:
         submitted_date_string (string): ISO formate date of the submission whose errors were checked. Returns None if the file submission can't be found for whatever reason
+        job_results_df (DataFrame): Returns a dataframe of the job results or False if the job is not yet in a final status.
         error_details (DataFrame): Returns a dataframe of error details, False if unable to find error details, True if file posted.
         """
 
