@@ -295,11 +295,15 @@ class PowerSchool:
         Returns:
         bool: True once successfully downloads the report. Otherwise, function keeps looping.
         """
-
-        # Pause briefly to give a just-submitted report time to get into the queue
-        time.sleep(1)
-
         self.ensure_on_desired_path(REPORT_QUEUE_REPORTWORKS_PAGE_PATH)
+
+        # Pause briefly to give the just-submitted report time to get into the queue
+        time.sleep(5)
+
+        # Confirm that the page has loaded
+        elem = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+        elem.click()
+        logging.info('Refresh button on report page has loaded. Refreshing.')
         
         while True:
             # TODO: Add a counter so this function can't get stuck in an infinte loop.
@@ -307,17 +311,18 @@ class PowerSchool:
                 # Confirm no reports are running
                 self.driver.find_element(By.XPATH, "//p[contains(text(), 'No reports running or pending!')]")
                 
+                # TODO: Is the below refresh necessary when we're refreshing upon first hitting this page?
                 # There is occasional flakiness where the "No reports running or pending!" message 
                 #    shows up but the latest report is not in the list for downloading yet, so refresh 
                 #    the page one more time.
                 time.sleep(1)
-                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
-                self.driver.find_element(By.ID, 'prReloadButton').click()
+                elem = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+                elem.click()
                 time.sleep(1)
             except NoSuchElementException: # Because reports ARE running
                 time.sleep(5)
-                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
-                self.driver.find_element(By.ID, 'prReloadButton').click()
+                elem = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+                elem.click()
                 logging.info('PowerSchool report is not ready, refreshing and waiting.')
                 time.sleep(3)
             else:
@@ -352,10 +357,15 @@ class PowerSchool:
             report generated no results from the previously-submitted parameters or the report
             download page is in a format this function does not handle.
         """
-        # Pause briefly to give a just-submitted report time to get into the queue
-        time.sleep(1)
-
         self.ensure_on_desired_path(REPORT_QUEUE_SYSTEM_PAGE_PATH)
+
+        # Pause briefly to give the just-submitted report time to get into the queue
+        time.sleep(5)
+
+        # Confirm that the page has loaded
+        elem = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+        elem.click()
+        logging.info('Refresh button on report page has loaded. Refreshing.')
 
         while True:
             try:
@@ -364,15 +374,15 @@ class PowerSchool:
 
                 # If yes, keep going here
                 time.sleep(5)
-                WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
-                self.driver.find_element(By.ID, 'prReloadButton').click()
+                elem = WebDriverWait(self.driver, 5).until(EC.element_to_be_clickable((By.ID, 'prReloadButton')))
+                elem.click()
                 logging.info('PowerSchool report is not ready, refreshing and waiting.')
                 time.sleep(3)
             except NoSuchElementException: # Because all reports are done running
                 break
 
-        top_completed_report_view_link = self.driver.find_element(By.XPATH, 
-            '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[5]/a')
+        top_completed_report_view_link = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH,
+            '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[5]/a')))
         top_completed_report_view_link.click()
 
         try:
