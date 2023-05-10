@@ -396,9 +396,6 @@ class PowerSchoolCALPADS(PowerSchool):
         # Submit report
         self.helper_click_element_by_id('btnSubmit')
 
-        # Give the STAS report time to get into the report queue, since it can be slow
-        time.sleep(5)
-
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
