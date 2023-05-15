@@ -26,6 +26,11 @@ try:
 except ModuleNotFoundError:
     print("No credentials file found in spswarehouse. This could cause issues.")
 
+from spswarehouse.calpads.calpads_config import (
+    snapshot_report_base,
+    snapshot_links
+)
+    
 class CALPADS():
     
     def __init__(
@@ -557,7 +562,47 @@ class CALPADS():
             return True, None, None
         else:
             raise RuntimeError("Impossible part of error_and_warn_count if-elif-else reached.")
+
+    def download_snapshot_report(
+        self,
+        lea,
+        academic_year,
+        submission_name,
+        report_code,
+        cert_status=None,
+        download_type='csv',
+        max_wait_time=10
+    ):
+        """
+        Download a CALPADS snapshot report.
         
+        Parameters:
+        Parameters:
+        lea: The numerical value of the LEA on the CALPADS site. Find by inspecting the
+            dropdown on the CALPADS page.
+        academic_year: Integer representing the academic year that you want to check
+            (per team norms, this is the year when the school year ends)
+        submission_name: The name of the certification window. As of this edit, the
+            certification windows are Fall1, Fall2, EOY1, EOY2, EOY3, and EOY4.
+        report_code: The code for the report that you want. Should be a string in
+            the form of "#.#".
+        cert_status: If there are multiple snapshots, which version you want. If
+            `None`, the top most option is selected (usually some variant of
+            "Certified" if the snapshot is certified). Will raise an error if the
+            given cert_status is not available.
+        download_type (str): The format in which you want the download for the report.
+            Currently supports csv, excel, and pdf.
+        max_wait_time: Integer >=0 indicating the maximum number of minutes to wait
+            for the report to generate.
+        
+        Returns:
+        string: The filepath to the downloaded file
+        """
+        
+        self._select_lea(lea)
+        snapshot_report_url = self.host + snapshot_report_base
+        
+            
     def _login_to_calpads(self, username, password):
         self.driver.get(self.host)
         try:
