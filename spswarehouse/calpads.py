@@ -271,23 +271,26 @@ class CALPADS():
         Parameters:
         lea: The numerical value of the LEA on the CALPADS site. Find by inspecting the
             dropdown on the CALPADS page.
-        academic_year: Integer representing the academic year that you want to check (per team norms,
-            this is the year when the school year ends)
-        submission_name: The name of the certification window. As of this edit, the certification windows are
-            Fall1, Fall2, EOY1, EOY2, EOY3, and EOY4.
+        academic_year: Integer representing the academic year that you want to check
+            (per team norms, this is the year when the school year ends)
+        submission_name: The name of the certification window. As of this edit, the
+            certification windows are Fall1, Fall2, EOY1, EOY2, EOY3, and EOY4.
         optional arguments (kwargs):
-            rollover_date: Applies only to EOY3. An ISO format string (YYYY-MM-DD) representing the expected
-                rollover date of your SIS. The SIS rollover is when exit dates and exit codes get put on 
-                enrollment records. Prior to this, CALPADS will return CERT131 errors for every actively enrolled
-                student. This function will begin scraping CERT131 the day after the rollover date.
-                If you do not pass a rollover date, CERT131 will be scraped.
+            rollover_date: Applies only to EOY3. An ISO format string (YYYY-MM-DD)
+                representing the expected rollover date of your SIS. The SIS rollover
+                is when exit dates and exit codes get put on enrollment records.
+                Prior to this, CALPADS will return CERT131 errors for every actively
+                enrolled student. This function will begin scraping CERT131 the day
+                after the rollover date. If you do not pass a rollover date, CERT131
+                will be scraped.
 
         Returns:
-        cert_status (Boolean): Returns False if the certification window isn't open yet; returns True if it is.
+        cert_status (Boolean): Returns False if the certification window isn't open yet;
+            returns True if it is.
         error_details (DataFrame): Returns a dataframe of error details, None if no errors,
             None if certification window isn't open.
-        warning_details (DataFrame): Returns a dataframe of warningsdetails, None if no warnings,
-            None if certification window isn't open.
+        warning_details (DataFrame): Returns a dataframe of warningsdetails, None if no
+            warnings, None if certification window isn't open.
         """
         
         # Fall1, EOY3, EOY4 have a SELPA approval, which
