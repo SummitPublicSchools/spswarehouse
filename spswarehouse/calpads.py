@@ -57,7 +57,8 @@ class CALPADS():
         download_location: The local folder that you want to save files too. Defaults
             to whatever the current folder is. (Not currently used, but functionality
             planned.)
-        headless: Selenium headless value. Default to True.
+        headless: Selenium headless value. Default to True. If using this in a notebook,
+            recommend setting to False.
         """
         
         self.host = None
