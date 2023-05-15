@@ -108,7 +108,7 @@ class CALPADS():
 #         self.driver.refresh()
         
         try:
-            elem = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((
+            elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((
                 By.XPATH,
                 '//*[@id="btnSearch"]'
             )))
@@ -129,7 +129,7 @@ class CALPADS():
         button.click()
 
         try:
-            success = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located(
+            success = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located(
             (By.CSS_SELECTOR, 'div.alert.alert-success.alert-dismissible.fade.in'))) #TODO: Confirm this reliably works. Otherwise, use text.
         except TimeoutException:
             logging.info('Something went wrong with the file upload for {}. Review files in directories and try again.'.format(lea)) #TODO: CALPADS provides error alerts in red on same page, should send to user
@@ -165,7 +165,7 @@ class CALPADS():
         self._select_lea(lea)
         self.driver.get(f'{self.host}/FileSubmission/')
         try:
-            file_elem = WebDriverWait(self.driver, 5).until(
+            file_elem = WebDriverWait(self.driver, 15).until(
                 EC.presence_of_element_located((By.ID, 'FileType'))
             )
         except TimeoutException:
@@ -180,7 +180,7 @@ class CALPADS():
         try:
             # The filtered page is identical, so sleep for a moment
             time.sleep(2)
-            WebDriverWait(self.driver, 10).until(EC.text_to_be_present_in_element(
+            WebDriverWait(self.driver, 20).until(EC.text_to_be_present_in_element(
                 (By.XPATH, '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[6]'),
                 submission_type
             ))
@@ -233,7 +233,7 @@ class CALPADS():
             return submitted_date_string, False, False
 
         try:
-            WebDriverWait(self.driver, 15).until(EC.text_to_be_present_in_element((
+            WebDriverWait(self.driver, 30).until(EC.text_to_be_present_in_element((
                 By.XPATH,
                 '//*[@id="main"]/div/div[2]/header/h1'), 'View Submission Details'
             ))
@@ -322,7 +322,7 @@ class CALPADS():
         self.driver.get(f"https://www.calpads.org/StateReporting/Certification?AcademicYear={academic_year_string}&Snapshot={submission_name}")
         
         try:
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((
+            WebDriverWait(self.driver, 20).until(EC.presence_of_element_located((
                 By.XPATH,
                 '/html/body/div[1]/main/div/div[2]/div[3]/div/div/div/div/table/tbody/tr/td[1]'
             )))
@@ -343,7 +343,7 @@ class CALPADS():
             )
             cert_status_link.click()
             try:
-                WebDriverWait(self.driver, 10).until(EC.text_to_be_present_in_element(
+                WebDriverWait(self.driver, 20).until(EC.text_to_be_present_in_element(
                     (
                         By.XPATH,
                         '/html/body/div/main/div/div[2]/header/h1'
@@ -354,7 +354,7 @@ class CALPADS():
                 logging.info("Failed to load Certification Status page")
                 raise RuntimeError("Failed to load Certification Status page")
             try:
-                WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((
+                WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((
                     By.XPATH,
                     f'/html/body/div/main/div/div[2]/div[{data_div_num}]/div[1]/div[1]/div/ul/li/div/div/div/table/tbody/tr/td[4]/a'
                 )))
@@ -409,7 +409,7 @@ class CALPADS():
                     apply_button.click()
                     
                     try:
-                        WebDriverWait(self.driver, 15).until(EC.text_to_be_present_in_element(
+                        WebDriverWait(self.driver, 30).until(EC.text_to_be_present_in_element(
                             (
                                 By.XPATH,
                                 f'/html/body/div/main/div/div[2]/div[{data_div_num}]/div[1]/div[4]/div/div/table/tbody/tr/td[10]/a'
@@ -558,7 +558,7 @@ class CALPADS():
     def _login_to_calpads(self, username, password):
         self.driver.get(self.host)
         try:
-            WebDriverWait(self.driver, 7).until(EC.presence_of_element_located((
+            WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((
                 By.XPATH,
                 '/html/body/div[3]/div/form/div/div[2]/fieldset/div[4]/div/button'
             )))
@@ -580,14 +580,14 @@ class CALPADS():
         )
         btn.click()
         try:
-            WebDriverWait(self.driver, 7).until(EC.presence_of_element_located((
+            WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((
                 By.ID,
                 'org-select'
             )))
         except TimeoutException:
             logging.info('Something went wrong with the login. Checking to see if there was an expected error message.')
             try:
-                alert = WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((
+                alert = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((
                     By.XPATH,
                     '/html/body/div[3]/div/form/div[1]'
                 )))
@@ -617,5 +617,5 @@ class CALPADS():
         """
         select = Select(self.driver.find_element(By.ID, 'org-select'))
         select.select_by_value(lea)
-        WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.ID, 'org-select')))
+        WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, 'org-select')))
         
