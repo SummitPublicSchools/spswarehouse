@@ -21,7 +21,12 @@ from selenium.common.exceptions import (
     ElementNotInteractableException
 )
 
-from ducttape.utils import DriverBuilder
+from ducttape.utils import (
+    DriverBuilder,
+    get_most_recent_file_in_dir,
+    wait_for_any_file_in_folder
+)
+    
 try:
     from spswarehouse.credentials import calpads_config
 except ModuleNotFoundError:
@@ -584,6 +589,8 @@ class CALPADS():
         """
         Download a CALPADS snapshot report.
         
+        Known issue: The download folder needs to be empty when this function is called.
+        
         Parameters:
         Parameters:
         lea: The numerical value of the LEA on the CALPADS site. Find by inspecting the
@@ -593,7 +600,8 @@ class CALPADS():
         submission_name: The name of the certification window. As of this edit, the
             certification windows are Fall1, Fall2, EOY1, EOY2, EOY3, and EOY4.
         report_code: The code for the report that you want. Should be a string in
-            the form of "#.#".
+            the form of "#.#". Check calpads_config.py for the list of available
+            report_code + submission_name combos
         cert_status: If there are multiple snapshots, which version you want. If
             `None`, the top most option is selected (usually some variant of
             "Certified" if the snapshot is certified). Will raise an error if the
@@ -601,15 +609,56 @@ class CALPADS():
         download_type (str): The format in which you want the download for the report.
             Currently supports csv, excel, and pdf.
         max_wait_time: Integer >=0 indicating the maximum number of minutes to wait
-            for the report to generate.
+            for the report to generate and for the download to succeed. This means
+            this function can actually take up to 2*max_wait_time to run.
         
         Returns:
         string: The filepath to the downloaded file
         """
         
         self._select_lea(lea)
-        snapshot_report_url = self.host + snapshot_report_base
         
+        url_tail = snapshot_links[submission_name][report_code]
+        snapshot_report_url = self.host + snapshot_report_base + url_tail
+        
+        self.driver.get(snapshot_report_url)
+        try:
+            # The Reports module is in an iframe
+            iframe = WebDriverWait(self.driver, 30).until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    '//*[@id="reports"]/div/div/div/iframe'
+                ))
+            )
+        except TimeoutException:
+            logging.info("Failed to load report page.")
+            raise
+        
+        self.driver.switch_to.frame(iframe)
+        
+        academic_year_string = f"{academic_year-1}-{academic_year}"
+        yr = Select(self.driver.find_element(
+            By.XPATH,
+            '//*[@id="ReportViewer1_ctl08_ctl03_ddValue"]'
+        ))
+        yr.select_by_visible_text(academic_year_string)
+        self._wait_for_view_report_clickable()
+        
+        cert_status_select = Select(self.driver.find_element(
+            By.XPATH,
+            '//*[@id="ReportViewer1_ctl08_ctl07_ddValue"]'
+        ))            
+        if cert_status is None:
+            cert_status_select.select_by_value("1")
+        else:
+            cert_status.select_by_visible_text(cert_status)
+        
+        submit_button = self._wait_for_view_report_clickable()
+        submit_button.click()
+        
+        self._wait_for_view_report_clickable(max_wait_time)
+        filepath = self._download_loaded_report(download_type, max_wait_time)
+        return filepath
             
     def _login_to_calpads(self, username, password):
         self.driver.get(self.host)
@@ -674,4 +723,64 @@ class CALPADS():
         select = Select(self.driver.find_element(By.ID, 'org-select'))
         select.select_by_value(lea)
         WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, 'org-select')))
+
+    def _wait_for_view_report_clickable(self, max_attempts=3):
+        """
+        Check for the delay before webpage allows another change in value
+        for the report request
+        """
+        try:
+            max_attempts = int(max_attempts)
+        except:
+            max_attempts = 1
+        for attempt in range(max_attempts):
+            try:
+                view_report = WebDriverWait(self.driver, 60).until(
+                    EC.element_to_be_clickable((
+                        By.XPATH,
+                        '//*[@id="ReportViewer1_ctl08_ctl00"]'
+                    ))
+                )
+                return view_report
+            except TimeoutException:
+                logging.info('The Report button has not loaded after 1 minute. Attempt: {}'.format(attempt+1))
+        logging.info('Max number of attempts waiting for View Report to be clickable reached and all failed.')
+        raise TimeoutException
         
+    def _download_loaded_report(self, download_type='csv', max_wait_time=3):
+        """
+        Downloads the report that is already loaded on the page. Assumes the driver
+        is still clicked into the iframe with the report controls.
+        
+        Return:
+        string: The filepath to the downloaded file.
+        """
+        dl_types = {
+            'csv': '//*[@id="ReportViewer1_ctl09_ctl04_ctl00_Menu"]/div[7]/a',
+            'pdf': '//*[@id="ReportViewer1_ctl09_ctl04_ctl00_Menu"]/div[4]/a',
+            'excel': '//*[@id="ReportViewer1_ctl09_ctl04_ctl00_Menu"]/div[2]/a'
+        }
+        
+        dropdown_btn = self.driver.find_element(
+            By.XPATH,
+            '//*[@id="ReportViewer1_ctl09_ctl04_ctl00"]'
+        )
+        dropdown_btn.click()
+        try:
+            dl_button = WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((
+                    By.XPATH,
+                    dl_types[download_type]
+                ))
+            )
+        except TimeoutException:
+            logging.info("Dropdown menu for download not loading")
+            raise
+        dl_button.send_keys(Keys.ENTER)
+        if wait_for_any_file_in_folder(self.download_location, timeout=max_wait_time*60):
+            file_path = get_most_recent_file_in_dir(self.download_location)
+            logging.info(f"File found: {file_path}")
+            return file_path
+        else:
+            logging.info("No file found")
+            return None
