@@ -6,6 +6,7 @@
 import logging
 import os
 import pandas as pd
+import tempfile
 import time
 
 from datetime import date, datetime
@@ -39,7 +40,7 @@ class CALPADS():
         username=None,
         password=None,
         host=None,
-        download_location="./",
+        download_location=None,
         headless=True,
     ):
         """
@@ -59,9 +60,8 @@ class CALPADS():
             Supercedes credentials.py
         host: The URL for CALPADS, in the format `https://www.calpads.org`. Optional.
             Supercedes the host from credentials.py
-        download_location: The local folder that you want to save files too. Defaults
-            to whatever the current folder is. (Not currently used, but functionality
-            planned.)
+        download_location: The local folder that you want to save files too. If no
+            folder path passed, creates a temporary directory for this object.
         headless: Selenium headless value. Default to True. If using this in a notebook,
             recommend setting to False.
         """
@@ -85,8 +85,16 @@ class CALPADS():
             self.host = calpads_config['host']
         else:
             pass
-               
-        self.driver = DriverBuilder().get_driver(headless=headless)
+        
+        if download_location is None:
+            self.download_location = tempfile.mkdtemp()
+        else:
+            self.download_location = download_location
+    
+        self.driver = DriverBuilder().get_driver(
+            download_location=self.download_location,
+            headless=headless
+        )
         self._login_to_calpads(username, password)
 
     def quit(self):
