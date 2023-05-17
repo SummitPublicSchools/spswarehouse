@@ -389,10 +389,9 @@ class PowerSchool:
             # Look for a result file link
             download_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((
                 By.LINK_TEXT, 'Click to Download Result File')))
+            original_files_list = os.listdir(destination_directory_path)
             download_link.click()
             logging.info('Downloading PowerSchool report.')
-
-            original_files_list = os.listdir(destination_directory_path)
 
             self._wait_for_new_file_in_folder(destination_directory_path, original_files_list)
             self._rename_recent_file_in_dir(destination_directory_path, file_postfix)
