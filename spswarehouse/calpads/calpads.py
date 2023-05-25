@@ -1,7 +1,7 @@
 # Code adapted from original code by Yusuph in the dops-calpad repo
 
 # Author: Howard Shen
-# Last Edited 5/8/2023
+# Last Edited 5/25/2023
 
 import logging
 import os
@@ -33,8 +33,10 @@ except ModuleNotFoundError:
     print("No credentials file found in spswarehouse. This could cause issues.")
 
 from spswarehouse.calpads.calpads_config import (
+    monitoring_report_base,
+    monitoring_links,
     snapshot_report_base,
-    snapshot_links
+    snapshot_links,
 )
     
 class CALPADS():
@@ -576,6 +578,57 @@ class CALPADS():
         else:
             raise RuntimeError("Impossible part of error_and_warn_count if-elif-else reached.")
 
+    def download_monitoring_report(
+        self,
+        lea,
+        academic_year,
+        report_code,
+        report_date=None,
+        download_type='csv',
+        max_wait_time=10
+    ):
+        """
+        Download a CALPADS snapshot report.
+        
+        Known issue: The download folder needs to be empty when this function is called.
+        
+        Parameters:
+        lea: The numerical value of the LEA on the CALPADS site. Find by inspecting the
+            dropdown on the CALPADS page.
+        academic_year: Integer representing the academic year that you want to check
+            (per team norms, this is the year when the school year ends)
+        submission_name: The name of the certification window. As of this edit, the
+            certification windows are Fall1, Fall2, EOY1, EOY2, EOY3, and EOY4.
+        report_code: The code for the report that you want. Should be a string in
+            the form of "#.#". Check calpads_config.py for the list of available
+            report_code + submission_name combos
+        report_date (str): An ISO format date string ('YYYY-MM-DD') indicating the 
+            desired date for the report. If None, the function will download whatever
+            the default date on the report is (usually today).
+            Note that the function only uses the month and day. (E.g., if you pass
+            academic_year=2023 and report_date="2024-10-01", the report downloaded will be
+            for October 1 of academic year 2023, which is actually "2022-10-01")
+        download_type (str): The format in which you want the download for the report.
+            Currently supports csv, excel, and pdf.
+        max_wait_time: Integer >=0 indicating the maximum number of minutes to wait
+            for the report to generate and for the download to succeed. This means
+            this function can actually take up to 2*max_wait_time to run.
+        
+        Returns:
+        string: The filepath to the downloaded file
+        """
+        url_tail = monitoring_links[report_code]
+        report_url = self.host + monitoring_report_base + url_tail
+        
+        return self._download_report(
+            lea,
+            report_url,
+            academic_year,
+            download_type,
+            max_wait_time,
+            report_date=report_date
+        )
+            
     def download_snapshot_report(
         self,
         lea,
@@ -591,7 +644,6 @@ class CALPADS():
         
         Known issue: The download folder needs to be empty when this function is called.
         
-        Parameters:
         Parameters:
         lea: The numerical value of the LEA on the CALPADS site. Find by inspecting the
             dropdown on the CALPADS page.
@@ -615,50 +667,17 @@ class CALPADS():
         Returns:
         string: The filepath to the downloaded file
         """
-        
-        self._select_lea(lea)
-        
         url_tail = snapshot_links[submission_name][report_code]
-        snapshot_report_url = self.host + snapshot_report_base + url_tail
+        report_url = self.host + snapshot_report_base + url_tail
         
-        self.driver.get(snapshot_report_url)
-        try:
-            # The Reports module is in an iframe
-            iframe = WebDriverWait(self.driver, 30).until(
-                EC.presence_of_element_located((
-                    By.XPATH,
-                    '//*[@id="reports"]/div/div/div/iframe'
-                ))
-            )
-        except TimeoutException:
-            logging.info("Failed to load report page.")
-            raise
-        
-        self.driver.switch_to.frame(iframe)
-        
-        academic_year_string = f"{academic_year-1}-{academic_year}"
-        yr = Select(self.driver.find_element(
-            By.XPATH,
-            '//*[@id="ReportViewer1_ctl08_ctl03_ddValue"]'
-        ))
-        yr.select_by_visible_text(academic_year_string)
-        self._wait_for_view_report_clickable()
-        
-        cert_status_select = Select(self.driver.find_element(
-            By.XPATH,
-            '//*[@id="ReportViewer1_ctl08_ctl07_ddValue"]'
-        ))            
-        if cert_status is None:
-            cert_status_select.select_by_value("1")
-        else:
-            cert_status.select_by_visible_text(cert_status)
-        
-        submit_button = self._wait_for_view_report_clickable()
-        submit_button.click()
-        
-        self._wait_for_view_report_clickable(max_wait_time)
-        filepath = self._download_loaded_report(download_type, max_wait_time)
-        return filepath
+        return self._download_report(
+            lea,
+            report_url,
+            academic_year,
+            download_type,
+            max_wait_time,
+            cert_status=cert_status
+        )
             
     def _login_to_calpads(self, username, password):
         self.driver.get(self.host)
@@ -724,6 +743,95 @@ class CALPADS():
         select.select_by_value(lea)
         WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, 'org-select')))
 
+    def _download_report(
+        self,
+        lea,
+        url,
+        academic_year,
+        download_type,
+        max_wait_time,
+        **kwargs
+    ):
+        """
+        Helper function for downloading from the reports iframe
+        Will crash if you pass "cert_status" in kwargs but the report is not a Snapshot
+            report
+        Will also crash if you pass a value othere than None for "report_date" in kwargs
+            but the report is not an Accountability/Monitoring report
+        """
+        
+        self._select_lea(lea)
+        self.driver.get(url)
+        try:
+            # The Reports module is in an iframe
+            iframe = WebDriverWait(self.driver, 30).until(
+                EC.presence_of_element_located((
+                    By.XPATH,
+                    '//*[@id="reports"]/div/div/div/iframe'
+                ))
+            )
+        except TimeoutException:
+            logging.info("Failed to load report page.")
+            raise
+        
+        self.driver.switch_to.frame(iframe)
+        self._select_report_academic_year(academic_year)
+        
+        if "cert_status" in kwargs:
+            cert_status = kwargs["cert_status"]
+            cert_status_select = Select(self.driver.find_element(
+                By.XPATH,
+                '//*[@id="ReportViewer1_ctl08_ctl07_ddValue"]'
+            ))
+            if cert_status is None:
+                cert_status_select.select_by_value("1")
+            else:
+                cert_status.select_by_visible_text(cert_status)
+        
+        elif "report_date" in kwargs:
+            report_date = kwargs["report_date"]
+            if report_date is None:
+                pass
+            else:
+                # You need the month and day as strings without leading zeroes
+                month = str(int(report_date[5:7]))
+                day = str(int(report_date[8:10]))
+                
+                month_select = Select(self.driver.find_element(
+                    By.XPATH,
+                    '//*[@id="ReportViewer1_ctl08_ctl05_ddValue"]'
+                ))
+                month_select.select_by_value(month)
+                self._wait_for_view_report_clickable()
+                
+                day_select = Select(self.driver.find_element(
+                    By.XPATH,
+                    '//*[@id="ReportViewer1_ctl08_ctl07_ddValue"]'
+                ))
+                day_select.select_by_value(day)
+                
+        submit_button = self._wait_for_view_report_clickable()
+        submit_button.click()
+        
+        self._wait_for_view_report_clickable(max_wait_time)
+        filepath = self._download_loaded_report(download_type, max_wait_time)
+        return filepath
+        
+    def _select_report_academic_year(self, academic_year):
+        """
+        Select the given academic_year for the the reports module. Assumes the driver
+        is already clicked into the iframe. This function waits for the "View Report"
+        button to be clickable before returning.
+        """
+        academic_year_string = f"{academic_year-1}-{academic_year}"
+        yr = Select(self.driver.find_element(
+            By.XPATH,
+            '//*[@id="ReportViewer1_ctl08_ctl03_ddValue"]'
+        ))
+        yr.select_by_visible_text(academic_year_string)
+        self._wait_for_view_report_clickable()
+        
+        
     def _wait_for_view_report_clickable(self, max_attempts=3):
         """
         Check for the delay before webpage allows another change in value

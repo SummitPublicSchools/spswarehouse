@@ -1,5 +1,12 @@
-snapshot_report_base = "/Report/Snapshot/"
+monitoring_report_base = "/Report/Accountability/"
+monitoring_links = {
+    "15.1": "15_1_-_Cohort_Outcome_-_Counts_and_Rates",
+    "15.2": "15_2_-_Cohort_Outcome_-_Student_Details",
+    "16.7": "16_7_-_Students_with_Disabilities_-_Monitoring_Counts_ODS",
+    "16.8": "16_8_-_Students_with_Disabilities_-_Monitoring_Student_List_ODS",
+}
 
+snapshot_report_base = "/Report/Snapshot/"
 snapshot_links = {
     "Fall1": {
         "1.1": "1_1_EnrollmentPrimaryStatusbySubgroup",
