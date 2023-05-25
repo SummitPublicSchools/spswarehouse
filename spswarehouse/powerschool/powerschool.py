@@ -154,7 +154,7 @@ class PowerSchool:
             time.sleep(1)
 
             logging.info("Waiting for School Search Field")
-            elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 
+            elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, 
                 'schoolSearchField_value')))
             logging.info("Found School Search Field. Typing in school name.")
 
