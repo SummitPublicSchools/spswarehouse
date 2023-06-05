@@ -328,7 +328,7 @@ class PowerSchool:
             else:
                 # Download the first report in table
                 queued_reports = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((
-                    By.XPATH, '//*[@id="queuecontent"]/table/tbody/tr[2]/td[7]/a')))
+                    By.XPATH, '//*[@id="queuecontent"]/table/tbody/tr[2]/td[8]/a')))
                 download_link = queued_reports.get_attribute('href')
                 original_files_list = os.listdir(destination_directory_path)
                 self.driver.get(download_link) #downloads the file
