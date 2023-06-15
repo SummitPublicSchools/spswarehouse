@@ -469,7 +469,11 @@ class CALPADS():
                         )
                     
                 # Drop the "View" button column
-                error_df.drop(columns="Error Record", inplace=True)
+                if len(error_df) == 0:
+                    logging.info("Only Cert Error was CERT131, and rollover has not passed.")
+                    error_df = None
+                else:
+                    error_df.drop(columns="Error Record", inplace=True)
                 
             except TimeoutException:
                 logging.info(f"No errors for {submission_name}")
