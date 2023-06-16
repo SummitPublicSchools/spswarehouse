@@ -509,7 +509,7 @@ class PowerSchoolCALPADS(PowerSchool):
 #    them separately from downloading files from PowerSchool.
 
 def swap_value_in_column_of_calpads_file(file_path: str, column_names_of_file: list, 
-    column_name_for_swap: str, existing_value: str, new_value: str):
+    column_name_for_swap: str, existing_value: str, new_value: str, encoding: str='utf-8'):
     """
     Opens a CALPADS upload file, looks for the existing_value in the provided column and replaces it
     with the new_value. Writes the new file to the same folder but with "_modified" added to the
@@ -527,7 +527,7 @@ def swap_value_in_column_of_calpads_file(file_path: str, column_names_of_file: l
     str: The path of the modified file
     """
 
-    df_to_edit = pd.read_csv(file_path, sep='^', header=None, names=column_names_of_file, dtype=str)
+    df_to_edit = pd.read_csv(file_path, sep='^', header=None, names=column_names_of_file, dtype=str, encoding=encoding)
 
     df_to_edit.loc[df_to_edit[column_name_for_swap] == existing_value, column_name_for_swap] = new_value
 
