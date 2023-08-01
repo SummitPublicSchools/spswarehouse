@@ -50,13 +50,18 @@ class PowerSchoolCALPADS(PowerSchool):
 
     def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, 
         calpads_report_abbreviation: str, ps_school_subdistrict_name: str, file_postfix: str, 
-        destination_directory_path: str, report_parameters: dict, validation_only_run: bool=False):
+        destination_directory_path: str, report_parameters: dict, ps_school_year_dropdown=None, 
+        validation_only_run: bool=False):
         """
         Switches to the desired school in PowerSchool and calls the function to generate the desired
         report for the specified submission window. Note: This function currently only supports EOY 
         reports and some All Year reports. Fall 1 and Fall 2 reports should not use this function until 
         it is expanded.
         """
+
+        # Choose the school year if one is provided
+        if ps_school_year_dropdown is not None:
+            self.switch_to_school_year(ps_school_year_dropdown)
 
         # The SCSC report needs to be run from the District Office level in order to properly generate 
         #   LEA IDs without dropping leading zeros
