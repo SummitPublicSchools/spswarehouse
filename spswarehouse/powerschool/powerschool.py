@@ -125,6 +125,97 @@ class PowerSchool:
         actions.send_keys(Keys.ESCAPE).perform()
         
         return outcome
+    
+    def check_whether_desired_school_year_selected(self, school_year_dropdown: str):
+        """
+        Checks whether the specified school year is currently selected in PowerSchool but
+        takes no action either way.
+
+        Parameters:
+        self
+        school_year_dropdown: The exact text of the school year that appears in the dropdown in 
+            PowerSchool. Should be 'XX-YY 20XX-20YY' format.
+
+        Returns:
+        bool: True indicates the desired school year is selected, and False indicates it is not.
+        """
+
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 
+            'term_picker_adminTermPicker_toggle_btn')))
+
+        elem.click()
+        time.sleep(1)
+
+        selected_element = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((
+            By.CSS_SELECTOR, '.list-item.selectable.selected')))
+
+        school_year_element_text = selected_element.find_element(By.XPATH, ".//div").text
+
+        result_message = f"Found '{school_year_dropdown}' in the school year element text. Match!"
+        outcome = True
+
+        if(school_year_dropdown not in school_year_element_text):
+            result_message = f"Did not find '{school_year_dropdown}' in the school year element text. No match."
+            outcome = False
+
+        logging.info(result_message)
+
+        logging.info(f"Pressing escape to leave dropdown selection.")
+        actions = ActionChains(self.driver)
+        actions.send_keys(Keys.ESCAPE).perform()
+        
+        return outcome
+    
+    def switch_to_school_year(self, school_year_dropdown: str):
+        """
+        Switches to a specified school year in PowerSchool.
+
+        Parameters:
+        self
+        school_year_dropdown: The exact text of the school year that appears in the dropdown in 
+            PowerSchool. Should be 'XX-YY 20XX-20YY' format.
+
+        Returns:
+        n/a
+        """
+        if self.check_whether_desired_school_year_selected(school_year_dropdown) == False:
+            logging.info(f"'{school_year_dropdown}' is not already selected. Selecting now.")
+
+            self.ensure_on_desired_path(ADMIN_HOME_PAGE_PATH)
+
+            logging.info("Waiting for School Year Picker")
+            elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, 
+                'term_picker_adminTermPicker_toggle_btn')))
+            logging.info("School Year Picker found. Click it.")
+
+            elem.click()
+
+            time.sleep(1)
+
+            logging.info("Waiting for School Year Search Field")
+            elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, 
+                'termText')))
+            logging.info("Found School Year Search Field. Typing in school year text.")
+
+            # Only send the XX-YY portion of the dropdown text
+            elem.send_keys(school_year_dropdown[:5])
+
+            time.sleep(1)
+
+            logging.info("Looking for first school year in list")
+            
+            elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.XPATH, 
+                "//ul[@id='term_choices']/li[2]"))) # This is li[2] instead of li[1] because there is read-only school year item displayed
+
+            logging.info("Found first school year in results list. Clicking.")
+            elem.click()
+            logging.info("Click. Waiting for page to refresh.")
+            time.sleep(1)
+            
+            assert self.check_whether_desired_school_year_selected(school_year_dropdown), "Failed to select \
+                desired school year."
+        else:
+            logging.info(f"'{school_year_dropdown}' is already selected. No action taken.")
 
     def switch_to_school(self, school_name: str):
         """
