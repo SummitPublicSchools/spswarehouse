@@ -372,6 +372,15 @@ class PowerSchool:
         if checkbox.is_selected():
             checkbox.click()
 
+    def helper_ensure_element_text_matches_expected_value_by_xpath(self, element_xpath, expected_text):
+        """
+        Waits for an element by XPATH and checks whether its text matches the expected text.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
+            element_xpath)))
+        
+        return elem.text == expected_text
+
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '', 
         file_postfix: str = ''):
         """
