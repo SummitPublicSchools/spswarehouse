@@ -82,7 +82,7 @@ class PowerSchool:
             logging.info("The current path is the desired path. No action taken.")
         else:
             logging.info(f"This does not match {desired_path}, so going to that path")
-            self.driver.get('https://' + self._get_current_domain(self.driver) + "/" + desired_path)
+            self.driver.get('https://' + self._get_current_domain() + "/" + desired_path)
             time.sleep(3) # Give new page time to load
             logging.info(f"Moved to {desired_path}.")
 
@@ -343,6 +343,13 @@ class PowerSchool:
         elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
         elem.click()
 
+    def helper_click_element_by_name(self, element_name: str):
+        """
+        Waits for an element by name and clicks it.
+        """
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+        elem.click()
+
     def helper_click_element_by_partial_link_text(self, partial_link_text: str):
         """
         Waits for an element by partial link text and clicks it.
@@ -380,6 +387,17 @@ class PowerSchool:
             element_xpath)))
         
         return elem.text == expected_text
+    
+    def helper_wait_for_element_containing_specific_text(self, expected_element_text, wait_time_in_second=30):
+        """
+        Waits for an element containing specific text and returns True if it appears in the time allotted
+        (default = 30 seconds) or False if it does not appear.
+        """
+        try:
+            WebDriverWait(self.driver, wait_time_in_second).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
+            return True
+        except:
+            return False
 
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '', 
         file_postfix: str = ''):
