@@ -60,6 +60,9 @@ class PowerSchool:
     def quit(self):
         self.driver.quit()
 
+    def refresh(self):
+        self.driver.refresh()
+
     def ensure_on_desired_path(self, desired_path: str):
         """
         Checks whether the WebDriver is on the desired path. If not, navigates there.
