@@ -29,13 +29,15 @@ class PSStudentPassword:
     passwords.
     """
     
-    def __init__(self, host: str=None, headless: bool=True, 
+    def __init__(self, host: str=None, headless: bool=True, wait_time: int=30,
         download_location: str='.'):
         
         if host is None:
             self.host = powerschool_config['host']
         else:
             self.host = host
+        
+        self.wait_time = wait_time
 
         self.student_url = self.host + '/' + STUDENT_URL_PATH
         self.driver = DriverBuilder().get_driver(headless=headless, download_location=download_location)
@@ -100,11 +102,11 @@ class PSStudentPassword:
         return elem
     
     def _wait_by_id(self, elem_id):
-        return WebDriverWait(self.driver, wait_time).until(
+        return WebDriverWait(self.driver, self.wait_time).until(
             EC.presence_of_element_located((By.ID, elem_id))
         )
     
     def _wait_by_name(self, elem_name):
-        return WebDriverWait(self.driver, wait_time).until(
+        return WebDriverWait(self.driver, self.wait_time).until(
             EC.presence_of_element_located((By.NAME, elem_name))
         )
