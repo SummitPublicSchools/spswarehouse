@@ -569,7 +569,8 @@ class PowerSchool:
             index=False,
             sep='\t',
             encoding='mac_roman',
-            # line_terminator = "\n",
+            # The "CR" option in PS's quick import, which is the default, is in fact "\n"
+            lineterminator = "\n",
         )
         
         self.upload_quick_import(new_filename, final_value, table_name)
