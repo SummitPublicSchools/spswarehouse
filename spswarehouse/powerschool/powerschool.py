@@ -606,11 +606,12 @@ class PowerSchool:
         self.helper_click_element_by_id('rdioc_update')
 
         # Submit
+        logging.info("Submitting file")
         self.helper_click_element_by_id('btnSubmit')
 
         # Check that file finished processing
-        logging.info(f'Waiting for student ID #{student_number_final_row} to appear to indicate that the file is finished processing.')
-        self.helper_wait_for_element_containing_specific_text(student_number_final_row, 60)
+        logging.info(f'Waiting for student ID #{final_value} to appear to indicate that the file is finished processing.')
+        self.helper_wait_for_element_containing_specific_text(final_value, 60)
         logging.info('Final student found. Upload file finished processing.')
         
     
