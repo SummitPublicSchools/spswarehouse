@@ -590,9 +590,10 @@ class PowerSchool:
         # Go to Quick Import page
         self.ensure_on_desired_path('admin/importexport/quickimport/quickimport1.html')
 
-        # Upload to Students table
+        # Upload to designated table
+        logging.info(f"Selecting {table_name} for table")
         self.helper_select_visible_text_in_element_by_id('filenumber', table_name)
-
+        
         # Choose file to upload
         self.helper_type_in_element_by_id('filename', filename)
 
@@ -606,8 +607,8 @@ class PowerSchool:
         self.helper_click_element_by_id('rdioc_update')
 
         # Submit
-        logging.info("Submitting file")
         self.helper_click_element_by_id('btnSubmit')
+        logging.info("Submitting file")
 
         # Check that file finished processing
         logging.info(f'Waiting for student ID #{final_value} to appear to indicate that the file is finished processing.')
