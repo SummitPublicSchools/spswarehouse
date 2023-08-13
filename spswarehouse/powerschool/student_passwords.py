@@ -60,7 +60,7 @@ class PSStudentPassword:
         try:
             self._logout()
         except:
-            reused_pw_message = driver.find_element(By.XPATH, "//*[@id="content"]/ul/li/span")
+            reused_pw_message = driver.find_element(By.XPATH, '//*[@id="content"]/ul/li/span')
             if reused_pw_message.text == 'The password entered was previously used. Please enter a new password':
                 logging.info(f"Username: {username} - repeated password. Skipping.")
                 return False

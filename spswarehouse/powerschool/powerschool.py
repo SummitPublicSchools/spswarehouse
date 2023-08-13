@@ -574,7 +574,7 @@ class PowerSchool:
         
         upload_quick_import(new_filename, final_value)
         
-    def upload_quick_import(filename, final_value, table_name)
+    def upload_quick_import(filename, final_value, table_name):
         """
         Uploads a tab-delimited file to quick import.
         
