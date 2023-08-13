@@ -1,6 +1,7 @@
 import logging
 import time
 import os
+import pandas as pd
 
 try:
     from spswarehouse.credentials import powerschool_config
@@ -532,6 +533,89 @@ class PowerSchool:
                     {file_postfix}.")
                 self.driver.back()
                 return False
+    
+    def upload_student_csv_quick_import(self, filename):
+        """
+        Uploads a file to Quick Import. Requires your file to
+        1. be a CSV
+        2. have a header row
+        3. have header names that can be auto-matched by PowerSchool
+        4. have a column called "student_number"
+        """
+        
+        import_data = pd.read_csv(filename)
+        final_student_number = import_data.iloc[-1]['student_number']
+        
+        self.upload_csv_quick_import(filename, final_student_number, 'Students')
+        
+    def upload_csv_quick_import(self, filename, final_value, table_name):
+        """
+        Uploads a CSV file to quick import.
+        
+        Arguments:
+        filename: Path to the file.
+        final_value: A value in the final row of the file that can be used to identify
+            when PS is done processing the file.
+        table_name: Exact value of the table name from the PS UI
+        """
+        
+        # Convert the file to a tab-delimited file
+        import_data = pd.read_csv(filename, encoding='mac_roman')
+        
+        new_filename = filename + ".tsv"
+        
+        import_data.to_csv(
+            new_filename,
+            index=False,
+            sep='\t',
+            encoding='mac_roman',
+            # The "CR" option in PS's quick import, which is the default, is in fact "\n"
+            lineterminator = "\n",
+        )
+        
+        self.upload_quick_import(new_filename, final_value, table_name)
+        
+    def upload_quick_import(self, filename, final_value, table_name):
+        """
+        Uploads a tab-delimited file to quick import.
+        
+        Arguments:
+        filename: Path to the file.
+        final_value: A value in the final row of the file that can be used to identify
+            when PS is done processing the file.
+        """
+        
+        # Upload may cover multiple schools, so should be done at the District Office level
+        self.switch_to_school('District Office')
+
+        # Go to Quick Import page
+        self.ensure_on_desired_path('admin/importexport/quickimport/quickimport1.html')
+
+        # Upload to designated table
+        logging.info(f"Selecting {table_name} for table")
+        self.helper_select_visible_text_in_element_by_id('filenumber', table_name)
+        
+        # Choose file to upload
+        self.helper_type_in_element_by_id('filename', filename)
+
+        # Submit file
+        self.helper_click_element_by_id('btnImport')
+
+        # Choose "Check to exclude first row"
+        self.helper_click_element_by_name('skipFirstRow')
+
+        # Choose "Update the student's record with the information from the file being imported."
+        self.helper_click_element_by_id('rdioc_update')
+
+        # Submit
+        self.helper_click_element_by_id('btnSubmit')
+        logging.info("Submitting file")
+
+        # Check that file finished processing
+        logging.info(f'Waiting for student ID #{final_value} to appear to indicate that the file is finished processing.')
+        self.helper_wait_for_element_containing_specific_text(final_value, 60)
+        logging.info('Final student found. Upload file finished processing.')
+        
     
     def _log_into_powerschool_admin(self, username, password):
         """
