@@ -540,13 +540,13 @@ class PowerSchool:
         1. be a CSV
         2. have a header row
         3. have header names that can be auto-matched by PowerSchool
-        4. have a column called "STUDENT_NUMBER"
+        4. have a column called "student_number"
         """
         
         import_data = pd.read_csv(filename)
-        final_student_number = import_data.iloc[-1]['STUDENT_NUMBER']
+        final_student_number = import_data.iloc[-1]['student_number']
         
-        upload_csv_quick_import(filename, final_student_number, 'Students')
+        self.upload_csv_quick_import(filename, final_student_number, 'Students')
         
     def upload_csv_quick_import(self, filename, final_value, table_name):
         """
@@ -572,9 +572,9 @@ class PowerSchool:
             # line_terminator = "\n",
         )
         
-        upload_quick_import(new_filename, final_value)
+        self.upload_quick_import(new_filename, final_value, table_name)
         
-    def upload_quick_import(filename, final_value, table_name):
+    def upload_quick_import(self, filename, final_value, table_name):
         """
         Uploads a tab-delimited file to quick import.
         
