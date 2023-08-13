@@ -49,7 +49,8 @@ class PSStudentPassword:
             self._wait_by_name("newCredential")
         except:
             logging.info(f"Username: {username} - password change screen did not load. Skipping.")
-            self._logout()
+            try:
+                self._logout()
             return False
         
         self._find_by_name_and_send("currentCredential", old_password)
