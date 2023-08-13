@@ -560,7 +560,7 @@ class PowerSchool:
         """
         
         # Convert the file to a tab-delimited file
-        import_data = pd.read_csv(filename)
+        import_data = pd.read_csv(filename, encoding='mac_roman')
         
         new_filename = filename + ".tsv"
         
