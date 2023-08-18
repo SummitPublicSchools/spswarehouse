@@ -343,14 +343,14 @@ class PowerSchool:
         """
         Waits for an element by ID and clicks it.
         """
-        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, element_id)))
         elem.click()
 
     def helper_click_element_by_name(self, element_name: str):
         """
         Waits for an element by name and clicks it.
         """
-        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, element_name)))
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.NAME, element_name)))
         elem.click()
 
     def helper_click_element_by_partial_link_text(self, partial_link_text: str):
