@@ -34,23 +34,36 @@ class PowerSchool:
     """
     This class is an abstraction for interacting with the PowerSchool Admin user 
     interface via Selenium.
+    
+    Username, password, and host arguments take precedence over config arguments.
+    Config arguments need to have 'username', 'password', and 'host' as keys.
     """
 
-    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, 
-        download_location: str='.'):
+    def __init__(
+        self,
+        config: dict=None,
+        username: str=None,
+        password: str=None,
+        host: str=None,
+        headless: bool=True, 
+        download_location: str='.'
+    ):
+        
+        if config is None:
+            config = powerschool_config
         
         if username is None: 
-            username = powerschool_config['username']
+            username = config['username']
         else:
             username = username
 
         if password is None:
-            password = powerschool_config['password']
+            password = config['password']
         else:
             password = password
 
         if host is None:
-            self.host = powerschool_config['host']
+            self.host = config['host']
         else:
             self.host = host
 
@@ -270,6 +283,19 @@ class PowerSchool:
                 desired school."
         else:
             logging.info(f"{school_name} is already selected. No action taken.")
+    
+    def get_student_selection(self, preset: str=None, search_box: str=None):
+        """
+        Sets student selection based on arguments. If you enter a preset and a search_box, will run
+        preset first, then search box.  Does not clear the selection before starting.
+        
+        presets: Select one of the preset student groups in PowerSchool (grade level, gender, all)
+            Accepted values are K-12, M, F, X, and All
+        search_box: A string to type into the search box and hit enter.
+        """
+        
+        self.driver.ensure_on_desired_path(ADMIN_HOME_PAGE_PATH)
+        search_type = self.driver.find_element(By.ID, "search_switch_btn")
     
     def navigate_to_state_reports_page(self):
         """
