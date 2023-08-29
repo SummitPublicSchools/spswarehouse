@@ -36,25 +36,40 @@ class PowerSchool:
     interface via Selenium.
     """
 
-    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, 
-        download_location: str='.'):
+    def __init__(
+        self,
+        config: dict=None,
+        username: str=None,
+        password: str=None,
+        host: str=None,
+        headless: bool=True, 
+        download_location: str='.',
+        chrome_option_prefs: dict=None,
+    ):
+        
+        if config is None:
+            config = powerschool_config
         
         if username is None: 
-            username = powerschool_config['username']
+            username = config['username']
         else:
             username = username
 
         if password is None:
-            password = powerschool_config['password']
+            password = config['password']
         else:
             password = password
 
         if host is None:
-            self.host = powerschool_config['host']
+            self.host = config['host']
         else:
             self.host = host
 
-        self.driver = DriverBuilder().get_driver(headless=headless, download_location=download_location)
+        self.driver = DriverBuilder().get_driver(
+            headless=headless,
+            download_location=download_location,
+            chrome_option_prefs=chrome_option_prefs,
+        )
         
         self._log_into_powerschool_admin(username, password)
 

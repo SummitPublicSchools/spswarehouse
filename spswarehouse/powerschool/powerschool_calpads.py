@@ -43,10 +43,18 @@ class PowerSchoolCALPADS(PowerSchool):
     reports.
     """
     
-    def __init__(self, username: str=None, password: str=None, host: str=None, headless: bool=True, 
-        download_location: str='.'):
+    def __init__(
+        self,
+        config: dict=None,
+        username: str=None,
+        password: str=None,
+        host: str=None,
+        headless: bool=True,
+        download_location: str='.',
+        chrome_option_prefs: dict=None,
+    ):
         
-        super().__init__(username, password, host, headless, download_location)
+        super().__init__(config, username, password, host, headless, download_location, chrome_option_prefs)
 
     def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, 
         calpads_report_abbreviation: str, ps_school_subdistrict_name: str, file_postfix: str, 
