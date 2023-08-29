@@ -44,6 +44,7 @@ class PowerSchool:
         host: str=None,
         headless: bool=True, 
         download_location: str='.',
+        chrome_option_prefs: dict=None,
     ):
         
         if config is None:
@@ -64,7 +65,11 @@ class PowerSchool:
         else:
             self.host = host
 
-        self.driver = DriverBuilder().get_driver(headless=headless, download_location=download_location)
+        self.driver = DriverBuilder().get_driver(
+            headless=headless,
+            download_location=download_location,
+            chrome_option_prefs=chrome_option_prefs,
+        )
         
         self._log_into_powerschool_admin(username, password)
 
