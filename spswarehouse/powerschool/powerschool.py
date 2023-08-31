@@ -1,6 +1,7 @@
 import logging
 import time
 import os
+import math
 import pandas as pd
 
 try:
@@ -29,6 +30,7 @@ ADMIN_URL_SCHEME = 'https://'
 STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
 REPORT_QUEUE_REPORTWORKS_PAGE_PATH = 'admin/reportqueue/prhome.html'
 REPORT_QUEUE_SYSTEM_PAGE_PATH = 'admin/reportqueue/home.html'
+DATA_IMPORT_MANAGER_PATH = 'admin/datamgmt/importmanager.action'
 
 class PowerSchool:
     """
@@ -407,13 +409,13 @@ class PowerSchool:
         
         return elem.text == expected_text
     
-    def helper_wait_for_element_containing_specific_text(self, expected_element_text, wait_time_in_second=30):
+    def helper_wait_for_element_containing_specific_text(self, expected_element_text, wait_time_in_seconds=30):
         """
         Waits for an element containing specific text and returns True if it appears in the time allotted
         (default = 30 seconds) or False if it does not appear.
         """
         try:
-            WebDriverWait(self.driver, wait_time_in_second).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
+            WebDriverWait(self.driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
             return True
         except:
             return False
@@ -631,7 +633,62 @@ class PowerSchool:
         self.helper_wait_for_element_containing_specific_text(final_value, 60)
         logging.info('Final student found. Upload file finished processing.')
         
-    
+    def upload_data_import_manager(self, file_path, table_name, num_rows_in_file, max_processing_wait_time_in_seconds = 60, override_existing_record = False):
+        logging.info('Switching to the "District Office" for a Data Import Manager upload.')
+        self.switch_to_school('District Office')
+
+        self.ensure_on_desired_path(DATA_IMPORT_MANAGER_PATH)
+
+        logging.info('Choosing the upload file.')
+        self.helper_type_in_element_by_id('idFilename', file_path)
+
+        logging.info('Selecting the upload table.')
+        self.helper_select_visible_text_in_element_by_id('moduleSelect', table_name)
+
+        logging.info('Clicking Next')
+        self.helper_click_element_by_id('nextButton0')
+
+        # Brief pause to allow for loading next part of the screen
+        time.sleep(2)
+
+        logging.info('Assuming all fields mapped properly.')
+        self.helper_click_element_by_id('nextButton1')
+
+        # Commenting this logic out, because overriding existing records is tricky and should only be done very intentionally and after extensive testing.
+        # if override_existing_record:
+        #     logging.info('Because override_existing_record was specified as True, clicking the corresponding radio button.')
+        #     self.helper_click_element_by_id('override_existing_value_override')
+
+        logging.info('Beginning import.')
+        self.helper_click_element_by_id('btnImport')
+
+        logging.info('Checking for message to indicate processing is complete.')
+        finished_processing_text = f'Processed {num_rows_in_file} out of {num_rows_in_file} records'
+        done_processing = False
+
+        num_of_loops = math.floor(max_processing_wait_time_in_seconds // 10)
+        
+        for i in range(num_of_loops):
+            try:
+                logging.info(f'Check #{i + 1} of {num_of_loops}')
+                self.helper_wait_for_element_containing_specific_text(finished_processing_text, 10)
+                logging.info('File is done processing.')
+                done_processing = True
+                break
+            except:
+                logging.info('Message not found yet. Refreshing.')
+                self.refresh()
+
+        if done_processing == False:
+            raise Exception(f'Something went wrong. File did not finish processing within {max_processing_wait_time_in_seconds} seconds.')
+
+        logging.info('Checking whether all records imported successfully.')
+        try:
+            successful_import_text = f'Imported:  {num_rows_in_file}'
+            logging.info('All records imported successfully. Upload is complete.')
+        except:
+            raise Exception('Import message indicates not all files imported successfully.')
+
     def _log_into_powerschool_admin(self, username, password):
         """
         Log into PowerSchool Admin and confirm the login was successful.
