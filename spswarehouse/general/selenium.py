@@ -1,12 +1,6 @@
-from selenium.webdriver import Chrome
-from selenium.webdriver.chrome import webdriver as chrome_webdriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common.exceptions import NoSuchElementException
-
 
 def helper_type_in_element_by_id(driver, element_id: str, input_to_type: str):
         """
