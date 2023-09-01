@@ -633,7 +633,28 @@ class PowerSchool:
         self.helper_wait_for_element_containing_specific_text(final_value, 60)
         logging.info('Final student found. Upload file finished processing.')
         
-    def upload_data_import_manager(self, file_path, table_name, num_rows_in_file, max_processing_wait_time_in_seconds = 60, override_existing_record = False):
+    def upload_data_import_manager(self, file_path, table_name, num_rows_in_file, max_processing_wait_time_in_seconds = 60, 
+        override_existing_record = False):
+        """
+        Uploads a tab-delimited file to the Data Import Manager.
+        
+        Arguments:
+        file_path: Path to the tab-delimited file.
+        table_name: The name of the PowerSchool table to upload to.
+        num_rows_in_file: The number of rows in the file to process, including the header row. Used to determine
+            whether the file has finished processing.
+        max_processing_wait_time_in_seconds: The maximum number of seconds to wait for the file to processing.
+            The processing check happens every 10 seconds, so this number will be divided by 10 and rounded down
+            to determine how many checks to make. e.g., a value of 35 will check 3 times, which is roughly 30 seconds.
+        override_existing_record: Defaults to False. Submit as True to have the function select the option to override
+            existing records as part of the import. Additionally, un-comment out the relevant code below, since 
+            overriding records in PowerSchool is tricky and should only be done after extensive testing of the import
+            file to make sure it is not adding records instead of updating existing ones.
+        """
+
+        # TODO: Create a helper function to count the number of rows in the upload file, rather than requiring the user
+        #       to submit it separately.
+
         logging.info('Switching to the "District Office" for a Data Import Manager upload.')
         self.switch_to_school('District Office')
 
