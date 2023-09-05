@@ -416,9 +416,8 @@ class PowerSchool:
         """
         try:
             WebDriverWait(self.driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
-            return True
         except:
-            return False
+            raise Exception(f'Element with text "{expected_element_text}" not found within {wait_time_in_seconds} seconds.')
 
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '', 
         file_postfix: str = ''):
@@ -706,6 +705,7 @@ class PowerSchool:
         logging.info('Checking whether all records imported successfully.')
         try:
             successful_import_text = f'Imported:  {num_rows_in_file}'
+            self.helper_wait_for_element_containing_specific_text(successful_import_text, 5)
             logging.info('All records imported successfully. Upload is complete.')
         except:
             raise Exception('Import message indicates not all files imported successfully.')
