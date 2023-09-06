@@ -632,7 +632,7 @@ class PowerSchool:
         self.helper_wait_for_element_containing_specific_text(final_value, 60)
         logging.info('Final student found. Upload file finished processing.')
         
-    def upload_data_import_manager(self, file_path, table_name, num_rows_in_file, max_processing_wait_time_in_seconds = 60, 
+    def upload_data_import_manager(self, file_path, table_name, max_processing_wait_time_in_seconds = 60, 
         override_existing_record = False):
         """
         Uploads a tab-delimited file to the Data Import Manager.
@@ -640,8 +640,6 @@ class PowerSchool:
         Arguments:
         file_path: Path to the tab-delimited file.
         table_name: The name of the PowerSchool table to upload to.
-        num_rows_in_file: The number of rows in the file to process, including the header row. Used to determine
-            whether the file has finished processing.
         max_processing_wait_time_in_seconds: The maximum number of seconds to wait for the file to processing.
             The processing check happens every 10 seconds, so this number will be divided by 10 and rounded down
             to determine how many checks to make. e.g., a value of 35 will check 3 times, which is roughly 30 seconds.
@@ -651,8 +649,13 @@ class PowerSchool:
             file to make sure it is not adding records instead of updating existing ones.
         """
 
-        # TODO: Create a helper function to count the number of rows in the upload file, rather than requiring the user
-        #       to submit it separately.
+        df_row_count = pd.read_csv(file_path)
+        num_data_rows = df_row_count.shape[0]
+
+        if num_data_rows == 0:
+            raise Exception(f'Upload file at path "{file_path}" does not contain any rows of data.')
+
+        num_rows_in_file = num_data_rows + 1 # Add 1 to account for the header row
 
         logging.info('Switching to the "District Office" for a Data Import Manager upload.')
         self.switch_to_school('District Office')
@@ -703,12 +706,15 @@ class PowerSchool:
             raise Exception(f'Something went wrong. File did not finish processing within {max_processing_wait_time_in_seconds} seconds.')
 
         logging.info('Checking whether all records imported successfully.')
-        try:
-            successful_import_text = f'Imported:  {num_rows_in_file}'
-            self.helper_wait_for_element_containing_specific_text(successful_import_text, 5)
-            logging.info('All records imported successfully. Upload is complete.')
-        except:
-            raise Exception('Import message indicates not all files imported successfully.')
+            
+        successful_import_text = f'Imported:  {num_rows_in_file}'
+        imported_element_text = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[4]/div[2]/div[2]/h3').text 
+        # Using the helper_wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
+        #    line gets the "Imported:  X" message 
+
+        assert imported_element_text == successful_import_text, 'Import message indicates not all files imported successfully.'
+
+        logging.info('All records imported successfully. Upload is complete.')
 
     def _log_into_powerschool_admin(self, username, password):
         """
