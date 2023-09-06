@@ -411,8 +411,8 @@ class PowerSchool:
     
     def helper_wait_for_element_containing_specific_text(self, expected_element_text, wait_time_in_seconds=30):
         """
-        Waits for an element containing specific text and returns True if it appears in the time allotted
-        (default = 30 seconds) or False if it does not appear.
+        Waits for an element containing specific text raises an exception if it does not 
+        appear in the time allotted (default = 30 seconds).
         """
         try:
             WebDriverWait(self.driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
