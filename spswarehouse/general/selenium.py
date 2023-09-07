@@ -37,7 +37,9 @@ def helper_click_element_by_partial_link_text(driver, partial_link_text: str):
     """
     Waits for an element by partial link text and clicks it.
     """
-    elem = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, partial_link_text)))
+    elem = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, partial_link_text)) )
+    # TODO: A previous version of this function had the partial_link_text in an f-string. Is that necessary?
+    # elem = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, f'{partial_link_text}')) )
     elem.click()
 
 def helper_click_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
