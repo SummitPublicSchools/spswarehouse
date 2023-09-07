@@ -7,6 +7,7 @@ import pandas as pd
 try:
     from spswarehouse.credentials import powerschool_config
 except ModuleNotFoundError:
+    powerschool_config = None
     print("No credentials file found in spswarehouse. This could cause issues.")
 
 from ducttape.utils import (
@@ -14,9 +15,6 @@ from ducttape.utils import (
     get_most_recent_file_in_dir,
 )
     
-
-from selenium.webdriver import Chrome
-from selenium.webdriver.chrome import webdriver as chrome_webdriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
