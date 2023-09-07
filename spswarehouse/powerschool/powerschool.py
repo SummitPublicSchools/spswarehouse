@@ -376,6 +376,13 @@ class PowerSchool:
         elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
             f"{partial_link_text}")))
         elem.click()
+        
+    def helper_click_element_by_xpath(self, xpath: str):
+        """
+        Waits for an element by XPATH and clicks it.
+        """
+        elem = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.XPATH, xpath)))
+        elem.click()
 
     def helper_ensure_checkbox_is_checked_by_name(self, checkbox_name: str):
         """
