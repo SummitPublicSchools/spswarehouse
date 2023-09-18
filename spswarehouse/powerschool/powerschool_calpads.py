@@ -4,6 +4,16 @@ import pandas as pd
 
 from .powerschool import PowerSchool
 
+from spswarehouse.general.selenium import (
+    helper_type_in_element_by_name,
+    helper_select_visible_text_in_element_by_name,
+    helper_click_element_by_id,
+    helper_ensure_checkbox_is_unchecked_by_name,
+    helper_ensure_checkbox_is_checked_by_name,
+    helper_type_in_element_by_id,
+    helper_select_visible_text_in_element_by_id,
+)
+
 PS_REPORT_LINK_TEXT = {
     'SINC': 'Student Incident Records (SINC)',
     'SIRS': 'Student Incident Results Records (SIRS)',
@@ -174,20 +184,20 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_type_in_element_by_name('StartDate', 
+        helper_type_in_element_by_name(self.driver, 'StartDate', 
             report_parameters['report_start_date'])
-        self.helper_type_in_element_by_name('EndDate', 
+        helper_type_in_element_by_name(self.driver, 'EndDate', 
             report_parameters['report_end_date'])
-        self.helper_select_visible_text_in_element_by_name('submissionMode', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'submissionMode', 
             'Non-submission mode (all records)') # Only 'Non-submission mode' is supported by this tool
         time.sleep(1) # Give page time to react
-        self.helper_select_visible_text_in_element_by_name('ssidOption', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'ssidOption', 
             report_parameters['student_selection_filter'])
-        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
 
         # Submit report
-        self.helper_click_element_by_id('btnSubmit')
+        helper_click_element_by_id(self.driver, 'btnSubmit')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
@@ -241,24 +251,24 @@ class PowerSchoolCALPADS(PowerSchool):
             date_for_report = today_datetime_object.strftime('%m/%d/%Y')
         
         # Enter specific parameters for this report
-        self.helper_type_in_element_by_name('startDate', date_for_report)
-        self.helper_type_in_element_by_name('endDate', date_for_report)
+        helper_type_in_element_by_name(self.driver, 'startDate', date_for_report)
+        helper_type_in_element_by_name(self.driver, 'endDate', date_for_report)
 
-        self.helper_type_in_element_by_name('status_start_date', '') # Make sure this field is cleared
-        self.helper_type_in_element_by_name('status_end_date', '') # Make sure this field is cleared
+        helper_type_in_element_by_name(self.driver, 'status_start_date', '') # Make sure this field is cleared
+        helper_type_in_element_by_name(self.driver, 'status_end_date', '') # Make sure this field is cleared
 
-        self.helper_select_visible_text_in_element_by_name('deltaOff', # Unclear why this is the element name
+        helper_select_visible_text_in_element_by_name(self.driver, 'deltaOff', # Unclear why this is the element name
             'Non-submission mode (all records)') # Only 'Non-submission mode' is supported by this tool
         time.sleep(1) # Give page time to react
 
-        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
         
         # Below defaults to "No Group Selected" because school should already be chosen
-        self.helper_select_visible_text_in_element_by_name('schoolGroup', '[No Group Selected]') 
+        helper_select_visible_text_in_element_by_name(self.driver, 'schoolGroup', '[No Group Selected]') 
 
         # Submit report
-        self.helper_click_element_by_id('btnSubmit')
+        helper_click_element_by_id(self.driver, 'btnSubmit')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
@@ -299,12 +309,12 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_ensure_checkbox_is_unchecked_by_name('SubmissionType')
+        helper_ensure_checkbox_is_unchecked_by_name(self.driver, 'SubmissionType')
         time.sleep(1) # Give page time to react
 
-        self.helper_ensure_checkbox_is_checked_by_name('effectiveStartDate')
+        helper_ensure_checkbox_is_checked_by_name(self.driver, 'effectiveStartDate')
 
-        self.helper_type_in_element_by_name('StartDate', 
+        helper_type_in_element_by_name(self.driver, 'StartDate', 
             report_parameters['report_start_date'])
         
         # If the provided report_end_date is in the future, use today's date instead
@@ -313,20 +323,20 @@ class PowerSchoolCALPADS(PowerSchool):
         current_date = date.today()
         if report_end_date_object > current_date:
             end_date_string = current_date.strftime("%m/%d/%Y")
-        self.helper_type_in_element_by_name('EndDate', end_date_string)
+        helper_type_in_element_by_name(self.driver, 'EndDate', end_date_string)
 
-        self.helper_select_visible_text_in_element_by_name('deltaOff',
+        helper_select_visible_text_in_element_by_name(self.driver, 'deltaOff',
             'Non-submission mode (all records)') # Only 'Non-submission mode' is supported by this tool
         time.sleep(1) # Give page time to react
 
-        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
         
         # See note in function definition
-        self.helper_select_visible_text_in_element_by_name('includePreferredName', 'No')
+        helper_select_visible_text_in_element_by_name(self.driver, 'includePreferredName', 'No')
 
         # Submit report
-        self.helper_click_element_by_id('btnSubmit')
+        helper_click_element_by_id(self.driver, 'btnSubmit')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
@@ -344,18 +354,18 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_type_in_element_by_id('reportStartDate', 
+        helper_type_in_element_by_id(self.driver, 'reportStartDate', 
             report_parameters['report_start_date'])
-        self.helper_type_in_element_by_id('reportEndDate', 
+        helper_type_in_element_by_id(self.driver, 'reportEndDate', 
             report_parameters['report_end_date'])
-        self.helper_select_visible_text_in_element_by_id('reportMode', 
+        helper_select_visible_text_in_element_by_id(self.driver, 'reportMode', 
             'Submission mode') # Only 'Submission mode' is supported by this tool
         time.sleep(1) # Give page time to react
-        self.helper_select_visible_text_in_element_by_id('bypassValidation', 
+        helper_select_visible_text_in_element_by_id(self.driver, 'bypassValidation', 
             'No' if validation_only_run else 'Yes')
 
         # Submit report
-        self.helper_click_element_by_id('submitReportSDKRuntimeParams')
+        helper_click_element_by_id(self.driver, 'submitReportSDKRuntimeParams')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
@@ -371,15 +381,15 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_type_in_element_by_id('reportStartDate', 
+        helper_type_in_element_by_id(self.driver, 'reportStartDate', 
             report_parameters['report_start_date'])
-        self.helper_type_in_element_by_id('reportEndDate', 
+        helper_type_in_element_by_id(self.driver, 'reportEndDate', 
             report_parameters['report_end_date'])
-        self.helper_select_visible_text_in_element_by_id('bypassValidation', 
+        helper_select_visible_text_in_element_by_id(self.driver, 'bypassValidation', 
             'No' if validation_only_run else 'Yes')
         
         # Submit report
-        self.helper_click_element_by_id('submitReportSDKRuntimeParams')
+        helper_click_element_by_id(self.driver, 'submitReportSDKRuntimeParams')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
@@ -394,20 +404,20 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_type_in_element_by_name('StartDate', 
+        helper_type_in_element_by_name(self.driver, 'StartDate', 
             report_parameters['report_start_date'])
-        self.helper_type_in_element_by_name('EndDate', 
+        helper_type_in_element_by_name(self.driver, 'EndDate', 
             report_parameters['report_end_date'])
         # Below 'adaFlag' defaults to 'Yes'
-        self.helper_select_visible_text_in_element_by_name('adaFlag', 'Yes') 
-        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'adaFlag', 'Yes') 
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
         # Below defaults to "No Group Selected" because school should already be chosen
-        self.helper_select_visible_text_in_element_by_name('schoolGroup', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'schoolGroup', 
             '[No Group Selected]') 
         
         # Submit report
-        self.helper_click_element_by_id('btnSubmit')
+        helper_click_element_by_id(self.driver, 'btnSubmit')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
@@ -422,27 +432,27 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_type_in_element_by_name('startDate', 
+        helper_type_in_element_by_name(self.driver, 'startDate', 
             report_parameters['report_start_date'])
-        self.helper_type_in_element_by_name('endDate', 
+        helper_type_in_element_by_name(self.driver, 'endDate', 
             report_parameters['report_end_date'])
-        self.helper_select_visible_text_in_element_by_name('selectProgs', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'selectProgs', 
             report_parameters['submission_type'])
 
         # I believe 'Non-submission mode (all records)' is the one we want to use for repeated 
         #   submissions, but there's also 'Replacement Submission Mode' which has a different flow 
         #   after clicking Submit.
-        self.helper_select_visible_text_in_element_by_name('submissionMode', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'submissionMode', 
             'Non-submission mode (all records)') 
 
-        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
         # Below defaults to "No Group Selected" because school should already be chosen
-        self.helper_select_visible_text_in_element_by_name('schoolGroup', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'schoolGroup', 
             '[No Group Selected]')
 
         # Submit report
-        self.helper_click_element_by_id('btnSubmit')
+        helper_click_element_by_id(self.driver, 'btnSubmit')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
@@ -457,22 +467,22 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_select_visible_text_in_element_by_id('submission', 
+        helper_select_visible_text_in_element_by_id(self.driver, 'submission', 
             report_parameters['submission_type'])
 
         # Date fields need time to appear
         time.sleep(1) 
-        self.helper_type_in_element_by_id('startDate', 
+        helper_type_in_element_by_id(self.driver, 'startDate', 
             report_parameters['report_start_date'])
-        self.helper_type_in_element_by_id('endDate', 
+        helper_type_in_element_by_id(self.driver, 'endDate', 
             report_parameters['report_end_date'])
-        self.helper_select_visible_text_in_element_by_id('bypassValidation', 
+        helper_select_visible_text_in_element_by_id(self.driver, 'bypassValidation', 
             'No' if validation_only_run else 'Yes')
         # The below indicates to not "Include Records For Course Code 1000"
-        self.helper_select_visible_text_in_element_by_id('selectCourseCode', 'No') 
+        helper_select_visible_text_in_element_by_id(self.driver, 'selectCourseCode', 'No') 
 
         # Submit report
-        self.helper_click_element_by_id('submitReportSDKRuntimeParams')
+        helper_click_element_by_id(self.driver, 'submitReportSDKRuntimeParams')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
@@ -487,30 +497,30 @@ class PowerSchoolCALPADS(PowerSchool):
         self.navigate_to_specific_state_report(ps_report_link_text)
         
         # Enter specific parameters for this report
-        self.helper_select_visible_text_in_element_by_name('submission', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'submission', 
             report_parameters['submission_type'])
-        self.helper_type_in_element_by_name('storeCodeList', 
+        helper_type_in_element_by_name(self.driver, 'storeCodeList', 
             report_parameters['eoy_store_code_list'])
         # Below defaults to 'No' for 'Extract Credits for Grades 7 and 8' 
         # TODO: Research if this is correct
-        self.helper_select_visible_text_in_element_by_name('msExtract', 'No') 
+        helper_select_visible_text_in_element_by_name(self.driver, 'msExtract', 'No') 
 
 
-        self.helper_type_in_element_by_name('startDate', 
+        helper_type_in_element_by_name(self.driver, 'startDate', 
             report_parameters['report_start_date'])
-        self.helper_type_in_element_by_name('endDate', 
+        helper_type_in_element_by_name(self.driver, 'endDate', 
             report_parameters['report_end_date'])
 
-        self.helper_select_visible_text_in_element_by_name('bypass_validation', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
-        self.helper_select_visible_text_in_element_by_name('selectCourseCode', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'selectCourseCode', 
             'No') # Do not "Include Records For Course Code 1000"
 
-        self.helper_select_visible_text_in_element_by_name('subDistrict', 
+        helper_select_visible_text_in_element_by_name(self.driver, 'subDistrict', 
             ps_school_subdistrict_name)
 
         # Submit report
-        self.helper_click_element_by_id('btnSubmit')
+        helper_click_element_by_id(self.driver, 'btnSubmit')
 
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
