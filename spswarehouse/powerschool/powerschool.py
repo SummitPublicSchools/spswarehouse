@@ -417,7 +417,7 @@ class PowerSchool:
         except:
             raise Exception(f'Element with text "{expected_element_text}" not found within {wait_time_in_seconds} seconds.')
 
-    def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '', 
+    def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '.', 
         file_postfix: str = ''):
         """
         Navigates to the PowerSchool Report Queue (ReportWorks), confirms the most recent report is 
@@ -477,7 +477,7 @@ class PowerSchool:
 
         return True
 
-    def download_latest_report_from_report_queue_system(self, destination_directory_path: str = '', 
+    def download_latest_report_from_report_queue_system(self, destination_directory_path: str = '.', 
         file_postfix: str = ''):
         """
         Navigates to the PowerSchool Report Queue (System), confirms the most recent report is done 
@@ -515,14 +515,19 @@ class PowerSchool:
                 logging.info('PowerSchool report is not ready, refreshing and waiting.')
                 time.sleep(3)
             except NoSuchElementException: # Because all reports are done running
+                logging.info('No currently running reports. Downloading the most recently completed report.')
                 break
 
         top_completed_report_view_link = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH,
-            '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[5]/a')))
+            "//*[@id='content-main']/div[3]/table/tbody/tr[1]/td[a[text()='View']][1]/a"))) 
+            # Note: The above XPATH seems to change a lot as PowerSchool makes changes to which column the link is in.
+            # This is the hard-coded XPATH for the 6th column: '//*[@id="content-main"]/div[3]/table/tbody/tr[1]/td[6]/a'
+            # The above XPATH tries to dynamically determine which column the link is in to be robust to these changes.
         top_completed_report_view_link.click()
 
         try:
             # Look for a result file link
+            logging.info('Looking for the result file link.')
             download_link = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((
                 By.LINK_TEXT, 'Click to Download Result File')))
             original_files_list = os.listdir(destination_directory_path)
