@@ -328,6 +328,10 @@ class PowerSchool:
 
         helper_click_element_by_partial_link_text(self.driver, report_link_text)
 
+    # def helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
+    #     """
+    #     """
+    #     Waits for an element by name, clears it, and types in the input.
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '.', 
         file_postfix: str = ''):
         """
