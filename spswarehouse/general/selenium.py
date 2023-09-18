@@ -68,10 +68,6 @@ def helper_ensure_checkbox_is_checked_by_name(driver, checkbox_name: str, wait_t
     checkbox = _wait_for_element_to_be_clickable_and_return_it(driver, By.XPATH, f"//input[@type='checkbox' and @name='{checkbox_name}']", 
         wait_time_in_seconds)
     
-    # TODO: Delete after testing
-    # WebDriverWait(driver, wait_time_in_seconds).until(EC.element_to_be_clickable((By.XPATH, 
-    #     f"//input[@type='checkbox' and @name='{checkbox_name}']")))
-    
     if checkbox.is_selected() == False:
         checkbox.click()
 
@@ -82,10 +78,6 @@ def helper_ensure_checkbox_is_unchecked_by_name(driver, checkbox_name: str, wait
     """
     checkbox = _wait_for_element_to_be_clickable_and_return_it(driver, By.XPATH, f"//input[@type='checkbox' and @name='{checkbox_name}']", 
         wait_time_in_seconds)
-    
-    # TODO: Delete after testing
-    # WebDriverWait(driver, wait_time_in_seconds).until(EC.element_to_be_clickable((By.XPATH, 
-    #     f"//input[@type='checkbox' and @name='{checkbox_name}']")))
     
     if checkbox.is_selected():
         checkbox.click()
@@ -98,11 +90,6 @@ def helper_ensure_element_text_matches_expected_value_by_xpath(driver, element_x
     Waits for an element by XPATH and checks whether its text matches the expected text.
     """
     elem = _wait_for_element_to_be_clickable_and_return_it(driver, By.XPATH, element_xpath, wait_time_in_seconds)
-    
-    # TODO: Delete after testing
-    # WebDriverWait(driver, wait_time_in_seconds).until(EC.element_to_be_clickable((By.XPATH, 
-        # element_xpath)))
-    
     return elem.text == expected_text
 
 
