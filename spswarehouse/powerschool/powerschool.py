@@ -725,7 +725,7 @@ class PowerSchool:
         # Commenting this logic out, because overriding existing records is tricky and should only be done very intentionally and after extensive testing.
         # if override_existing_record:
         #     logging.info('Because override_existing_record was specified as True, clicking the corresponding radio button.')
-        #     self.helper_click_element_by_id('override_existing_value_override')
+        #     helper_click_element_by_id(self.driver, 'override_existing_value_override')
 
         logging.info('Beginning import.')
         helper_click_element_by_id(self.driver, 'btnImport')
@@ -739,7 +739,7 @@ class PowerSchool:
         for i in range(num_of_loops):
             try:
                 logging.info(f'Check #{i + 1} of {num_of_loops}')
-                self.helper_wait_for_element_containing_specific_text_and_raise_exception_if_missing(finished_processing_text, 10)
+                helper_wait_for_element_containing_specific_text_and_raise_exception_if_missing(self.driver, finished_processing_text, 10)
                 logging.info('File is done processing.')
                 done_processing = True
                 break
