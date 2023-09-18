@@ -39,6 +39,8 @@ REPORT_QUEUE_REPORTWORKS_PAGE_PATH = 'admin/reportqueue/prhome.html'
 REPORT_QUEUE_SYSTEM_PAGE_PATH = 'admin/reportqueue/home.html'
 DATA_IMPORT_MANAGER_PATH = 'admin/datamgmt/importmanager.action'
 
+DEPRECATION_WARNING_MESSAGE = "DEPRECATION_WARNING: This helper function in the PowerSchool class will be deprecated in a future release. Use the helper functions in general.selenium instead."
+
 class PowerSchool:
     """
     This class is an abstraction for interacting with the PowerSchool Admin user 
@@ -328,103 +330,134 @@ class PowerSchool:
 
         helper_click_element_by_partial_link_text(self.driver, report_link_text)
 
-    # def helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
-    #     """
-    #     Waits for an element by ID, clears it, and types in the input.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
-    #     elem.clear()
-    #     elem.send_keys(input_to_type)
 
-    # def helper_type_in_element_by_name(self, element_name: str, input_to_type: str):
-    #     """
-    #     Waits for an element by name, clears it, and types in the input.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
-    #         element_name)))
-    #     elem.clear()
-    #     elem.send_keys(input_to_type)
 
-    # def helper_select_visible_text_in_element_by_id(self, element_id: str, 
-    #     text_to_select: str):
-    #     """
-    #     Waits for an element by ID and selects it by specified text.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
-    #     select = Select(elem)
-    #     select.select_by_visible_text(text_to_select)
+### START TODO: These helper functions inside the PowerSchool class will be removed in a future release. ##############
+###             The functions in general.selenium should be used instead. #############################################
 
-    # def helper_select_visible_text_in_element_by_name(self, element_name: str, 
-    #     text_to_select: str):
-    #     """
-    #     Waits for an element by name and selects it by specified text.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
-    #         element_name)))
-    #     select = Select(elem)
-    #     select.select_by_visible_text(text_to_select)
+    def helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
+        """
+        Waits for an element by ID, clears it, and types in the input.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
 
-    # def helper_click_element_by_id(self, element_id: str):
-    #     """
-    #     Waits for an element by ID and clicks it.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, element_id)))
-    #     elem.click()
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+        elem.clear()
+        elem.send_keys(input_to_type)
 
-    # def helper_click_element_by_name(self, element_name: str):
-    #     """
-    #     Waits for an element by name and clicks it.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.NAME, element_name)))
-    #     elem.click()
+    def helper_type_in_element_by_name(self, element_name: str, input_to_type: str):
+        """
+        Waits for an element by name, clears it, and types in the input.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
 
-    # def helper_click_element_by_partial_link_text(self, partial_link_text: str):
-    #     """
-    #     Waits for an element by partial link text and clicks it.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
-    #         f"{partial_link_text}")))
-    #     elem.click()
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
+            element_name)))
+        elem.clear()
+        elem.send_keys(input_to_type)
 
-    # def helper_ensure_checkbox_is_checked_by_name(self, checkbox_name: str):
-    #     """
-    #     Waits for a checkbox element by name and clicks it if it is not already selected.
-    #     """
-    #     checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
-    #         f"//input[@type='checkbox' and @name='{checkbox_name}']")))
+    def helper_select_visible_text_in_element_by_id(self, element_id: str, 
+        text_to_select: str):
+        """
+        Waits for an element by ID and selects it by specified text.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
+        select = Select(elem)
+        select.select_by_visible_text(text_to_select)
+
+    def helper_select_visible_text_in_element_by_name(self, element_name: str, 
+        text_to_select: str):
+        """
+        Waits for an element by name and selects it by specified text.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
+            element_name)))
+        select = Select(elem)
+        select.select_by_visible_text(text_to_select)
+
+    def helper_click_element_by_id(self, element_id: str):
+        """
+        Waits for an element by ID and clicks it.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, element_id)))
+        elem.click()
+
+    def helper_click_element_by_name(self, element_name: str):
+        """
+        Waits for an element by name and clicks it.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.NAME, element_name)))
+        elem.click()
+
+    def helper_click_element_by_partial_link_text(self, partial_link_text: str):
+        """
+        Waits for an element by partial link text and clicks it.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
+            f"{partial_link_text}")))
+        elem.click()
+
+    def helper_ensure_checkbox_is_checked_by_name(self, checkbox_name: str):
+        """
+        Waits for a checkbox element by name and clicks it if it is not already selected.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
+            f"//input[@type='checkbox' and @name='{checkbox_name}']")))
         
-    #     if checkbox.is_selected() == False:
-    #         checkbox.click()
+        if checkbox.is_selected() == False:
+            checkbox.click()
     
-    # def helper_ensure_checkbox_is_unchecked_by_name(self, checkbox_name: str):
-    #     """
-    #     Waits for a checkbox element by name and clicks it if it is already selected, to make
-    #     sure it is not checked.
-    #     """
-    #     checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
-    #         f"//input[@type='checkbox' and @name='{checkbox_name}']")))
-        
-    #     if checkbox.is_selected():
-    #         checkbox.click()
+    def helper_ensure_checkbox_is_unchecked_by_name(self, checkbox_name: str):
+        """
+        Waits for a checkbox element by name and clicks it if it is already selected, to make
+        sure it is not checked.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
 
-    # def helper_ensure_element_text_matches_expected_value_by_xpath(self, element_xpath, expected_text):
-    #     """
-    #     Waits for an element by XPATH and checks whether its text matches the expected text.
-    #     """
-    #     elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
-    #         element_xpath)))
+        checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
+            f"//input[@type='checkbox' and @name='{checkbox_name}']")))
         
-    #     return elem.text == expected_text
+        if checkbox.is_selected():
+            checkbox.click()
+
+    def helper_ensure_element_text_matches_expected_value_by_xpath(self, element_xpath, expected_text):
+        """
+        Waits for an element by XPATH and checks whether its text matches the expected text.
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
+            element_xpath)))
+        
+        return elem.text == expected_text
     
-    # def helper_wait_for_element_containing_specific_text(self, expected_element_text, wait_time_in_seconds=30):
-    #     """
-    #     Waits for an element containing specific text raises an exception if it does not 
-    #     appear in the time allotted (default = 30 seconds).
-    #     """
-    #     try:
-    #         WebDriverWait(self.driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
-    #     except:
-    #         raise Exception(f'Element with text "{expected_element_text}" not found within {wait_time_in_seconds} seconds.')
+    def helper_wait_for_element_containing_specific_text(self, expected_element_text, wait_time_in_seconds=30):
+        """
+        Waits for an element containing specific text raises an exception if it does not 
+        appear in the time allotted (default = 30 seconds).
+        """
+        print(DEPRECATION_WARNING_MESSAGE)
+
+        try:
+            WebDriverWait(self.driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
+        except:
+            raise Exception(f'Element with text "{expected_element_text}" not found within {wait_time_in_seconds} seconds.')
+
+### END TODO #########################################################################################################
+
+
 
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '.', 
         file_postfix: str = ''):
