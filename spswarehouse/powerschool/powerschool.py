@@ -675,7 +675,7 @@ class PowerSchool:
         self.helper_click_element_by_id('nextButton0')
 
         # Brief pause to allow for loading next part of the screen
-        time.sleep(2)
+        time.sleep(10)
 
         logging.info('Assuming all fields mapped properly.')
         self.helper_click_element_by_id('nextButton1')
