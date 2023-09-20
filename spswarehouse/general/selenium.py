@@ -7,37 +7,37 @@ from selenium.webdriver.support import expected_conditions as EC
 
 ### Click Elements
 
-def helper_click_element_by_css_selector(driver, css_selector: str, wait_time_in_seconds=30):
+def click_element_by_css_selector(driver, css_selector: str, wait_time_in_seconds=30):
     """
     Waits for an element by CSS Selector and clicks it.
     """
     _wait_for_element_to_be_clickable_and_click_it(driver, By.CSS_SELECTOR, css_selector, wait_time_in_seconds)
 
-def helper_click_element_by_id(driver, element_id: str, wait_time_in_seconds=30):
+def click_element_by_id(driver, element_id: str, wait_time_in_seconds=30):
     """
     Waits for an element by ID and clicks it.
     """
     _wait_for_element_to_be_clickable_and_click_it(driver, By.ID, element_id, wait_time_in_seconds)
 
-def helper_click_element_by_name(driver, element_name: str, wait_time_in_seconds=30):
+def click_element_by_name(driver, element_name: str, wait_time_in_seconds=30):
     """
     Waits for an element by name and clicks it.
     """
     _wait_for_element_to_be_clickable_and_click_it(driver, By.NAME, element_name, wait_time_in_seconds)
 
-def helper_click_element_by_link_text(driver, link_text, wait_time_in_seconds=30):
+def click_element_by_link_text(driver, link_text, wait_time_in_seconds=30):
     """
     Waits for an element by (full) link text and clicks it.
     """
     _wait_for_element_to_be_clickable_and_click_it(driver, By.LINK_TEXT, link_text, wait_time_in_seconds)
 
-def helper_click_element_by_partial_link_text(driver, partial_link_text: str, wait_time_in_seconds=30):
+def click_element_by_partial_link_text(driver, partial_link_text: str, wait_time_in_seconds=30):
     """
     Waits for an element by partial link text and clicks it.
     """
     _wait_for_element_to_be_clickable_and_click_it(driver, By.PARTIAL_LINK_TEXT, partial_link_text, wait_time_in_seconds)
 
-def helper_click_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
+def click_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
     """
     Waits for an element by XPATH and clicks it.
     """
@@ -46,7 +46,7 @@ def helper_click_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
 
 ### Checkboxes
 
-def helper_ensure_checkbox_is_checked_by_name(driver, checkbox_name: str, wait_time_in_seconds=30):
+def ensure_checkbox_is_checked_by_name(driver, checkbox_name: str, wait_time_in_seconds=30):
     """
     Waits for a checkbox element by name and clicks it if it is not already selected.
     """
@@ -56,7 +56,7 @@ def helper_ensure_checkbox_is_checked_by_name(driver, checkbox_name: str, wait_t
     if checkbox.is_selected() == False:
         checkbox.click()
 
-def helper_ensure_checkbox_is_unchecked_by_name(driver, checkbox_name: str, wait_time_in_seconds=30):
+def ensure_checkbox_is_unchecked_by_name(driver, checkbox_name: str, wait_time_in_seconds=30):
     """
     Waits for a checkbox element by name and clicks it if it is already selected, to make
     sure it is not checked.
@@ -70,7 +70,7 @@ def helper_ensure_checkbox_is_unchecked_by_name(driver, checkbox_name: str, wait
 
 ### Element Text Matches
 
-def helper_ensure_element_text_matches_expected_value_by_xpath(driver, element_xpath, expected_text, wait_time_in_seconds=30):
+def ensure_element_text_matches_expected_value_by_xpath(driver, element_xpath, expected_text, wait_time_in_seconds=30):
     """
     Waits for an element by XPATH and checks whether its text matches the expected text.
     """
@@ -80,35 +80,35 @@ def helper_ensure_element_text_matches_expected_value_by_xpath(driver, element_x
 
 ### Get Element(s)
 
-def helper_get_element_by_css_selector(driver, css_selector: str, wait_time_in_seconds=30):
+def get_element_by_css_selector(driver, css_selector: str, wait_time_in_seconds=30):
     """
     Waits for an element by CSS Selector and returns it.
     """
     elem = _wait_for_element_to_be_present_and_return_it(driver, By.CSS_SELECTOR, css_selector, wait_time_in_seconds)
     return elem
 
-def helper_get_element_by_id(driver, element_id, wait_time_in_seconds=30):
+def get_element_by_id(driver, element_id, wait_time_in_seconds=30):
     """
     Waits for an element by ID and returns it.
     """
     elem = _wait_for_element_to_be_present_and_return_it(driver, By.ID, element_id, wait_time_in_seconds)
     return elem
 
-def helper_get_element_by_link_text(driver, link_text, wait_time_in_seconds=30):
+def get_element_by_link_text(driver, link_text, wait_time_in_seconds=30):
     """
     Waits for an element by (full) link text and returns it.
     """
     elem = _wait_for_element_to_be_present_and_return_it(driver, By.LINK_TEXT, link_text, wait_time_in_seconds)
     return elem
 
-def helper_get_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
+def get_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
     """
     Waits for an element by XPATH and returns it.
     """
     elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, xpath)))
     return elem
 
-def helper_get_multiple_elements_by_class_name(driver, class_name: str, wait_time_in_seconds=30):
+def get_multiple_elements_by_class_name(driver, class_name: str, wait_time_in_seconds=30):
     """
     Waits for an element by class name, then retrieves the full list of elements with that class name.
     """
@@ -124,7 +124,7 @@ def helper_get_multiple_elements_by_class_name(driver, class_name: str, wait_tim
 
 ### Select Text in Element
 
-def helper_select_visible_text_in_element_by_id(driver, element_id: str, text_to_select: str, wait_time_in_seconds=30):
+def select_visible_text_in_element_by_id(driver, element_id: str, text_to_select: str, wait_time_in_seconds=30):
     """
     Waits for an element by ID and selects it by specified text.
     """
@@ -132,7 +132,7 @@ def helper_select_visible_text_in_element_by_id(driver, element_id: str, text_to
     select = Select(elem)
     select.select_by_visible_text(text_to_select)
 
-def helper_select_visible_text_in_element_by_name(driver, element_name: str, text_to_select: str, wait_time_in_seconds=30):
+def select_visible_text_in_element_by_name(driver, element_name: str, text_to_select: str, wait_time_in_seconds=30):
     """
     Waits for an element by name and selects it by specified text.
     """
@@ -143,7 +143,7 @@ def helper_select_visible_text_in_element_by_name(driver, element_name: str, tex
 
 ### Type in Element
 
-def helper_type_in_element_by_id(driver, element_id: str, input_to_type: str, wait_time_in_seconds=30):
+def type_in_element_by_id(driver, element_id: str, input_to_type: str, wait_time_in_seconds=30):
     """
     Waits for an element by ID, clears it, and types in the input.
     """
@@ -151,7 +151,7 @@ def helper_type_in_element_by_id(driver, element_id: str, input_to_type: str, wa
     elem.clear()
     elem.send_keys(input_to_type)
 
-def helper_type_in_element_by_name(driver, element_name: str, input_to_type: str, wait_time_in_seconds=30):
+def type_in_element_by_name(driver, element_name: str, input_to_type: str, wait_time_in_seconds=30):
     """
     Waits for an element by name, clears it, and types in the input.
     """

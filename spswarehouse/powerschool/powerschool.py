@@ -16,11 +16,11 @@ from ducttape.utils import (
 )
 
 from spswarehouse.general.selenium import (
-    helper_type_in_element_by_id,
-    helper_select_visible_text_in_element_by_id,
-    helper_click_element_by_id,
-    helper_click_element_by_name,
-    helper_click_element_by_partial_link_text,
+    type_in_element_by_id,
+    select_visible_text_in_element_by_id,
+    click_element_by_id,
+    click_element_by_name,
+    click_element_by_partial_link_text,
     wait_for_element_containing_specific_text,
 )
     
@@ -328,7 +328,7 @@ class PowerSchool:
         """
         self.navigate_to_state_reports_page()
 
-        helper_click_element_by_partial_link_text(self.driver, report_link_text)
+        click_element_by_partial_link_text(self.driver, report_link_text)
 
 
 
@@ -654,22 +654,22 @@ class PowerSchool:
 
         # Upload to designated table
         logging.info(f"Selecting {table_name} for table")
-        helper_select_visible_text_in_element_by_id(self.driver, 'filenumber', table_name)
+        select_visible_text_in_element_by_id(self.driver, 'filenumber', table_name)
         
         # Choose file to upload
-        helper_type_in_element_by_id(self.driver, 'filename', filename)
+        type_in_element_by_id(self.driver, 'filename', filename)
 
         # Submit file
-        helper_click_element_by_id(self.driver, 'btnImport')
+        click_element_by_id(self.driver, 'btnImport')
 
         # Choose "Check to exclude first row"
-        helper_click_element_by_name(self.driver, 'skipFirstRow')
+        click_element_by_name(self.driver, 'skipFirstRow')
 
         # Choose "Update the student's record with the information from the file being imported."
-        helper_click_element_by_id(self.driver, 'rdioc_update')
+        click_element_by_id(self.driver, 'rdioc_update')
 
         # Submit
-        helper_click_element_by_id(self.driver, 'btnSubmit')
+        click_element_by_id(self.driver, 'btnSubmit')
         logging.info("Submitting file")
 
         # Check that file finished processing
@@ -708,27 +708,27 @@ class PowerSchool:
         self.ensure_on_desired_path(DATA_IMPORT_MANAGER_PATH)
 
         logging.info('Choosing the upload file.')
-        helper_type_in_element_by_id(self.driver, 'idFilename', file_path)
+        type_in_element_by_id(self.driver, 'idFilename', file_path)
 
         logging.info('Selecting the upload table.')
-        helper_select_visible_text_in_element_by_id(self.driver, 'moduleSelect', table_name)
+        select_visible_text_in_element_by_id(self.driver, 'moduleSelect', table_name)
 
         logging.info('Clicking Next')
-        helper_click_element_by_id(self.driver, 'nextButton0')
+        click_element_by_id(self.driver, 'nextButton0')
 
         # Brief pause to allow for loading next part of the screen
         time.sleep(2)
 
         logging.info('Assuming all fields mapped properly.')
-        helper_click_element_by_id(self.driver, 'nextButton1')
+        click_element_by_id(self.driver, 'nextButton1')
 
         # Commenting this logic out, because overriding existing records is tricky and should only be done very intentionally and after extensive testing.
         # if override_existing_record:
         #     logging.info('Because override_existing_record was specified as True, clicking the corresponding radio button.')
-        #     helper_click_element_by_id(self.driver, 'override_existing_value_override')
+        #     click_element_by_id(self.driver, 'override_existing_value_override')
 
         logging.info('Beginning import.')
-        helper_click_element_by_id(self.driver, 'btnImport')
+        click_element_by_id(self.driver, 'btnImport')
 
         logging.info('Checking for message to indicate processing is complete.')
         finished_processing_text = f'Processed {num_rows_in_file} out of {num_rows_in_file} records'
@@ -754,7 +754,7 @@ class PowerSchool:
             
         successful_import_text = f'Imported:  {num_rows_in_file}'
         imported_element_text = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[4]/div[2]/div[2]/h3').text 
-        # Using the old helper_wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
+        # Using the old wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
         #    line gets the "Imported:  X" message 
 
         assert imported_element_text == successful_import_text, 'Import message indicates not all files imported successfully.'
