@@ -5,21 +5,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 
 
-### Internal Functions
-
-def _wait_for_element_to_be_clickable_and_return_it(driver, by_object, target_identifier, wait_time_in_seconds=30):
-    elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.element_to_be_clickable((by_object, target_identifier)))
-    return elem
-
-def _wait_for_element_to_be_clickable_and_click_it(driver, by_object, target_identifier, wait_time_in_seconds=30):
-    elem = _wait_for_element_to_be_clickable_and_return_it(driver, by_object, target_identifier, wait_time_in_seconds)
-    elem.click()
-
-def _wait_for_element_to_be_present_and_return_it(driver, by_object, target_identifier, wait_time_in_seconds=30):
-    elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((by_object, target_identifier)))
-    return elem
-
-
 ### Click Elements
 
 def helper_click_element_by_css_selector(driver, css_selector: str, wait_time_in_seconds=30):
@@ -197,3 +182,18 @@ def helper_wait_for_element_containing_specific_text_and_raise_exception_if_miss
         WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
     except:
         raise Exception(f'Element with text "{expected_element_text}" not found within {wait_time_in_seconds} seconds.')
+    
+
+### Internal Functions
+
+def _wait_for_element_to_be_clickable_and_return_it(driver, by_object, target_identifier, wait_time_in_seconds=30):
+    elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.element_to_be_clickable((by_object, target_identifier)))
+    return elem
+
+def _wait_for_element_to_be_clickable_and_click_it(driver, by_object, target_identifier, wait_time_in_seconds=30):
+    elem = _wait_for_element_to_be_clickable_and_return_it(driver, by_object, target_identifier, wait_time_in_seconds)
+    elem.click()
+
+def _wait_for_element_to_be_present_and_return_it(driver, by_object, target_identifier, wait_time_in_seconds=30):
+    elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((by_object, target_identifier)))
+    return elem
