@@ -161,27 +161,15 @@ def helper_type_in_element_by_name(driver, element_name: str, input_to_type: str
 
 
 ### Wait for Element
-
-def helper_wait_for_element_containing_specific_text_and_return_bool(driver, expected_element_text, wait_time_in_seconds=30):
-    """
-    Waits for an element containing specific text and returns True if it appears in the time allotted
-    (default = 30 seconds) or False if it does not appear.
-    """
-    try:
-        _wait_for_element_to_be_present_and_return_it(driver, By.XPATH, f"//*[contains(text(), '{expected_element_text}')]", wait_time_in_seconds)
-        return True
-    except:
-        return False
     
-def helper_wait_for_element_containing_specific_text_and_raise_exception_if_missing(driver, expected_element_text, wait_time_in_seconds=30):
+def wait_for_element_containing_specific_text(driver, expected_element_text, wait_time_in_seconds=30):
     """
-    Waits for an element containing specific text raises an exception if it does not 
+    Waits for an element containing the specific text. Will crash if it does not 
     appear in the time allotted (default = 30 seconds).
     """
-    try:
-        WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
-    except:
-        raise Exception(f'Element with text "{expected_element_text}" not found within {wait_time_in_seconds} seconds.')
+    xpath_text = f"//*[contains(text(), '{expected_element_text}')]"
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.XPATH, xpath_text, wait_time_in_seconds)
+    return elem
     
 
 ### Internal Functions

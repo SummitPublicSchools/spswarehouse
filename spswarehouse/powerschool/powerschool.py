@@ -21,7 +21,7 @@ from spswarehouse.general.selenium import (
     helper_click_element_by_id,
     helper_click_element_by_name,
     helper_click_element_by_partial_link_text,
-    helper_wait_for_element_containing_specific_text_and_raise_exception_if_missing,
+    wait_for_element_containing_specific_text,
 )
     
 from selenium.webdriver.support.ui import WebDriverWait, Select
@@ -674,7 +674,7 @@ class PowerSchool:
 
         # Check that file finished processing
         logging.info(f'Waiting for student ID #{final_value} to appear to indicate that the file is finished processing.')
-        helper_wait_for_element_containing_specific_text_and_raise_exception_if_missing(self.driver, final_value, 60)
+        wait_for_element_containing_specific_text(self.driver, final_value, 60)
         logging.info('Final student found. Upload file finished processing.')
         
     def upload_data_import_manager(self, file_path, table_name, max_processing_wait_time_in_seconds = 60, 
@@ -739,7 +739,7 @@ class PowerSchool:
         for i in range(num_of_loops):
             try:
                 logging.info(f'Check #{i + 1} of {num_of_loops}')
-                helper_wait_for_element_containing_specific_text_and_raise_exception_if_missing(self.driver, finished_processing_text, 10)
+                wait_for_element_containing_specific_text(self.driver, finished_processing_text, 10)
                 logging.info('File is done processing.')
                 done_processing = True
                 break
