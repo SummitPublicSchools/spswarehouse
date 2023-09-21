@@ -14,6 +14,15 @@ from ducttape.utils import (
     DriverBuilder,
     get_most_recent_file_in_dir,
 )
+
+from spswarehouse.general.selenium import (
+    type_in_element_by_id,
+    select_visible_text_in_element_by_id,
+    click_element_by_id,
+    click_element_by_name,
+    click_element_by_partial_link_text,
+    wait_for_element_containing_specific_text,
+)
     
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
@@ -29,6 +38,8 @@ STATE_REPORTS_PAGE_PATH = 'admin/reports/statereports.html?repType=state'
 REPORT_QUEUE_REPORTWORKS_PAGE_PATH = 'admin/reportqueue/prhome.html'
 REPORT_QUEUE_SYSTEM_PAGE_PATH = 'admin/reportqueue/home.html'
 DATA_IMPORT_MANAGER_PATH = 'admin/datamgmt/importmanager.action'
+
+DEPRECATION_WARNING_MESSAGE = "DEPRECATION_WARNING: This helper function in the PowerSchool class will be deprecated in a future release. Use the helper functions in general.selenium instead."
 
 class PowerSchool:
     """
@@ -317,12 +328,19 @@ class PowerSchool:
         """
         self.navigate_to_state_reports_page()
 
-        self.helper_click_element_by_partial_link_text(report_link_text)
+        click_element_by_partial_link_text(self.driver, report_link_text)
+
+
+
+### START TODO: These helper functions inside the PowerSchool class will be removed in a future release. ##############
+###             The functions in general.selenium should be used instead. #############################################
 
     def helper_type_in_element_by_id(self, element_id: str, input_to_type: str):
         """
         Waits for an element by ID, clears it, and types in the input.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
         elem.clear()
         elem.send_keys(input_to_type)
@@ -331,6 +349,8 @@ class PowerSchool:
         """
         Waits for an element by name, clears it, and types in the input.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
             element_name)))
         elem.clear()
@@ -341,6 +361,8 @@ class PowerSchool:
         """
         Waits for an element by ID and selects it by specified text.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.ID, element_id)))
         select = Select(elem)
         select.select_by_visible_text(text_to_select)
@@ -350,6 +372,8 @@ class PowerSchool:
         """
         Waits for an element by name and selects it by specified text.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.NAME, 
             element_name)))
         select = Select(elem)
@@ -359,6 +383,8 @@ class PowerSchool:
         """
         Waits for an element by ID and clicks it.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.ID, element_id)))
         elem.click()
 
@@ -366,6 +392,8 @@ class PowerSchool:
         """
         Waits for an element by name and clicks it.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.NAME, element_name)))
         elem.click()
 
@@ -373,6 +401,8 @@ class PowerSchool:
         """
         Waits for an element by partial link text and clicks it.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, 
             f"{partial_link_text}")))
         elem.click()
@@ -381,6 +411,8 @@ class PowerSchool:
         """
         Waits for a checkbox element by name and clicks it if it is not already selected.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
             f"//input[@type='checkbox' and @name='{checkbox_name}']")))
         
@@ -392,6 +424,8 @@ class PowerSchool:
         Waits for a checkbox element by name and clicks it if it is already selected, to make
         sure it is not checked.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         checkbox = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
             f"//input[@type='checkbox' and @name='{checkbox_name}']")))
         
@@ -402,6 +436,8 @@ class PowerSchool:
         """
         Waits for an element by XPATH and checks whether its text matches the expected text.
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         elem = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, 
             element_xpath)))
         
@@ -412,10 +448,16 @@ class PowerSchool:
         Waits for an element containing specific text raises an exception if it does not 
         appear in the time allotted (default = 30 seconds).
         """
+        print(DEPRECATION_WARNING_MESSAGE)
+
         try:
             WebDriverWait(self.driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{expected_element_text}')]")))
         except:
             raise Exception(f'Element with text "{expected_element_text}" not found within {wait_time_in_seconds} seconds.')
+
+### END TODO #########################################################################################################
+
+
 
     def download_latest_report_from_report_queue_reportworks(self, destination_directory_path: str = '.', 
         file_postfix: str = ''):
@@ -612,27 +654,27 @@ class PowerSchool:
 
         # Upload to designated table
         logging.info(f"Selecting {table_name} for table")
-        self.helper_select_visible_text_in_element_by_id('filenumber', table_name)
+        select_visible_text_in_element_by_id(self.driver, 'filenumber', table_name)
         
         # Choose file to upload
-        self.helper_type_in_element_by_id('filename', filename)
+        type_in_element_by_id(self.driver, 'filename', filename)
 
         # Submit file
-        self.helper_click_element_by_id('btnImport')
+        click_element_by_id(self.driver, 'btnImport')
 
         # Choose "Check to exclude first row"
-        self.helper_click_element_by_name('skipFirstRow')
+        click_element_by_name(self.driver, 'skipFirstRow')
 
         # Choose "Update the student's record with the information from the file being imported."
-        self.helper_click_element_by_id('rdioc_update')
+        click_element_by_id(self.driver, 'rdioc_update')
 
         # Submit
-        self.helper_click_element_by_id('btnSubmit')
+        click_element_by_id(self.driver, 'btnSubmit')
         logging.info("Submitting file")
 
         # Check that file finished processing
         logging.info(f'Waiting for student ID #{final_value} to appear to indicate that the file is finished processing.')
-        self.helper_wait_for_element_containing_specific_text(final_value, 60)
+        wait_for_element_containing_specific_text(self.driver, final_value, 60)
         logging.info('Final student found. Upload file finished processing.')
         
     def upload_data_import_manager(self, file_path, table_name, max_processing_wait_time_in_seconds = 60, 
@@ -666,27 +708,27 @@ class PowerSchool:
         self.ensure_on_desired_path(DATA_IMPORT_MANAGER_PATH)
 
         logging.info('Choosing the upload file.')
-        self.helper_type_in_element_by_id('idFilename', file_path)
+        type_in_element_by_id(self.driver, 'idFilename', file_path)
 
         logging.info('Selecting the upload table.')
-        self.helper_select_visible_text_in_element_by_id('moduleSelect', table_name)
+        select_visible_text_in_element_by_id(self.driver, 'moduleSelect', table_name)
 
         logging.info('Clicking Next')
-        self.helper_click_element_by_id('nextButton0')
+        click_element_by_id(self.driver, 'nextButton0')
 
         # Brief pause to allow for loading next part of the screen
         time.sleep(10)
 
         logging.info('Assuming all fields mapped properly.')
-        self.helper_click_element_by_id('nextButton1')
+        click_element_by_id(self.driver, 'nextButton1')
 
         # Commenting this logic out, because overriding existing records is tricky and should only be done very intentionally and after extensive testing.
         # if override_existing_record:
         #     logging.info('Because override_existing_record was specified as True, clicking the corresponding radio button.')
-        #     self.helper_click_element_by_id('override_existing_value_override')
+        #     click_element_by_id(self.driver, 'override_existing_value_override')
 
         logging.info('Beginning import.')
-        self.helper_click_element_by_id('btnImport')
+        click_element_by_id(self.driver, 'btnImport')
 
         logging.info('Checking for message to indicate processing is complete.')
         finished_processing_text = f'Processed {num_rows_in_file} out of {num_rows_in_file} records'
@@ -697,7 +739,7 @@ class PowerSchool:
         for i in range(num_of_loops):
             try:
                 logging.info(f'Check #{i + 1} of {num_of_loops}')
-                self.helper_wait_for_element_containing_specific_text(finished_processing_text, 10)
+                wait_for_element_containing_specific_text(self.driver, finished_processing_text, 10)
                 logging.info('File is done processing.')
                 done_processing = True
                 break
@@ -712,7 +754,7 @@ class PowerSchool:
             
         successful_import_text = f'Imported:  {num_rows_in_file}'
         imported_element_text = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[4]/div[2]/div[2]/h3').text 
-        # Using the helper_wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
+        # Using the old wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
         #    line gets the "Imported:  X" message 
 
         assert imported_element_text == successful_import_text, 'Import message indicates not all files imported successfully.'
