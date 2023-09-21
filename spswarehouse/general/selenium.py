@@ -185,3 +185,111 @@ def _wait_for_element_to_be_clickable_and_click_it(driver, by_object, target_ide
 def _wait_for_element_to_be_present_and_return_it(driver, by_object, target_identifier, wait_time_in_seconds=30):
     elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((by_object, target_identifier)))
     return elem
+
+
+### Deprecated old functions, do not delete until v1.0.0
+def helper_click_element_by_css_selector(driver, css_selector: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    _wait_for_element_to_be_clickable_and_click_it(driver, By.CSS_SELECTOR, css_selector, wait_time_in_seconds)
+
+def helper_click_element_by_id(driver, element_id: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    _wait_for_element_to_be_clickable_and_click_it(driver, By.ID, element_id, wait_time_in_seconds)
+
+def helper_click_element_by_name(driver, element_name: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    _wait_for_element_to_be_clickable_and_click_it(driver, By.NAME, element_name, wait_time_in_seconds)
+
+def helper_click_element_by_link_text(driver, link_text, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    _wait_for_element_to_be_clickable_and_click_it(driver, By.LINK_TEXT, link_text, wait_time_in_seconds)
+
+def helper_click_element_by_partial_link_text(driver, partial_link_text: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    _wait_for_element_to_be_clickable_and_click_it(driver, By.PARTIAL_LINK_TEXT, partial_link_text, wait_time_in_seconds)
+
+def helper_click_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    _wait_for_element_to_be_clickable_and_click_it(driver, By.XPATH, xpath, wait_time_in_seconds)
+    
+def helper_ensure_checkbox_is_checked_by_name(driver, checkbox_name: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    checkbox = _wait_for_element_to_be_clickable_and_return_it(driver, By.XPATH, f"//input[@type='checkbox' and @name='{checkbox_name}']", 
+        wait_time_in_seconds)
+    
+    if checkbox.is_selected() == False:
+        checkbox.click()
+
+def helper_ensure_checkbox_is_unchecked_by_name(driver, checkbox_name: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    checkbox = _wait_for_element_to_be_clickable_and_return_it(driver, By.XPATH, f"//input[@type='checkbox' and @name='{checkbox_name}']", 
+        wait_time_in_seconds)
+    
+    if checkbox.is_selected():
+        checkbox.click()
+
+def helper_ensure_element_text_matches_expected_value_by_xpath(driver, element_xpath, expected_text, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = _wait_for_element_to_be_clickable_and_return_it(driver, By.XPATH, element_xpath, wait_time_in_seconds)
+    return elem.text == expected_text
+
+def helper_get_element_by_css_selector(driver, css_selector: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.CSS_SELECTOR, css_selector, wait_time_in_seconds)
+    return elem
+
+def helper_get_element_by_id(driver, element_id, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.ID, element_id, wait_time_in_seconds)
+    return elem
+
+def helper_get_element_by_link_text(driver, link_text, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.LINK_TEXT, link_text, wait_time_in_seconds)
+    return elem
+
+def helper_get_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, xpath)))
+    return elem
+
+def helper_get_multiple_elements_by_class_name(driver, class_name: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    _wait_for_element_to_be_present_and_return_it(driver, By.CLASS_NAME, class_name, wait_time_in_seconds)
+
+    # Pause to give all elements with that class_name time to load
+    time.sleep(5)
+
+    elements_list = driver.find_elements(By.CLASS_NAME, class_name)
+
+    return elements_list
+
+def helper_select_visible_text_in_element_by_id(driver, element_id: str, text_to_select: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.ID, element_id, wait_time_in_seconds)
+    select = Select(elem)
+    select.select_by_visible_text(text_to_select)
+
+def helper_select_visible_text_in_element_by_name(driver, element_name: str, text_to_select: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.NAME, element_name, wait_time_in_seconds)
+    select = Select(elem)
+    select.select_by_visible_text(text_to_select)
+
+def helper_type_in_element_by_id(driver, element_id: str, input_to_type: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.ID, element_id, wait_time_in_seconds)
+    elem.clear()
+    elem.send_keys(input_to_type)
+
+def helper_type_in_element_by_name(driver, element_name: str, input_to_type: str, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    elem =  _wait_for_element_to_be_present_and_return_it(driver, By.NAME, element_name, wait_time_in_seconds)
+    elem.clear()
+    elem.send_keys(input_to_type)
+    
+def helper_wait_for_element_containing_specific_text(driver, expected_element_text, wait_time_in_seconds=30):
+    print("Deprecated. Please remove helper_ prefix from function name")
+    xpath_text = f"//*[contains(text(), '{expected_element_text}')]"
+    elem = _wait_for_element_to_be_present_and_return_it(driver, By.XPATH, xpath_text, wait_time_in_seconds)
+    return elem
