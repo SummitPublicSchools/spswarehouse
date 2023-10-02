@@ -81,6 +81,7 @@ def create_table_stmt(
     google_sheet=None, # gspread.models.Worksheet
     google_drive_id=None, #string
     force_string=False, # boolean
+    sep=None, # string - if not using comma as separator
 ):
     # Column names and types explicitly specified, use them as-is
     if columns is not None:
@@ -101,9 +102,9 @@ def create_table_stmt(
             df = pd.DataFrame(google_sheet.get_all_records())
     elif csv_filename is not None:
         if force_string:
-            df = pd.read_csv(csv_filename, encoding=encoding, dtype=str)
+            df = pd.read_csv(csv_filename, encoding=encoding, dtype=str, sep=sep)
         else:
-            df = pd.read_csv(csv_filename, encoding=encoding)
+            df = pd.read_csv(csv_filename, encoding=encoding, sep=sep)
     elif google_drive_id is not None:
         letters = string.ascii_letters
         filename = ''.join(random.choice(letters) for i in range(10)) + '.csv'
@@ -111,9 +112,9 @@ def create_table_stmt(
         tempFile.GetContentFile(filename)
         try:
             if force_string:
-                df = pd.read_csv(filename, encoding=encoding, dtype=str)
+                df = pd.read_csv(filename, encoding=encoding, dtype=str, sep=sep)
             else:
-                df = pd.read_csv(filename, encoding=encoding)
+                df = pd.read_csv(filename, encoding=encoding, sep=sep)
         except Exception as error:
             raise error
         finally:
@@ -163,6 +164,7 @@ def upload_to_warehouse(
     batch_size=DEFAULT_BATCH_SIZE,
     force_string=False,
     encoding=DEFAULT_ENCODING,
+    sep=None, # string - if not using comma as separator
 ):
     df = None
     if dataframe is not None:
@@ -178,9 +180,9 @@ def upload_to_warehouse(
             df = pd.DataFrame(google_sheet.get_all_records())
     elif csv_filename is not None:
         if force_string:
-            df = pd.read_csv(csv_filename, encoding=encoding, dtype=str)
+            df = pd.read_csv(csv_filename, encoding=encoding, dtype=str, sep=sep)
         else:
-            df = pd.read_csv(csv_filename, encoding=encoding)
+            df = pd.read_csv(csv_filename, encoding=encoding, sep=sep)
     elif google_drive_id is not None:
         letters = string.ascii_letters
         filename = ''.join(random.choice(letters) for i in range(10)) + '.csv'
@@ -188,9 +190,9 @@ def upload_to_warehouse(
         tempFile.GetContentFile(filename)
         try:
             if force_string:
-                df = pd.read_csv(filename, encoding=encoding, dtype=str)
+                df = pd.read_csv(filename, encoding=encoding, dtype=str, sep=sep)
             else:
-                df = pd.read_csv(filename, encoding=encoding)
+                df = pd.read_csv(filename, encoding=encoding, sep=sep)
         except Exception as error:
             raise error
         finally:
