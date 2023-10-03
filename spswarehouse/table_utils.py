@@ -1,4 +1,6 @@
 import pandas as pd
+from pandas.api.extensions import no_default
+
 import numpy as np
 import os
 import random
@@ -81,7 +83,7 @@ def create_table_stmt(
     google_sheet=None, # gspread.models.Worksheet
     google_drive_id=None, #string
     force_string=False, # boolean
-    sep=None, # string - if not using comma as separator
+    sep=no_default, # string - if not using comma as separator
 ):
     # Column names and types explicitly specified, use them as-is
     if columns is not None:
@@ -164,7 +166,7 @@ def upload_to_warehouse(
     batch_size=DEFAULT_BATCH_SIZE,
     force_string=False,
     encoding=DEFAULT_ENCODING,
-    sep=None, # string - if not using comma as separator
+    sep=no_default, # string - if not using comma as separator
 ):
     df = None
     if dataframe is not None:
