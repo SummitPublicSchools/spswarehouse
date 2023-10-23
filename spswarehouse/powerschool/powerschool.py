@@ -689,9 +689,9 @@ class PowerSchool:
             The processing check happens every 10 seconds, so this number will be divided by 10 and rounded down
             to determine how many checks to make. e.g., a value of 35 will check 3 times, which is roughly 30 seconds.
         override_existing_record: Defaults to False. Submit as True to have the function select the option to override
-            existing records as part of the import. Additionally, un-comment out the relevant code below, since 
-            overriding records in PowerSchool is tricky and should only be done after extensive testing of the import
-            file to make sure it is not adding records instead of updating existing ones.
+            existing records as part of the import. WARNING: Be very careful when using this feature, since overriding 
+            records in PowerSchool requires very precisely formatted files, and if anything is incorrect, the system
+            will likely create duplicate records. Please extensively test the file you are importing.
         """
 
         df_row_count = pd.read_csv(file_path)
@@ -722,10 +722,11 @@ class PowerSchool:
         logging.info('Assuming all fields mapped properly.')
         click_element_by_id(self.driver, 'nextButton1')
 
-        # Commenting this logic out, because overriding existing records is tricky and should only be done very intentionally and after extensive testing.
-        # if override_existing_record:
-        #     logging.info('Because override_existing_record was specified as True, clicking the corresponding radio button.')
-        #     click_element_by_id(self.driver, 'override_existing_value_override')
+        # WARNING: Be VERY careful when overriding existing records, because PowerSchool can create duplicates if the upload
+        #   file is not precisely what the system expects.
+        if override_existing_record:
+            logging.info('Because override_existing_record was specified as True, clicking the corresponding radio button.')
+            click_element_by_id(self.driver, 'override_existing_value_override')
 
         logging.info('Beginning import.')
         click_element_by_id(self.driver, 'btnImport')
