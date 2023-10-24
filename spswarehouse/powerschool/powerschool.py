@@ -712,7 +712,10 @@ class PowerSchool:
 
         logging.info('Selecting the upload table.')
         select_visible_text_in_element_by_id(self.driver, 'moduleSelect', table_name)
-
+        
+        # Need to give the UI a moment to catch up to the fact that a table has been selected.
+        # (The button is already clickable when a table is unselected, but gives an error)
+        time.sleep(5)
         logging.info('Clicking Next')
         click_element_by_id(self.driver, 'nextButton0')
 
