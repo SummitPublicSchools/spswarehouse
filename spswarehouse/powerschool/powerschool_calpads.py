@@ -111,7 +111,7 @@ class PowerSchoolCALPADS(PowerSchool):
                 return self._download_eoy_report_for_course_section_records_crsc(**report_kwargs)
             elif(calpads_report_abbreviation == 'SCSC'):
                 return self._download_eoy_report_for_student_course_section_records_scsc(
-                    **report_kwargs
+                    **report_kwargs,
                     # The below is an additional parameter compared to the function calls earlier in the 
                     #   if-else tree
                     ps_school_subdistrict_name=ps_school_subdistrict_name, 
