@@ -77,6 +77,14 @@ class PowerSchoolCALPADS(PowerSchool):
         it is expanded.
         """
 
+        report_kwargs = {
+            'ps_report_link_text': PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
+            'file_postfix': file_postfix, 
+            'destination_directory_path': destination_directory_path, 
+            'report_parameters': report_parameters,
+            'validation_only_run': validation_only_run
+        }
+        
         # Choose the school year if one is provided
         if ps_school_year_dropdown is not None:
             self.switch_to_school_year(ps_school_year_dropdown)
@@ -90,83 +98,35 @@ class PowerSchoolCALPADS(PowerSchool):
 
         if(submission_window == 'EOY'):
             if(calpads_report_abbreviation == "SINC"):
-                return self._download_eoy_report_for_student_incident_records_sinc(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
+                return self._download_eoy_report_for_student_incident_records_sinc(**report_kwargs)
             elif(calpads_report_abbreviation in ('SIRS', 'SOFF')):
                 return self._download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
+                    **report_kwargs
+                )
             elif(calpads_report_abbreviation == 'STAS'):
-                return self._download_eoy_report_for_student_absence_summary_stas(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
+                return self._download_eoy_report_for_student_absence_summary_stas(**report_kwargs)
             elif(calpads_report_abbreviation == 'SPRG'):
-                return self._download_eoy_report_for_student_program_records_sprg(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
+                return self._download_eoy_report_for_student_program_records_sprg(**report_kwargs)
             elif(calpads_report_abbreviation == 'CRSC'):
-                return self._download_eoy_report_for_course_section_records_crsc(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
+                return self._download_eoy_report_for_course_section_records_crsc(**report_kwargs)
             elif(calpads_report_abbreviation == 'SCSC'):
                 return self._download_eoy_report_for_student_course_section_records_scsc(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
+                    **report_kwargs
                     # The below is an additional parameter compared to the function calls earlier in the 
                     #   if-else tree
                     ps_school_subdistrict_name=ps_school_subdistrict_name, 
-                    validation_only_run=validation_only_run,
-                    )
+                )
             else:
                 raise Exception("CALPADS EOY report name not supported")
         elif(submission_window == 'All Year'):
             if(calpads_report_abbreviation == 'SENR'):
-                return self._download_all_year_report_for_ssid_enrollment_records_senr(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run,
-                    )
+                return self._download_all_year_report_for_ssid_enrollment_records_senr(**report_kwargs)
             elif(calpads_report_abbreviation == 'SELA'):
                 return self._download_all_year_report_for_student_english_language_acquisition_records_sela(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run,
-                    )
+                    **report_kwargs
+                )
             elif(calpads_report_abbreviation == 'SINF'):
-                return self._download_all_year_report_for_student_information_records_sinf(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run,
-                    )
+                return self._download_all_year_report_for_student_information_records_sinf(**report_kwargs)
             else:
                 raise Exception("CALPADS All Year report name not supported")
         else:
