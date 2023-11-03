@@ -129,6 +129,11 @@ class PowerSchoolCALPADS(PowerSchool):
                 return self._download_all_year_report_for_student_information_records_sinf(**report_kwargs)
             else:
                 raise Exception("CALPADS All Year report name not supported")
+        elif submission_window == 'Fall 1':
+            if calpads_report_abbreviation == 'SPRG':
+                return self._download_eoy_report_for_student_program_records_sprg(**report_kwargs)
+            else:
+                raise Exception("CALPADS Fall 1 report name not supported")
         else:
             raise Exception("Submission window name not supported")
         
