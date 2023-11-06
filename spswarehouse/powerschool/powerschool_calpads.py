@@ -30,6 +30,7 @@ PS_REPORT_LINK_TEXT = {
     'SELA': 'Student EL Acquisition Records',
     'SINF': 'Student Information Records',
     'SDEM' : 'Staff Demographic Records',
+    'SASS' : 'Staff Assignment Records',
 }
 
 # Used for making the standard modifications to the Student English Language Acquistion (SELA) upload file; column #'s from the CALPADS file specifications
@@ -142,6 +143,8 @@ class PowerSchoolCALPADS(PowerSchool):
         elif submission_window == 'Fall 2':
             if calpads_report_abbreviation == 'SDEM':
                 return self._download_fall_2_report_for_staff_demographics_records_sdem(**report_kwargs)
+            elif calpads_report_abbreviation == 'SASS':
+                return self._download_fall_2_report_for_staff_assignment_records_sass(**report_kwargs)
             else:
                 raise Exception("CALPADS Fall 2 report name not supported")
         else:
@@ -337,6 +340,28 @@ class PowerSchoolCALPADS(PowerSchool):
         type_in_element_by_name(self.driver, 'CensusDate', report_parameters['census_date'])
         
         select_visible_text_in_element_by_name(self.driver, 'deltaOff', 'Non-submission mode (all records)')
+        select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+        select_visible_text_in_element_by_name(self.driver, 'schoolGroup', 
+            '[No Group Selected]') 
+
+        # Submit report
+        click_element_by_id(self.driver, 'btnSubmit')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+
+    def _download_fall_2_report_for_staff_assignment_records_sass(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the Staff Assignment Records (SASS) report in PowerSchool and downloads it.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        type_in_element_by_name(self.driver, 'reportDate', report_parameters['census_date'])
+        
         select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
         select_visible_text_in_element_by_name(self.driver, 'schoolGroup', 
