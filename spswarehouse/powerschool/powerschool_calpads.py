@@ -106,7 +106,7 @@ class PowerSchoolCALPADS(PowerSchool):
             elif(calpads_report_abbreviation == 'STAS'):
                 return self._download_eoy_report_for_student_absence_summary_stas(**report_kwargs)
             elif(calpads_report_abbreviation == 'SPRG'):
-                return self._download_eoy_report_for_student_program_records_sprg(**report_kwargs)
+                return self._download_student_program_records_sprg(**report_kwargs)
             elif(calpads_report_abbreviation == 'CRSC'):
                 return self._download_eoy_report_for_course_section_records_crsc(**report_kwargs)
             elif(calpads_report_abbreviation == 'SCSC'):
@@ -131,7 +131,7 @@ class PowerSchoolCALPADS(PowerSchool):
                 raise Exception("CALPADS All Year report name not supported")
         elif submission_window == 'Fall 1':
             if calpads_report_abbreviation == 'SPRG':
-                return self._download_eoy_report_for_student_program_records_sprg(**report_kwargs)
+                return self._download_student_program_records_sprg(**report_kwargs)
             else:
                 raise Exception("CALPADS Fall 1 report name not supported")
         else:
@@ -388,7 +388,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
-    def _download_eoy_report_for_student_program_records_sprg(self, file_postfix: str, 
+    def _download_student_program_records_sprg(self, file_postfix: str, 
         destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
