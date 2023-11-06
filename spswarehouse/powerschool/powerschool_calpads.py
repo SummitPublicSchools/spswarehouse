@@ -320,6 +320,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
+
     # Fall 2 Reports ######################
 
     def _download_fall_2_report_for_staff_demographics_records_sdem(self, file_postfix: str, 
@@ -373,6 +374,7 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
+
 
     # EOY Reports ######################
 
