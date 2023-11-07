@@ -89,7 +89,7 @@ class PowerSchoolCALPADS(PowerSchool):
             self.switch_to_school(school_full_name)
 
         return self.CALPADS_REPORT_TYPES[calpads_report_abbreviation]['function'](self, **report_kwargs)
-
+    
     # All Year Reports #################
 
     def _download_all_year_report_for_ssid_enrollment_records_senr(self, file_postfix: str, 
@@ -494,8 +494,8 @@ class PowerSchoolCALPADS(PowerSchool):
             file_postfix)
 
     def _download_eoy_report_for_student_program_records_sprg(self, **kwargs):
-        logging.info("_download_eoy_report_for_student_program_records_sprg deprecated; use _download_student_program_records_sprg")
-        return self._download_student_program_records_sprg(self, **kwargs)
+        print("_download_eoy_report_for_student_program_records_sprg deprecated; use _download_student_program_records_sprg")
+        return self._download_student_program_records_sprg(**kwargs)
     
     
     # TODO: Refactor CRSC/CRSE to be a shared function rather than two totally separate ones
