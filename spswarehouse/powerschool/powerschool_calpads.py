@@ -91,6 +91,10 @@ class PowerSchoolCALPADS(PowerSchool):
         else:
             self.switch_to_school(school_full_name)
 
+        # Must pass self to the function explicitly
+        # Howard's note: I'm not certain the cause, but I think it's because the functions in the
+        # dictionary are not (and cannot be) defined as `self.function`, thus requiring that self
+        # be passed explicitly instead
         return self.CALPADS_REPORT_TYPES[calpads_report_abbreviation]['function'](self, **report_kwargs)
     
     # All Year Reports #################
