@@ -14,19 +14,6 @@ from spswarehouse.general.selenium import (
     helper_select_visible_text_in_element_by_id,
 )
 
-PS_REPORT_LINK_TEXT = {
-    'SINC': 'Student Incident Records (SINC)',
-    'SIRS': 'Student Incident Results Records (SIRS)',
-    'SOFF': 'Student Offense Records (SOFF)',
-    'STAS': 'Student Absence Summary',
-    'SPRG': 'Student Program Records',
-    'CRSC': 'Course Section Records',
-    'SCSC': 'Student Course Section Records',
-    'SENR': 'SSID Enrollment Records',
-    'SELA': 'Student EL Acquisition Records',
-    'SINF': 'Student Information Records',
-}
-
 # Used for making the standard modifications to the Student English Language Acquistion (SELA) upload file; column #'s from the CALPADS file specifications
 SELA_COLUMN_NAMES = [
     'Record Type Code', # 12.01
@@ -64,8 +51,8 @@ class PowerSchoolCALPADS(PowerSchool):
         chrome_option_prefs: dict=None,
     ):
         
-        super().__init__(config, username, password, host, headless, download_location, chrome_option_prefs)
-
+        super().__init__(config, username, password, host, headless, download_location, chrome_option_prefs)    
+        
     def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, 
         calpads_report_abbreviation: str, ps_school_subdistrict_name: str, file_postfix: str, 
         destination_directory_path: str, report_parameters: dict, ps_school_year_dropdown=None, 
@@ -78,7 +65,7 @@ class PowerSchoolCALPADS(PowerSchool):
         """
 
         report_kwargs = {
-            'ps_report_link_text': PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
+            'ps_report_link_text': self.CALPADS_REPORT_TYPES[calpads_report_abbreviation]['ps_title'], 
             'file_postfix': file_postfix, 
             'destination_directory_path': destination_directory_path, 
             'report_parameters': report_parameters,
@@ -91,51 +78,14 @@ class PowerSchoolCALPADS(PowerSchool):
 
         # The SCSC report needs to be run from the District Office level in order to properly generate 
         #   LEA IDs without dropping leading zeros
+        #   SCSC also requires an additional parameter
         if calpads_report_abbreviation == "SCSC":
             self.switch_to_school('District Office')
+            report_kwargs['ps_school_subdistrict_name'] = ps_school_subdistrict_name
         else:
             self.switch_to_school(school_full_name)
 
-        if(submission_window == 'EOY'):
-            if(calpads_report_abbreviation == "SINC"):
-                return self._download_eoy_report_for_student_incident_records_sinc(**report_kwargs)
-            elif(calpads_report_abbreviation in ('SIRS', 'SOFF')):
-                return self._download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff(
-                    **report_kwargs
-                )
-            elif(calpads_report_abbreviation == 'STAS'):
-                return self._download_eoy_report_for_student_absence_summary_stas(**report_kwargs)
-            elif(calpads_report_abbreviation == 'SPRG'):
-                return self._download_student_program_records_sprg(**report_kwargs)
-            elif(calpads_report_abbreviation == 'CRSC'):
-                return self._download_eoy_report_for_course_section_records_crsc(**report_kwargs)
-            elif(calpads_report_abbreviation == 'SCSC'):
-                return self._download_eoy_report_for_student_course_section_records_scsc(
-                    **report_kwargs,
-                    # The below is an additional parameter compared to the function calls earlier in the 
-                    #   if-else tree
-                    ps_school_subdistrict_name=ps_school_subdistrict_name, 
-                )
-            else:
-                raise Exception("CALPADS EOY report name not supported")
-        elif(submission_window == 'All Year'):
-            if(calpads_report_abbreviation == 'SENR'):
-                return self._download_all_year_report_for_ssid_enrollment_records_senr(**report_kwargs)
-            elif(calpads_report_abbreviation == 'SELA'):
-                return self._download_all_year_report_for_student_english_language_acquisition_records_sela(
-                    **report_kwargs
-                )
-            elif(calpads_report_abbreviation == 'SINF'):
-                return self._download_all_year_report_for_student_information_records_sinf(**report_kwargs)
-            else:
-                raise Exception("CALPADS All Year report name not supported")
-        elif submission_window == 'Fall 1':
-            if calpads_report_abbreviation == 'SPRG':
-                return self._download_student_program_records_sprg(**report_kwargs)
-            else:
-                raise Exception("CALPADS Fall 1 report name not supported")
-        else:
-            raise Exception("Submission window name not supported")
+        return self.CALPADS_REPORT_TYPES[calpads_report_abbreviation]['function'](self, **report_kwargs)
         
 
     # All Year Reports #################
@@ -490,6 +440,49 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
+    
+    CALPADS_REPORT_TYPES = {
+        'CRSC': {
+            'ps_title': 'Course Section Records',
+            'function': _download_eoy_report_for_course_section_records_crsc,
+        },
+        'SCSC': {
+            'ps_title': 'Student Course Section Records',
+            'function': _download_eoy_report_for_student_course_section_records_scsc,
+        },
+        'SELA': {
+            'ps_title': 'Student EL Acquisition Records',
+            'function': _download_all_year_report_for_student_english_language_acquisition_records_sela,
+        },
+        'SENR': {
+            'ps_title': 'SSID Enrollment Records',
+            'function': _download_all_year_report_for_ssid_enrollment_records_senr,
+        },
+        'SINC': {
+            'ps_title': 'Student Incident Records (SINC)',
+            'function': _download_eoy_report_for_student_incident_records_sinc,
+        },
+        'SINF': {
+            'ps_title': 'Student Information Records',
+            'function': _download_all_year_report_for_student_information_records_sinf,
+        },
+        'SIRS': {
+            'ps_title': 'Student Incident Results Records (SIRS)',
+            'function': _download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff,
+        },
+        'SOFF': {
+            'ps_title': 'Student Offense Records (SOFF)',
+            'function': _download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff,
+        },
+        'SPRG': {
+            'ps_title': 'Student Program Records',
+            'function': _download_student_program_records_sprg,
+        },
+        'STAS': {
+            'ps_title': 'Student Absence Summary',
+            'function': _download_eoy_report_for_student_absence_summary_stas,
+        },
+    }
     
 # Helper Functions #################
 
