@@ -50,7 +50,6 @@ class PowerSchoolCALPADS(PowerSchool):
         download_location: str='.',
         chrome_option_prefs: dict=None,
     ):
-        
         super().__init__(config, username, password, host, headless, download_location, chrome_option_prefs)    
         
     def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, 
