@@ -332,7 +332,7 @@ class PowerSchoolCALPADS(PowerSchool):
         helper_select_visible_text_in_element_by_id(self.driver, 'useTracks', 
             report_parameters['use_tracks'])
         helper_type_in_element_by_id(self.driver, 'censusDate', 
-            report_parameters['report_census_date'])
+            report_parameters['census_date'])
         helper_select_visible_text_in_element_by_id(self.driver, 'bypassValidation', 
             'No' if validation_only_run else 'Yes')
         # The below indicates to not "Include Records For Course Code 1000"
@@ -361,7 +361,7 @@ class PowerSchoolCALPADS(PowerSchool):
             report_parameters['term'])
 
         helper_type_in_element_by_name(self.driver, 'censusDate', 
-            report_parameters['report_census_date'])
+            report_parameters['census_date'])
 
         helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
             'No' if validation_only_run else 'Yes')
