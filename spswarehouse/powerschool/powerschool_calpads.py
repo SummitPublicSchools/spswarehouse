@@ -79,10 +79,10 @@ class PowerSchoolCALPADS(PowerSchool):
         if ps_school_year_dropdown is not None:
             self.switch_to_school_year(ps_school_year_dropdown)
 
-        # The SCSC report needs to be run from the District Office level in order to properly generate 
+        # The SCSC/SCSE reports need to be run from the District Office level in order to properly generate 
         #   LEA IDs without dropping leading zeros
         #   SCSC also requires an additional parameter
-        if calpads_report_abbreviation == "SCSC":
+        if calpads_report_abbreviation in ["SCSC", "SCSE"]:
             self.switch_to_school('District Office')
             report_kwargs['ps_school_subdistrict_name'] = ps_school_subdistrict_name
         else:
@@ -344,6 +344,40 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
             file_postfix)
+
+    # TODO: Make SCSC and SCSE a shared function
+    def _download_fall2_report_for_student_course_section_records_scse(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        ps_school_subdistrict_name:str, validation_only_run: bool=False):
+        """
+        Switches to the Student Course Enrollment (SCSE) report in PowerSchool and downloads it.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        # Enter specific parameters for this report
+        helper_select_visible_text_in_element_by_name(self.driver, 'submission', 
+            report_parameters['submission_type'])
+        helper_select_visible_text_in_element_by_name(self.driver, 'term', 
+            report_parameters['term'])
+
+        helper_type_in_element_by_name(self.driver, 'censusDate', 
+            report_parameters['report_census_date'])
+
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+        helper_select_visible_text_in_element_by_name(self.driver, 'selectCourseCode', 
+            'No') # Do not "Include Records For Course Code 1000"
+
+        helper_select_visible_text_in_element_by_name(self.driver, 'subDistrict', 
+            ps_school_subdistrict_name)
+
+        # Submit report
+        helper_click_element_by_id(self.driver, 'btnSubmit')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+    
     # EOY Reports ######################
 
     def _download_eoy_report_for_student_incident_records_sinc(self, file_postfix: str, 
@@ -494,7 +528,8 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
             file_postfix)
-
+    
+    # TODO: Make SCSC and SCSE a shared function
     def _download_eoy_report_for_student_course_section_records_scsc(self, file_postfix: str, 
         destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         ps_school_subdistrict_name:str, validation_only_run: bool=False):
@@ -511,7 +546,6 @@ class PowerSchoolCALPADS(PowerSchool):
         # Below defaults to 'No' for 'Extract Credits for Grades 7 and 8' 
         # TODO: Research if this is correct
         helper_select_visible_text_in_element_by_name(self.driver, 'msExtract', 'No') 
-
 
         helper_type_in_element_by_name(self.driver, 'startDate', 
             report_parameters['report_start_date'])
@@ -549,6 +583,10 @@ class PowerSchoolCALPADS(PowerSchool):
         'SCSC': {
             'ps_title': 'Student Course Section Records',
             'function': _download_eoy_report_for_student_course_section_records_scsc,
+        },
+        'SCSE': {
+            'ps_title': 'Student Course Section Records',
+            'function': _download_fall2_report_for_student_course_section_records_scse,
         },
         'SDEM': {
             'ps_title': 'Staff Demographic Records',
