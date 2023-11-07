@@ -67,6 +67,9 @@ class PowerSchoolCALPADS(PowerSchool):
         it is expanded.
         """
 
+        if calpads_report_abbreviation not in self.CALPADS_REPORT_TYPES:
+            raise KeyError(f"{calpads_report_abbreviation} not found in report types")
+            
         report_kwargs = {
             'ps_report_link_text': self.CALPADS_REPORT_TYPES[calpads_report_abbreviation]['ps_title'], 
             'file_postfix': file_postfix, 
