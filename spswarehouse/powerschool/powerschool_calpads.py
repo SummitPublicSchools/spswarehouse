@@ -314,7 +314,36 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
+    # TODO: Refactor CRSC/CRSE to be a shared function rather than two totally separate ones
+    def _download_fall2_report_for_course_section_records_crse(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the Course Section Enrollment (CRSE) report in PowerSchool and downloads it.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        # Enter specific parameters for this report
+        helper_select_visible_text_in_element_by_id(self.driver, 'submission', 
+            report_parameters['submission_type'])
 
+        # Date fields need time to appear
+        time.sleep(1) 
+        helper_select_visible_text_in_element_by_id(self.driver, 'useTracks', 
+            report_parameters['use_tracks'])
+        helper_type_in_element_by_id(self.driver, 'censusDate', 
+            report_parameters['report_census_date'])
+        helper_select_visible_text_in_element_by_id(self.driver, 'bypassValidation', 
+            'No' if validation_only_run else 'Yes')
+        # The below indicates to not "Include Records For Course Code 1000"
+        helper_select_visible_text_in_element_by_id(self.driver, 'selectCourseCode', 'No') 
+
+        # Submit report
+        helper_click_element_by_id(self.driver, 'submitReportSDKRuntimeParams')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
+            file_postfix)
     # EOY Reports ######################
 
     def _download_eoy_report_for_student_incident_records_sinc(self, file_postfix: str, 
@@ -434,6 +463,8 @@ class PowerSchoolCALPADS(PowerSchool):
         logging.info("_download_eoy_report_for_student_program_records_sprg deprecated; use _download_student_program_records_sprg")
         return self._download_student_program_records_sprg(self, **kwargs)
     
+    
+    # TODO: Refactor CRSC/CRSE to be a shared function rather than two totally separate ones
     def _download_eoy_report_for_course_section_records_crsc(self, file_postfix: str, 
         destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
@@ -506,6 +537,10 @@ class PowerSchoolCALPADS(PowerSchool):
         'CRSC': {
             'ps_title': 'Course Section Records',
             'function': _download_eoy_report_for_course_section_records_crsc,
+        },
+        'CRSE': {
+            'ps_title': 'Course Section Records',
+            'function': _download_fall2_report_for_course_section_records_crse,
         },
         'SASS': {
             'ps_title': 'Staff Assignment Records',
