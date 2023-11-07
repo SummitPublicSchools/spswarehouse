@@ -432,7 +432,7 @@ class PowerSchoolCALPADS(PowerSchool):
 
     def _download_eoy_report_for_student_program_records_sprg(self, **kwargs):
         logging.info("_download_eoy_report_for_student_program_records_sprg deprecated; use _download_student_program_records_sprg")
-        return self._download_student_program_records_sprg(kwargs)
+        return self._download_student_program_records_sprg(self, **kwargs)
     
     def _download_eoy_report_for_course_section_records_crsc(self, file_postfix: str, 
         destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
