@@ -12,20 +12,11 @@ from spswarehouse.general.selenium import (
     helper_ensure_checkbox_is_checked_by_name,
     helper_type_in_element_by_id,
     helper_select_visible_text_in_element_by_id,
+    ensure_checkbox_is_checked_by_name,
+    type_in_element_by_name,
+    select_visible_text_in_element_by_name,
+    click_element_by_id,
 )
-
-PS_REPORT_LINK_TEXT = {
-    'SINC': 'Student Incident Records (SINC)',
-    'SIRS': 'Student Incident Results Records (SIRS)',
-    'SOFF': 'Student Offense Records (SOFF)',
-    'STAS': 'Student Absence Summary',
-    'SPRG': 'Student Program Records',
-    'CRSC': 'Course Section Records',
-    'SCSC': 'Student Course Section Records',
-    'SENR': 'SSID Enrollment Records',
-    'SELA': 'Student EL Acquisition Records',
-    'SINF': 'Student Information Records',
-}
 
 # Used for making the standard modifications to the Student English Language Acquistion (SELA) upload file; column #'s from the CALPADS file specifications
 SELA_COLUMN_NAMES = [
@@ -63,9 +54,8 @@ class PowerSchoolCALPADS(PowerSchool):
         download_location: str='.',
         chrome_option_prefs: dict=None,
     ):
+        super().__init__(config, username, password, host, headless, download_location, chrome_option_prefs)    
         
-        super().__init__(config, username, password, host, headless, download_location, chrome_option_prefs)
-
     def download_calpads_report_for_school(self, school_full_name: str, submission_window: str, 
         calpads_report_abbreviation: str, ps_school_subdistrict_name: str, file_postfix: str, 
         destination_directory_path: str, report_parameters: dict, ps_school_year_dropdown=None, 
@@ -77,102 +67,36 @@ class PowerSchoolCALPADS(PowerSchool):
         it is expanded.
         """
 
+        if calpads_report_abbreviation not in self.CALPADS_REPORT_TYPES:
+            raise KeyError(f"{calpads_report_abbreviation} not found in report types")
+            
+        report_kwargs = {
+            'ps_report_link_text': self.CALPADS_REPORT_TYPES[calpads_report_abbreviation]['ps_title'], 
+            'file_postfix': file_postfix, 
+            'destination_directory_path': destination_directory_path, 
+            'report_parameters': report_parameters,
+            'validation_only_run': validation_only_run
+        }
+        
         # Choose the school year if one is provided
         if ps_school_year_dropdown is not None:
             self.switch_to_school_year(ps_school_year_dropdown)
 
-        # The SCSC report needs to be run from the District Office level in order to properly generate 
+        # The SCSC/SCSE reports need to be run from the District Office level in order to properly generate 
         #   LEA IDs without dropping leading zeros
-        if calpads_report_abbreviation == "SCSC":
+        #   SCSC also requires an additional parameter
+        if calpads_report_abbreviation in ["SCSC", "SCSE"]:
             self.switch_to_school('District Office')
+            report_kwargs['ps_school_subdistrict_name'] = ps_school_subdistrict_name
         else:
             self.switch_to_school(school_full_name)
 
-        if(submission_window == 'EOY'):
-            if(calpads_report_abbreviation == "SINC"):
-                return self._download_eoy_report_for_student_incident_records_sinc(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
-            elif(calpads_report_abbreviation in ('SIRS', 'SOFF')):
-                return self._download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
-            elif(calpads_report_abbreviation == 'STAS'):
-                return self._download_eoy_report_for_student_absence_summary_stas(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
-            elif(calpads_report_abbreviation == 'SPRG'):
-                return self._download_eoy_report_for_student_program_records_sprg(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
-            elif(calpads_report_abbreviation == 'CRSC'):
-                return self._download_eoy_report_for_course_section_records_crsc(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation], 
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run
-                    )
-            elif(calpads_report_abbreviation == 'SCSC'):
-                return self._download_eoy_report_for_student_course_section_records_scsc(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    # The below is an additional parameter compared to the function calls earlier in the 
-                    #   if-else tree
-                    ps_school_subdistrict_name=ps_school_subdistrict_name, 
-                    validation_only_run=validation_only_run,
-                    )
-            else:
-                raise Exception("CALPADS EOY report name not supported")
-        elif(submission_window == 'All Year'):
-            if(calpads_report_abbreviation == 'SENR'):
-                return self._download_all_year_report_for_ssid_enrollment_records_senr(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run,
-                    )
-            elif(calpads_report_abbreviation == 'SELA'):
-                return self._download_all_year_report_for_student_english_language_acquisition_records_sela(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run,
-                    )
-            elif(calpads_report_abbreviation == 'SINF'):
-                return self._download_all_year_report_for_student_information_records_sinf(
-                    ps_report_link_text=PS_REPORT_LINK_TEXT[calpads_report_abbreviation],
-                    file_postfix=file_postfix, 
-                    destination_directory_path=destination_directory_path, 
-                    report_parameters=report_parameters,
-                    validation_only_run=validation_only_run,
-                    )
-            else:
-                raise Exception("CALPADS All Year report name not supported")
-        else:
-            raise Exception("Submission window name not supported")
-        
-
+        # Must pass self to the function explicitly
+        # Howard's note: I'm not certain the cause, but I think it's because the functions in the
+        # dictionary are not (and cannot be) defined as `self.function`, thus requiring that self
+        # be passed explicitly instead
+        return self.CALPADS_REPORT_TYPES[calpads_report_abbreviation]['function'](self, **report_kwargs)
+    
     # All Year Reports #################
 
     def _download_all_year_report_for_ssid_enrollment_records_senr(self, file_postfix: str, 
@@ -341,8 +265,126 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
-    
 
+
+    # Fall 2 Reports ######################
+
+    def _download_fall_2_report_for_staff_demographics_records_sdem(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the Staff Demographics Records (SDEM) report in PowerSchool and downloads it.
+        Note: This function assumes that the report will be run with data as of Census Day and
+        not using the more general Start Date and End Date parameters.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        # Check the box to indicate this is a Fall submission
+        ensure_checkbox_is_checked_by_name(self.driver, 'SubmissionType')
+        
+        # Date field needs time to appear
+        time.sleep(1) 
+        type_in_element_by_name(self.driver, 'CensusDate', report_parameters['census_date'])
+        
+        select_visible_text_in_element_by_name(self.driver, 'deltaOff', 'Non-submission mode (all records)')
+        select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+        select_visible_text_in_element_by_name(self.driver, 'schoolGroup', 
+            '[No Group Selected]') 
+
+        # Submit report
+        click_element_by_id(self.driver, 'btnSubmit')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+
+    def _download_fall_2_report_for_staff_assignment_records_sass(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the Staff Assignment Records (SASS) report in PowerSchool and downloads it.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        type_in_element_by_name(self.driver, 'reportDate', report_parameters['census_date'])
+        
+        select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+        select_visible_text_in_element_by_name(self.driver, 'schoolGroup', 
+            '[No Group Selected]') 
+
+        # Submit report
+        click_element_by_id(self.driver, 'btnSubmit')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+
+    # TODO: Refactor CRSC/CRSE to be a shared function rather than two totally separate ones
+    def _download_fall2_report_for_course_section_records_crse(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        validation_only_run: bool=False):
+        """
+        Switches to the Course Section Enrollment (CRSE) report in PowerSchool and downloads it.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        # Enter specific parameters for this report
+        helper_select_visible_text_in_element_by_id(self.driver, 'submission', 
+            report_parameters['submission_type'])
+
+        # Date fields need time to appear
+        time.sleep(1) 
+        helper_select_visible_text_in_element_by_id(self.driver, 'useTracks', 
+            report_parameters['use_tracks'])
+        helper_type_in_element_by_id(self.driver, 'censusDate', 
+            report_parameters['census_date'])
+        helper_select_visible_text_in_element_by_id(self.driver, 'bypassValidation', 
+            'No' if validation_only_run else 'Yes')
+        # The below indicates to not "Include Records For Course Code 1000"
+        helper_select_visible_text_in_element_by_id(self.driver, 'selectCourseCode', 'No') 
+
+        # Submit report
+        helper_click_element_by_id(self.driver, 'submitReportSDKRuntimeParams')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
+            file_postfix)
+
+    # TODO: Make SCSC and SCSE a shared function
+    def _download_fall2_report_for_student_course_section_records_scse(self, file_postfix: str, 
+        destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
+        ps_school_subdistrict_name:str, validation_only_run: bool=False):
+        """
+        Switches to the Student Course Enrollment (SCSE) report in PowerSchool and downloads it.
+        """
+        self.navigate_to_specific_state_report(ps_report_link_text)
+        
+        # Enter specific parameters for this report
+        helper_select_visible_text_in_element_by_name(self.driver, 'submission', 
+            report_parameters['submission_type'])
+        helper_select_visible_text_in_element_by_name(self.driver, 'term', 
+            report_parameters['term'])
+
+        helper_type_in_element_by_name(self.driver, 'censusDate', 
+            report_parameters['census_date'])
+
+        helper_select_visible_text_in_element_by_name(self.driver, 'bypass_validation', 
+            'No' if validation_only_run else 'Yes')
+        helper_select_visible_text_in_element_by_name(self.driver, 'selectCourseCode', 
+            'No') # Do not "Include Records For Course Code 1000"
+
+        helper_select_visible_text_in_element_by_name(self.driver, 'subDistrict', 
+            ps_school_subdistrict_name)
+
+        # Submit report
+        helper_click_element_by_id(self.driver, 'btnSubmit')
+
+        # Download report zipfile
+        return self.download_latest_report_from_report_queue_system(destination_directory_path, 
+            file_postfix)
+    
     # EOY Reports ######################
 
     def _download_eoy_report_for_student_incident_records_sinc(self, file_postfix: str, 
@@ -423,7 +465,7 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
-    def _download_eoy_report_for_student_program_records_sprg(self, file_postfix: str, 
+    def _download_student_program_records_sprg(self, file_postfix: str, 
         destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
         """
@@ -458,6 +500,12 @@ class PowerSchoolCALPADS(PowerSchool):
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
 
+    def _download_eoy_report_for_student_program_records_sprg(self, **kwargs):
+        print("_download_eoy_report_for_student_program_records_sprg deprecated; use _download_student_program_records_sprg")
+        return self._download_student_program_records_sprg(**kwargs)
+    
+    
+    # TODO: Refactor CRSC/CRSE to be a shared function rather than two totally separate ones
     def _download_eoy_report_for_course_section_records_crsc(self, file_postfix: str, 
         destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         validation_only_run: bool=False):
@@ -487,7 +535,8 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_reportworks(destination_directory_path, 
             file_postfix)
-
+    
+    # TODO: Make SCSC and SCSE a shared function
     def _download_eoy_report_for_student_course_section_records_scsc(self, file_postfix: str, 
         destination_directory_path: str, ps_report_link_text: str, report_parameters: dict, 
         ps_school_subdistrict_name:str, validation_only_run: bool=False):
@@ -504,7 +553,6 @@ class PowerSchoolCALPADS(PowerSchool):
         # Below defaults to 'No' for 'Extract Credits for Grades 7 and 8' 
         # TODO: Research if this is correct
         helper_select_visible_text_in_element_by_name(self.driver, 'msExtract', 'No') 
-
 
         helper_type_in_element_by_name(self.driver, 'startDate', 
             report_parameters['report_start_date'])
@@ -525,6 +573,65 @@ class PowerSchoolCALPADS(PowerSchool):
         # Download report zipfile
         return self.download_latest_report_from_report_queue_system(destination_directory_path, 
             file_postfix)
+    
+    CALPADS_REPORT_TYPES = {
+        'CRSC': {
+            'ps_title': 'Course Section Records',
+            'function': _download_eoy_report_for_course_section_records_crsc,
+        },
+        'CRSE': {
+            'ps_title': 'Course Section Records',
+            'function': _download_fall2_report_for_course_section_records_crse,
+        },
+        'SASS': {
+            'ps_title': 'Staff Assignment Records',
+            'function': _download_fall_2_report_for_staff_assignment_records_sass,
+        },
+        'SCSC': {
+            'ps_title': 'Student Course Section Records',
+            'function': _download_eoy_report_for_student_course_section_records_scsc,
+        },
+        'SCSE': {
+            'ps_title': 'Student Course Section Records',
+            'function': _download_fall2_report_for_student_course_section_records_scse,
+        },
+        'SDEM': {
+            'ps_title': 'Staff Demographic Records',
+            'function': _download_fall_2_report_for_staff_demographics_records_sdem,
+        },    
+        'SELA': {
+            'ps_title': 'Student EL Acquisition Records',
+            'function': _download_all_year_report_for_student_english_language_acquisition_records_sela,
+        },
+        'SENR': {
+            'ps_title': 'SSID Enrollment Records',
+            'function': _download_all_year_report_for_ssid_enrollment_records_senr,
+        },
+        'SINC': {
+            'ps_title': 'Student Incident Records (SINC)',
+            'function': _download_eoy_report_for_student_incident_records_sinc,
+        },
+        'SINF': {
+            'ps_title': 'Student Information Records',
+            'function': _download_all_year_report_for_student_information_records_sinf,
+        },
+        'SIRS': {
+            'ps_title': 'Student Incident Results Records (SIRS)',
+            'function': _download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff,
+        },
+        'SOFF': {
+            'ps_title': 'Student Offense Records (SOFF)',
+            'function': _download_eoy_report_for_student_incident_results_records_sirs_or_student_offense_records_soff,
+        },
+        'SPRG': {
+            'ps_title': 'Student Program Records',
+            'function': _download_student_program_records_sprg,
+        },
+        'STAS': {
+            'ps_title': 'Student Absence Summary',
+            'function': _download_eoy_report_for_student_absence_summary_stas,
+        },
+    }
     
 # Helper Functions #################
 
