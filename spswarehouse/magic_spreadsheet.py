@@ -1,7 +1,6 @@
 import pandas as pd
 import logging
 
-from .warehouse import create_warehouse
 from .googlesheets import create_sheets
 from .googledrive import create_drive
 
@@ -38,11 +37,14 @@ Typical sequence of calls:
     * If desired, update specific cells (like the "Last Updated" field): `update_specific_cell(...)`
 """
 
-def _run_warehouse_query_for_worksheet(query_list: list):
+def _run_warehouse_query_for_worksheet(query_list: list, warehouse_obj=None):
     """
     Take a list of queries stored as dictionaries. Run each query at the provided
     path with the provided parameters. Take the output of all queries in the list,
     combine them, remove NAs, and return the resulting combined dataframe.
+
+    A Warehouse object can optionally be passed in to allow for an spswarehouse_airflow
+    version of the Warehouse. If not provided, a new one will be created.
     """
     df_combined_query_output = None
 
@@ -56,13 +58,15 @@ def _run_warehouse_query_for_worksheet(query_list: list):
             else:
                 warehouse_query = f.read().format(**query_parameters)
 
-        Warehouse = create_warehouse()
+        if not warehouse_obj:
+            from .warehouse import create_warehouse
+            warehouse_obj = create_warehouse()
 
         # Raise logging level to limit warehouse output to logs
         logger = logging.getLogger()
         logger.setLevel(logging.WARNING)
 
-        df_query_output = Warehouse.read_sql(warehouse_query)
+        df_query_output = warehouse_obj.read_sql(warehouse_query)
 
          # Reset logging level
         logger.setLevel(logging.INFO)
@@ -276,6 +280,8 @@ def update_magic_spreadsheet_with_new_query_results(spreadsheet_object, workshee
         school_information_dict: dict, other_query_parameters_dict: dict, primary_identifier: str,
         secondary_optional_identifier: str = '', colors_dict: dict = {}, worksheet_order_name_list = [], 
         general_editor_list = [],
+        # Optional Parameters: Warehouse for using with airflow
+        warehouse_obj = None,
         # Optional Parameters: Getting Data From Different Source
         # get_data_from_different_source: bool = False, 
         **kwargs,
@@ -297,6 +303,7 @@ def update_magic_spreadsheet_with_new_query_results(spreadsheet_object, workshee
             colors_dict = colors_dict,
             primary_identifier = primary_identifier,
             secondary_optional_identifier = secondary_optional_identifier,
+            warehouse_obj = warehouse_obj,
             # get_data_from_different_source = get_data_from_different_source, 
             **kwargs,
             # different_source_worksheet_object = different_source_worksheet_object, 
@@ -499,6 +506,8 @@ def _update_magic_spreadsheet_worksheet_with_new_query_results(worksheet_object,
         query_parameters_dict: dict, colors_dict: dict, primary_identifier: str,
         # Optional Parameters: Secondary Identifier
         secondary_optional_identifier: str = '', 
+        # Optional Parameters: Warehouse for using with airflow
+        warehouse_obj = None,
         # Optional Parameters: Getting Data from Different Source
         **kwargs
     ):
@@ -512,7 +521,7 @@ def _update_magic_spreadsheet_worksheet_with_new_query_results(worksheet_object,
     }]
 
     logging.info('Run worksheet query in data warehouse.')
-    df_query_output = _run_warehouse_query_for_worksheet(query_list)
+    df_query_output = _run_warehouse_query_for_worksheet(query_list, warehouse_obj=warehouse_obj)
 
     # Load key metadata
 
