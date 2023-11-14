@@ -7,6 +7,8 @@ snowflake-sqlalchemy==1.4.4
 google-api-python-client==1.12.11
 google-auth-oauthlib==0.7.1
 gspread==5.7.2
+gspread-dataframe==3.3.0
+gspread-formatting==1.1.2
 PyDrive2==1.15.0
 "duct-tape>0.26.0"
 # This probably works with selenium==3.141.0 too, but is not as thoroughly tested
