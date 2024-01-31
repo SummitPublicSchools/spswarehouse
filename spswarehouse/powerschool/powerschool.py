@@ -6,7 +6,7 @@ import pandas as pd
 
 try:
     from spswarehouse.credentials import powerschool_config
-except ModuleNotFoundError:
+except:
     powerschool_config = None
     print("No credentials file found in spswarehouse. This could cause issues.")
 
