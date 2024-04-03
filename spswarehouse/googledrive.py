@@ -17,16 +17,20 @@ def get_google_service_account_email():
     """
     return google_config['service-account']['client_email']
 
-def initialize_credentials():
+def initialize_auth():
     """
-    initialize_credentials: -> oauth2client.service_account.ServiceAccountCredentials
+    initialize_auth: -> pydrive2.auth.GoogleAuth
 
-    Returns credentials that allows you to access your Google Drive &
-    Sheets using the Google Sheets API.
+    Returns an Auth object that allows you to access your Google Drive &
+    Sheets using the Google Drive API.
 
-    You still need to share spreadsheets with the service account email.
+    You still need to share files with the service account email.
+
+    Note: we use a GoogleAuth object rather than just passing a credentials
+    file so that pydrive can create refresh tokens if necessary. This only
+    is an issue when you want run a notebook for longer than an hour, but it
+    does come up.
     """
-
     # This prevents us from erroring out trying to construct credentials
     # from incomplete information.
     service_account = google_config.get('service-account', {})
@@ -40,29 +44,27 @@ def initialize_credentials():
         )
         return None
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_dict(
-        google_config['service-account'],
-        scopes=google_config['scopes'],
-    )
+    gauth = GoogleAuth()
+    gauth.client_config["client_user_email"] = get_google_service_account_email()
+    gauth.client_config["client_json_dict"] = service_account
+    gauth.settings["oauth_scope"] = google_config['scopes']
+    gauth.ServiceAuth()
     print(
         'To access your Google Drive file, share the file with {email}'
-        .format(email=get_google_service_account_email())
+        .format(email=gauth.client_config["client_user_email"])
     )
-    return credentials
+    return gauth
 
-def create_client(credentials):
+def create_client(gauth):
     """
     create_engine:
 
-    Sets up Google Drive API access using credentials (see above).
+    Sets up Google Drive API access using an Auth object (see above).
     """
-    gauth = GoogleAuth()
-    gauth.credentials = credentials
-    drive = GoogleDrive(gauth)
-    return drive
+    return GoogleDrive(gauth)
 
 # Set up credentials
-credentials = initialize_credentials()
+gauth = initialize_auth()
 
 # This is a wrapper for pydrive.GoogleDrive
-GoogleDrive = None if credentials is None else create_client(credentials)
+GoogleDrive = None if gauth is None else create_client(gauth)
