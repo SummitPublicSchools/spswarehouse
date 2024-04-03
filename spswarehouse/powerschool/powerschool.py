@@ -604,7 +604,7 @@ class PowerSchool:
         4. have a column called "student_number"
         """
         
-        import_data = pd.read_csv(filename)
+        import_data = pd.read_csv(filename, dtype=str)
         final_student_number = import_data.iloc[-1]['student_number']
         
         self.upload_csv_quick_import(filename, final_student_number, 'Students')
@@ -621,7 +621,7 @@ class PowerSchool:
         """
         
         # Convert the file to a tab-delimited file
-        import_data = pd.read_csv(filename, encoding='mac_roman')
+        import_data = pd.read_csv(filename, encoding='mac_roman', dtype=str)
         
         new_filename = filename + ".tsv"
         
