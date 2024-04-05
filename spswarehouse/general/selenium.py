@@ -108,6 +108,14 @@ def get_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
     elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, xpath)))
     return elem
 
+def get_element_by_class_name(driver, class_name: str, wait_time_in_seconds=30):
+    """
+    Waits for an element by class_name and returns it.
+    """
+    elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
+
+    return elem
+
 def get_multiple_elements_by_class_name(driver, class_name: str, wait_time_in_seconds=30):
     """
     Waits for an element by class name, then retrieves the full list of elements with that class name.
