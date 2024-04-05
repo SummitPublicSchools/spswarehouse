@@ -159,6 +159,14 @@ def type_in_element_by_name(driver, element_name: str, input_to_type: str, wait_
     elem.clear()
     elem.send_keys(input_to_type)
 
+def type_in_element_by_xpath(driver, element_xpath: str, input_to_type: str, wait_time_in_seconds=30):
+    """
+    Waits for an element by XPATH, clears it, and types in the input.
+    """
+    elem =  _wait_for_element_to_be_present_and_return_it(driver, By.XPATH, element_xpath, wait_time_in_seconds)
+    elem.clear()
+    elem.send_keys(input_to_type)
+
 
 ### Wait for Element
     
