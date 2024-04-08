@@ -108,14 +108,6 @@ def get_element_by_xpath(driver, xpath: str, wait_time_in_seconds=30):
     elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.XPATH, xpath)))
     return elem
 
-def get_element_by_class_name(driver, class_name: str, wait_time_in_seconds=30):
-    """
-    Waits for an element by class_name and returns it.
-    """
-    elem = WebDriverWait(driver, wait_time_in_seconds).until(EC.presence_of_element_located((By.CLASS_NAME, class_name)))
-
-    return elem
-
 def get_multiple_elements_by_class_name(driver, class_name: str, wait_time_in_seconds=30):
     """
     Waits for an element by class name, then retrieves the full list of elements with that class name.
@@ -164,14 +156,6 @@ def type_in_element_by_name(driver, element_name: str, input_to_type: str, wait_
     Waits for an element by name, clears it, and types in the input.
     """
     elem =  _wait_for_element_to_be_present_and_return_it(driver, By.NAME, element_name, wait_time_in_seconds)
-    elem.clear()
-    elem.send_keys(input_to_type)
-
-def type_in_element_by_xpath(driver, element_xpath: str, input_to_type: str, wait_time_in_seconds=30):
-    """
-    Waits for an element by XPATH, clears it, and types in the input.
-    """
-    elem =  _wait_for_element_to_be_present_and_return_it(driver, By.XPATH, element_xpath, wait_time_in_seconds)
     elem.clear()
     elem.send_keys(input_to_type)
 
