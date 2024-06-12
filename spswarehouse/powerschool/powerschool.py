@@ -310,9 +310,8 @@ class PowerSchool:
 
         self.driver.get(ADMIN_URL_SCHEME + self._get_current_domain() + '/' + STATE_REPORTS_PAGE_PATH)
 
-        elem = WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
-            'ul li.selected')))
-        assert elem.text == 'State', "'State' tab is not selected"
+        WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
+            '.stateDiv')))
 
     def navigate_to_specific_state_report(self, report_link_text: str):
         """
