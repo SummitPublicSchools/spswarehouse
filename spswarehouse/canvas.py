@@ -58,7 +58,7 @@ class CanvasClient():
         #<https://summitps.instructure.com/api/v1/courses/2809/modules?page=2&per_page=10>; rel="last"
         #"""
         split_header_list = [l.partition("; rel=") for l in link_header.split(",") ]
-        link_header_dict = { type.strip('"') : url.strip("<>") for (url, _, type) in split_header_list}
+        link_header_dict = { type.strip('"') : url.strip("<>") for (url, _, type) in split_header_list }
         
         return link_header_dict
 
