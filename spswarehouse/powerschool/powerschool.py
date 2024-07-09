@@ -756,7 +756,8 @@ class PowerSchool:
         logging.info('Checking whether all records imported successfully.')
             
         successful_import_text = f'Imported:  {num_rows_in_file}'
-        imported_element_text = self.driver.find_element(By.XPATH, '/html/body/div[2]/div[4]/div[2]/div[2]/h3').text 
+        imported_element_text = self.driver.find_element(By.XPATH, "//div[@id='importResultsContent']/div[2]/h3").text 
+
         # Using the old wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
         #    line gets the "Imported:  X" message 
 
