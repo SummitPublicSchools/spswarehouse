@@ -1,4 +1,4 @@
-from requests_oauthlib import OAuth2Session
+import requests
 import json
 
 try:
@@ -8,20 +8,14 @@ except:
     canvas_config = None
 
 class CanvasClient():
-    def __init__(self, config=None, token=None):
+    def __init__(self, config=None):
         if config is None:
             self.config = canvas_config
         else:
             self.config = config
 
-        if token is None:
-            self.token = self.config["token"]
-        else:
-            self.token = token
-
         self.HOST = self.config["host"]
-        self.REFRESH_URL = f'{self.HOST}/login/oauth2/token'
-        self.client = OAuth2Session(self.config["client_id"], token=self.config["token"])
+        self.TOKEN = self.config["api_token"]
 
     def request(self, method, path, **kwargs):
         """
@@ -34,17 +28,10 @@ class CanvasClient():
         if path.startswith("/"):
             path = f'{self.HOST}{path}'
 
-        r = self.client.request(method, path, **kwargs)
-        if r.status_code == 401 and 'Invalid access token' in r.text:
-            t = self.client.refresh_token(self.REFRESH_URL,
-                                     client_id=self.config["client_id"],
-                                     client_secret=self.config["client_secret"])
+        headers = kwargs.setdefault("headers", {})
+        kwargs["headers"]["Authorization"] = f"Bearer {self.TOKEN}"
 
-            # Save the new access token
-            self.token["access_token"] = t["access_token"]
-
-            # Retry
-            return self.request(method, path, **kwargs)
+        r = requests.request(method, path, **kwargs)
             
         return r
 
