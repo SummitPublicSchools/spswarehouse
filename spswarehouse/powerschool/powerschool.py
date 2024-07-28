@@ -721,6 +721,9 @@ class PowerSchool:
         # Brief pause to allow for loading next part of the screen
         time.sleep(10)
 
+        # Double-check that there is no overlay that will intercept the clicks
+        WebDriverWait(self.driver, 30).until(EC.invisibility_of_element_located((By.CSS_SELECTOR, "div.ui-widget-overlay")))
+
         logging.info('Assuming all fields mapped properly.')
         click_element_by_id(self.driver, 'nextButton1')
 
@@ -734,7 +737,9 @@ class PowerSchool:
         click_element_by_id(self.driver, 'btnImport')
 
         logging.info('Checking for message to indicate processing is complete.')
-        finished_processing_text = f'Processed {num_rows_in_file} out of {num_rows_in_file} records'
+        # Note: the ":,d" turns the number into a *comma-delimited* string, which is what Powerschool does (e.g. 1234 = "1,234")
+        # Without this, the function will fail for files with >= 1000 (or: "1,000") rows
+        finished_processing_text = f'Processed {num_rows_in_file:,d} out of {num_rows_in_file:,d} records'
         done_processing = False
 
         num_of_loops = math.floor(max_processing_wait_time_in_seconds // 10)
@@ -755,7 +760,8 @@ class PowerSchool:
 
         logging.info('Checking whether all records imported successfully.')
             
-        successful_import_text = f'Imported:  {num_rows_in_file}'
+        # Same thing here as above with ':,d' to turn 1234 => "1,234"
+        successful_import_text = f'Imported:  {num_rows_in_file:,d}'
         imported_element_text = self.driver.find_element(By.XPATH, "//div[@id='importResultsContent']/div[2]/h3").text 
 
         # Using the old wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
