@@ -762,14 +762,19 @@ class PowerSchool:
             
         # Same thing here as above with ':,d' to turn 1234 => "1,234"
         successful_import_text = f'Imported:  {num_rows_in_file:,d}'
-        imported_element_text = self.driver.find_element(By.XPATH, "//div[@id='importResultsContent']/div[2]/h3").text 
 
-        # Using the old wait_for_element_containing_specific_text() function did not work for finding the right message, so the above
-        #    line gets the "Imported:  X" message 
+        for i in range(3): # Sometimes the text is wrong initially, give it a few tries
+            imported_element_text = self.driver.find_element(By.XPATH, "//div[@id='importResultsContent']/div[2]/h3").text 
+            if imported_element_text == successful_import_text:
+                logging.info('All records imported successfully. Upload is complete.')
+                # All done! Return
+                return
+            else:
+                logging.info('Success message indicates failure, trying again', imported_element_text)
+                time.sleep(3)
+                self.refresh()
 
-        assert imported_element_text == successful_import_text, 'Import message indicates not all files imported successfully.'
-
-        logging.info('All records imported successfully. Upload is complete.')
+        raise Exception('Import message indicates not all files imported successfully: {imported_element_text}')
 
     def _log_into_powerschool_admin(self, username, password):
         """
