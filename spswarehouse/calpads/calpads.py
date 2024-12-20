@@ -790,7 +790,7 @@ class CALPADS():
             if cert_status is None:
                 cert_status_select.select_by_value("1")
             else:
-                cert_status.select_by_visible_text(cert_status)
+                cert_status_select.select_by_visible_text(cert_status)
         
         elif "report_date" in kwargs:
             report_date = kwargs["report_date"]
