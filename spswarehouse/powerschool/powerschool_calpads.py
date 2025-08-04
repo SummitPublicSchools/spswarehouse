@@ -162,14 +162,19 @@ class PowerSchoolCALPADS(PowerSchool):
 
         # SELA requires some very specific setup to export in a way that CALPADS will accept. Specifically,
         #   you can only include students that are currently rostered to you in CALPADS, so this function
-        #   will only pull currently enrolled students or students who were enrolled on the report end date
-        #   if that date is in the past. Usually, the report end date will be the last day of school, so this
-        #   will enable submissions after the school year has ended.
+        #   will only pull either currently enrolled students, students who are enrolled on the report start  
+        #   date (if that date is in the future), or students who were enrolled on the report end date (if 
+        #   that date is in the past). Usually, the report start date will be the first day of school and
+        #   the report end date will be the last day of school, so this will enable submissions outside the 
+        #   bounds of the school year.
 
+        report_start_date_datetime_object = datetime.strptime(report_parameters['report_start_date'], '%m/%d/%Y').date()
         report_end_date_datetime_object = datetime.strptime(report_parameters['report_end_date'], '%m/%d/%Y').date()
         today_datetime_object = date.today()
 
-        if today_datetime_object > report_end_date_datetime_object:
+        if today_datetime_object < report_start_date_datetime_object:
+            date_for_report = report_parameters['report_start_date']
+        elif today_datetime_object > report_end_date_datetime_object:
             date_for_report = report_parameters['report_end_date']
         else:
             date_for_report = today_datetime_object.strftime('%m/%d/%Y')
