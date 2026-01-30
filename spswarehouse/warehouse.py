@@ -6,7 +6,7 @@ except ModuleNotFoundError:
     print("No credentials file found in spswarehouse. This could cause issues.")
     
 from sqlalchemy.engine.url import URL
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, MetaData, Table, text
 from sqlalchemy.engine import reflection
 from snowflake.sqlalchemy import VARIANT
 
@@ -34,7 +34,7 @@ class Warehouse:
     """
     def __init__(self, engine):
         self.engine = engine
-        self.meta = MetaData(bind=engine)
+        self.meta = MetaData()
         self._insp = None
         self._conn = None
         self.loaded_tables = {}   # dictionary of Table objects keyed by "schema.table_name"
@@ -61,7 +61,7 @@ class Warehouse:
         connection object and the SQLAlchemy proxy object returned from executing
         the SQL.
         """
-        return self.conn, self.conn.execute(sql)
+        return self.conn, self.conn.execute(text(sql))
 
     def read_sql(self, sql):
         """
@@ -98,7 +98,7 @@ class Warehouse:
         if table is not None:
             return table
 
-        table = Table(table_or_view, self.meta, autoload=True, schema=schema)
+        table = Table(table_or_view, self.meta, autoload_with=self.engine, schema=schema)
 
         # sets the column names explicitly on the instance so that tab-completion is easy
         for c in table.columns:
