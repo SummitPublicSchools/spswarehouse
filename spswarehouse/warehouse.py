@@ -61,7 +61,8 @@ class Warehouse:
         connection object and the SQLAlchemy proxy object returned from executing
         the SQL.
         """
-        return self.conn, self.conn.execute(text(sql))
+        self.conn.execute(text(sql))
+        self.conn.commit()
 
     def read_sql(self, sql):
         """
