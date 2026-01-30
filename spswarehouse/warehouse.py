@@ -57,9 +57,9 @@ class Warehouse:
         execute: SQL statement -> (connection, proxy)
 
         Running the execute method sends the SQL string to the warehouse using
-        this object's connection object. The return value is a tuple of the
-        connection object and the SQLAlchemy proxy object returned from executing
-        the SQL.
+        this object's connection object, and commits the statement.
+
+        No value is returned.
         """
         self.conn.execute(text(sql))
         self.conn.commit()

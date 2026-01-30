@@ -227,22 +227,15 @@ def _upload_df(
 
     print(str(end_index - start_index) + ' rows to insert')
 
-    while start_index < end_index:
-        end = min(start_index + batch_size, end_index)
-        df_insert = df[start_index:end]
-        values_to_insert = [
-            _build_dict_for_insert(row)
-            for _, row in df_insert.iterrows()
-        ]
-
-        Warehouse.engine.execute(reflected_table.insert(), values_to_insert)
-        print("Inserted {count} rows to {schema}.{table}".format(
-            count=len(df_insert),
-            schema=reflected_table.schema,
-            table=reflected_table.name,
-        ))
-
-        start_index = end
+    df[start_index:end_index].to_sql(
+        name=reflected_table.description,
+        con=Warehouse.engine,
+        schema=reflected_table.schema,
+        if_exists='append',
+        index=False,
+        method='multi',
+        chunksize=batch_size
+    )
 
 def _build_dict_for_insert(row):
     ret = {}
