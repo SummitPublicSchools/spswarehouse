@@ -1,9 +1,12 @@
 #
 ####### requirements.txt #######
+# Updated 2/3/2026 as part of v1.0.0 upgrade
 #
 
 pandas==2.3.3
 snowflake-sqlalchemy==1.8.2
+snowflake-connector-python==4.0.0
+sqlalchemy==2.0.43
 google-api-python-client==2.188.0
 google-auth-oauthlib==1.2.4
 gspread==6.2.1
@@ -12,5 +15,4 @@ gspread-formatting==1.2.1
 PyDrive2==1.21.3
 duct-tape==0.26.6
 requests==2.32.5
-# This probably works with selenium==3.141.0 too, but is not as thoroughly tested
 selenium==4.40.0
