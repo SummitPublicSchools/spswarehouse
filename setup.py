@@ -19,4 +19,19 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
+    install_requires=[
+        'pandas==2.3.3',
+        'snowflake-sqlalchemy==1.8.2',
+        'snowflake-connector-python==4.0.0',
+        'sqlalchemy==2.0.43',
+        'google-api-python-client==2.188.0',
+        'google-auth-oauthlib==1.2.4',
+        'gspread==6.2.1',
+        'gspread-dataframe==4.0.0',
+        'gspread-formatting==1.2.1',
+        'PyDrive2==1.21.3',
+        'duct-tape==0.26.6',
+        'requests==2.32.5',
+        'selenium==4.40.0',
+    ],
 )
