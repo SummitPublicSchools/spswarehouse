@@ -145,6 +145,8 @@ class Warehouse:
             method='multi',
             chunksize=batch_size
         )
+
+        print(f"Data inserted to {schema}.{table} successfully")
     
     def upload_google_drive_csv(
         self,
