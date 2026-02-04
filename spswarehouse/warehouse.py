@@ -131,7 +131,7 @@ class Warehouse:
         if end_index is None:
             end_index = len(dataframe)
 
-        dataframe = _sanitize_columns_for_upload(dataframe)
+        dataframe = sanitize_columns_for_upload(dataframe)
         dataframe = dataframe.rename(columns=renamer())
     
         print(str(end_index - start_index) + ' rows to insert')
@@ -139,7 +139,7 @@ class Warehouse:
         dataframe[start_index:end_index].to_sql(
             name=table,
             con=self.engine,
-            schema=schemea,
+            schema=schema,
             if_exists='append',
             index=False,
             method='multi',
