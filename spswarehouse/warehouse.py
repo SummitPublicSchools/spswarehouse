@@ -12,6 +12,7 @@ from snowflake.sqlalchemy import VARIANT
 
 from datetime import date
 
+from .config import DEFAULT_BATCH_SIZE, DEFAULT_ENCODING
 def describe(table):
     for c in table.columns:
         tipe = c.type
