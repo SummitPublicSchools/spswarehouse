@@ -4,12 +4,10 @@ from pandas.api.extensions import no_default
 import numpy as np
 import os
 import random
+import re
 import string
 
-from .warehouse import Warehouse
-from .googledrive import GoogleDrive
 from config import DEFAULT_ENCODING
-
 
 # Copied from https://stackoverflow.com/questions/40774787/renaming-columns-in-a-pandas-dataframe-with-duplicate-column-names
 # guess_col_types will break if you have duplicate column names
@@ -30,9 +28,9 @@ def sanitize_string(name):
         name = 'no_col_name_or_merged_column_header'
     elif name[0].isdigit():
         name = '_' + name
-    return name.translate(
-        {ord(c): "_" for c in "'""→!@#$%^&*()[]{};:,./<>?\|`~-=_+ \n"}
-    )
+
+    pattern = re.compile('[\W_]+')
+    return pattern.sub('_', name)
 
 def guess_col_types(df):
     """
