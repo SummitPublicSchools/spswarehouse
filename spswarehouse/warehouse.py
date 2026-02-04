@@ -13,6 +13,9 @@ from snowflake.sqlalchemy import VARIANT
 from datetime import date
 
 from .config import DEFAULT_BATCH_SIZE, DEFAULT_ENCODING
+from .googledrive import GoogleDrive
+from .table_utils import renamer, sanitize_columns_for_upload
+
 def describe(table):
     for c in table.columns:
         tipe = c.type
@@ -110,6 +113,107 @@ class Warehouse:
         self.loaded_tables[name_with_schema] = table
 
         return table
+
+    def upload_df(
+        self,
+        table,
+        schema,
+        dataframe,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        force_string=False,
+    ):
+
+        if force_string:
+            dataframe = dataframe.astype(str)
+        
+        if end_index is None:
+            end_index = len(dataframe)
+
+        dataframe = _sanitize_columns_for_upload(dataframe)
+        dataframe = dataframe.rename(columns=renamer())
+    
+        print(str(end_index - start_index) + ' rows to insert')
+    
+        dataframe[start_index:end_index].to_sql(
+            name=table,
+            con=self.engine,
+            schema=schemea,
+            if_exists='append',
+            index=False,
+            method='multi',
+            chunksize=batch_size
+        )
+    
+    def upload_google_drive_csv(
+        self,
+        table,
+        schema,
+        google_drive_id,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        encoding=DEFAULT_ENCODING,
+        force_string=False,
+        sep=",",
+    ):
+        letters = string.ascii_letters
+        filename = ''.join(random.choice(letters) for i in range(10)) + '.csv'
+        tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
+        tempFile.GetContentFile(filename)
+        try:
+            if force_string:
+                df = pd.read_csv(filename, encoding=encoding, dtype=str, sep=sep)
+            else:
+                df = pd.read_csv(filename, encoding=encoding, sep=sep)
+            os.remove(filename)
+        except Exception as error:
+            raise error
+
+        #  Pass force_string=False, since we've already handled force_string here
+        self.upload_df(table, schema, df, start_index, end_index, batch_size, force_string=False)
+
+    
+    def upload_google_sheet(
+        self,
+        table,
+        schema,
+        google_sheet,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        encoding=DEFAULT_ENCODING,
+        force_string=False,
+    ):
+        if force_string:
+            google_sheet_values = google_sheet.get_all_values()
+            df = pandas.DataFrame(google_sheet_values[1:], columns=google_sheete_values[0])
+        else:
+            df = pandas.DataFrame(google_sheet.get_all_records())
+
+        #  Pass force_string=False, since we've already handled force_string here
+        self.upload_df(table, schema, df, start_index, end_index, batch_size, force_string=False)
+        
+    def upload_local_csv(
+        self,
+        table,
+        schema,
+        csv_filename,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        encoding=DEFAULT_ENCODING,
+        force_string=False,
+        sep=",",
+    ):
+        if force_string:
+            df = pandas.read_csv(csv_filepath, encoding=encoding, dtype=str, sep=sep)
+        else:
+            df = pandas.read_csv(csv_filepath, encoding=encoding, sep=sep)
+
+        #  Pass force_string=False, since we've already handled force_string here
+        self.upload_df(table, schema, df, start_index, end_index, batch_size, force_string=False)
 
 Warehouse = Warehouse(
     create_engine(
