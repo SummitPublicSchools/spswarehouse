@@ -1,5 +1,24 @@
 # spswarehouse
 
+# 1.X Changes
+## Major Changes
+- `table_utils.upload_to_warehouse` has been deprecated. Instead the Warehouse class now has a varietey of native `upload_<data>` functions that do not require reflecting the target table.
+- The available Warehouse upload functions are
+    - `Warehouse.upload_df`
+    - `Warehouse.upload_google_drive_csv`
+    - `Warehouse.upload_google_sheet`
+    - `Warehouse.upload_local_csv`
+- Differencces between the new upload functions and the old `upload_to_warehouse`
+    - These functions take `table` and `schema` as two separate arguments instead of `reflected_table`.
+    - `upload_df` does not acccept the `sep` argument (since the `sep` argument didn't do anything with dataframes anyways)
+    - Each function only accepts its listed data type (e.g., `upload_df` only accepts `dataframe`, and does not acceept `csv_filename`)
+    - All other argumenets are the same (`batch_size`, `encoding`, etc.)
+- When using `table_utils.create_table_stmt` and the `Warehouse.upload_<data>` functions, first symbols are sanitized to underscores. Then consecutive underscores are collapsed into a single underscore.
+    - Additionally, it now uses `re.compile('[\W_]+')` as the basis for replacement, rather than a custom list of symbols (making it consistent with how Summit's Airflow server behaves)
+- Upgrade to gspread 6.X. The 6.X update of gspread reversed the default argument order of severala functions. It's advised that you name arguments instead of relying on position.
+- The update to SQLAlchemy 2.X significanatly changes how the Warehouse class queries things. The Warehouse class abstracts most of this, but if you were calling `Warehouse.engine` or `Warehouse.conn` directly, your code may break.
+- The `helper_` functions were removed from `selenium.py`. Simply remove the `helper_` prefix from the function name to fix.
+
 # Prerequisites
 
 - Anaconda & Python 3
@@ -192,7 +211,8 @@ Specifics for `spswarehouse`:
 `python setup.py sdist`
 - Upload to Test PyPI:
 `python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*`
-- Install on local machine to test: `pip install spswarehouse==<insert version number> -i https://test.pypi.org/simple/`
+- Install on local machine to test: `pip install spswarehouse==<insert version number> --no-build-isolation -i https://test.pypi.org/simple/`
+- TODO: Figure out how to do this without needing the `--no-build-isolation` flag
 
 ### Pushing a new package
 
