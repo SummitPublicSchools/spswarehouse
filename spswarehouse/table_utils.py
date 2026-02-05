@@ -30,7 +30,7 @@ def sanitize_string(name):
         name = '_' + name
 
     pattern = re.compile('[\W_]+')
-    return pattern.sub('_', name)
+    return pattern.sub('_', name.lower())
 
 def guess_col_types(df):
     """
