@@ -8,6 +8,7 @@ import re
 import string
 
 from .config import DEFAULT_ENCODING
+from .googledrive import GoogleDrive
 
 # Copied from https://stackoverflow.com/questions/40774787/renaming-columns-in-a-pandas-dataframe-with-duplicate-column-names
 # guess_col_types will break if you have duplicate column names
