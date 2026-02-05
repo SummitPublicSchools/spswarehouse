@@ -1,4 +1,5 @@
 import pandas
+import string
 
 try:
     from .credentials import snowflake_config
