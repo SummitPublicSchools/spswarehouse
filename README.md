@@ -21,6 +21,7 @@
 
 ## Minor changes
 - Most likely, you were upgraded to `numpy>=2.0.0` as part of the package update, which may break some minor things.
+- You know longer have to manually install requirements; the requirements install is built into the `spswarehouse` install
 
 # Prerequisites
 
@@ -36,15 +37,6 @@
     - Take note of the install directory for the "Set up credentials" step.
 
 The files referred to in this `README` are in `<install-directory>/spswarehouse/`.
-
-## Set up dependencies
-
-- Change to the `spswarehouse` directory
-    - `cd <install-directory>\spswarehouse`
-    - The default for Anaconda3 is `cd Anaconda3\Lib\site-packages\spswarehouse`
-- Run: `pip install -r requirements.txt`
-
-You can `exit` the Anaconda Prompt; the next step is more easily done in the File Explorer.
 
 ## Updating to new version
 
@@ -85,46 +77,7 @@ Snowflake access is implemented in by `Warehouse`. You can:
 - Reflect a table using `reflect_table()`
 - Run a SQL command using `execute()`
 
-### Table & column name tab-completion
-
-When you run `import spswarehouse`, some tab-completion for table and column names is automatically set up.
-
-The format is:
-
-```
-spswarehouse.<schema_name>.<table name>.c_<column name>
-```
-
-To reduce load time, tab-completion is automatically set up for only a few schemas when `spswarehouse`is imported.
-
-If the schema you're using isn't tab-completing you can manually import it.
-
-For example, to enable tab-competion for the schema `schoolmint`, run:
-
-```
-from spswarehouse.table_names import *
-
-initialize_schema_object(SchoolMint)
-schoolmint = SchoolMint()
-```
-
 ### Uploading data
-
-The `table_utils` module implements uploading data to the Snowflake warehouse.
-
-The data sources you can upload from are:
-
-- pandas.DataFrame `dataframe`
-- CSV file `csv_filename`
-- Google Sheet `google_sheet`
-- Google Drive files `google_drive_id`
-
-The two major methods are `create_table_stmt` and `upload_to_warehouse`. Both support the above data sources as optional arguments:
-
- - `dataframe`
- - `csv_filename`
- - `google_sheet`
- - `google_drive_id`
 
 From Jupyter Notebook, open `snowflake-upload-example.ipynb` for a basic example.
 
@@ -134,7 +87,7 @@ From Jupyter Notebook, open `snowflake-upload-example.ipynb` for a basic example
 
 If you want to explicitly name and type your columns, you can pass in the `columns` argument instead.
 
-Alternatively, if you want to force all columns to be strings, pass `force_string=True`. This works for both `create_table_stmt()` and `upload_to_warehouse()`. This does not work if you pass a dataframe.
+Alternatively, if you want to force all columns to be strings, pass `force_string=True`. This works for both `create_table_stmt()` and `Warehouse.upload_<data_type>`. This does not work if you pass a dataframe.
 
 See the documentation for `guess_col_types()` for best practices for types.
 
