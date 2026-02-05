@@ -19,6 +19,9 @@
 - The update to SQLAlchemy 2.X significanatly changes how the Warehouse class queries things. The Warehouse class abstracts most of this, but if you were calling `Warehouse.engine` or `Warehouse.conn` directly, your code may break.
 - The `helper_` functions were removed from `selenium.py`. Simply remove the `helper_` prefix from the function name to fix.
 
+## Minor changes
+- Most likely, you were upgraded to `numpy>=2.0.0` as part of the package update, which may break some minor things.
+
 # Prerequisites
 
 - Anaconda & Python 3
