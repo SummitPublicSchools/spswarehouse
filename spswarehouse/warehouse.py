@@ -1,4 +1,6 @@
+import os
 import pandas
+import random
 import string
 
 try:
@@ -167,9 +169,9 @@ class Warehouse:
         tempFile.GetContentFile(filename)
         try:
             if force_string:
-                df = pd.read_csv(filename, encoding=encoding, dtype=str, sep=sep)
+                df = pandas.read_csv(filename, encoding=encoding, dtype=str, sep=sep)
             else:
-                df = pd.read_csv(filename, encoding=encoding, sep=sep)
+                df = pandas.read_csv(filename, encoding=encoding, sep=sep)
             os.remove(filename)
         except Exception as error:
             raise error
