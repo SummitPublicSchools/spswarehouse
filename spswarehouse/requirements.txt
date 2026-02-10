@@ -13,6 +13,6 @@ gspread==6.2.1
 gspread-dataframe==4.0.0
 gspread-formatting==1.2.1
 PyDrive2==1.21.3
-duct-tape==0.26.6
+"duct-tape>=0.26.6"
 requests==2.32.5
 selenium==4.40.0
