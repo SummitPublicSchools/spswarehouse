@@ -193,7 +193,7 @@ class Warehouse:
     ):
         if force_string:
             google_sheet_values = google_sheet.get_all_values()
-            df = pandas.DataFrame(google_sheet_values[1:], columns=google_sheete_values[0])
+            df = pandas.DataFrame(google_sheet_values[1:], columns=google_sheet_values[0])
         else:
             df = pandas.DataFrame(google_sheet.get_all_records())
 
