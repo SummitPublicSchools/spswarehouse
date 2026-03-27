@@ -139,15 +139,19 @@ class Warehouse:
     
         print(str(end_index - start_index) + ' rows to insert')
     
-        dataframe[start_index:end_index].to_sql(
-            name=table,
-            con=self.engine,
-            schema=schema,
-            if_exists='append',
-            index=False,
-            method='multi',
-            chunksize=batch_size
-        )
+        current_index = start_index
+        while current_index < end_index:
+            stop_index = min(current_index + batch_size, end_index)
+            print(f'loading records {current_index} to {stop_index-1}')
+            dataframe[current_index:stop_index].to_sql(
+                name=table,
+                con=self.engine,
+                schema=schema,
+                if_exists='append',
+                index=False,
+                method='multi',
+            )
+            current_index = stop_index
 
         print(f"Data inserted to {schema}.{table} successfully")
     
