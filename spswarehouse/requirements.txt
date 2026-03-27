@@ -1,6 +1,9 @@
 #
 ####### requirements.txt #######
 # Updated 2/3/2026 as part of v1.0.0 upgrade
+# This file is no longer used for installation; however, it is a
+# reference for what package versions are known to work in case
+# a user runs into a package conflict issue
 #
 
 pandas==2.3.3

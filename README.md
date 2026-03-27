@@ -11,7 +11,7 @@
 - Differences between the new upload functions and the old `upload_to_warehouse`
     - These functions take `table` and `schema` as two separate arguments instead of `reflected_table`.
     - `upload_df` does not acccept the `sep` argument (since the `sep` argument didn't do anything with dataframes anyways)
-    - Each function only accepts its listed data type (e.g., `upload_df` only accepts `dataframe`, and does not acceept `csv_filename`)
+    - Each function only accepts its listed data type (e.g., `upload_df` only accepts `dataframe`, and does not accept `csv_filename`)
     - All other arguments are the same (`batch_size`, `encoding`, etc.)
 - When using `table_utils.create_table_stmt` and the `Warehouse.upload_<data>` functions, first, symbols are sanitized to underscores. Then consecutive underscores are collapsed into a single underscore.
     - Additionally, it now uses `re.compile('[\W_]+')` as the basis for replacement, rather than a custom list of symbols (making it consistent with how Summit's Airflow server behaves)
