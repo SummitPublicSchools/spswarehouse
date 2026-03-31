@@ -1,4 +1,7 @@
+import os
 import pandas
+import random
+import string
 
 try:
     from .credentials import snowflake_config
@@ -6,11 +9,15 @@ except ModuleNotFoundError:
     print("No credentials file found in spswarehouse. This could cause issues.")
     
 from sqlalchemy.engine.url import URL
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, MetaData, Table, text
 from sqlalchemy.engine import reflection
 from snowflake.sqlalchemy import VARIANT
 
 from datetime import date
+
+from .config import DEFAULT_BATCH_SIZE, DEFAULT_ENCODING
+from .googledrive import GoogleDrive
+from .table_utils import renamer, sanitize_columns_for_upload
 
 def describe(table):
     for c in table.columns:
@@ -34,7 +41,7 @@ class Warehouse:
     """
     def __init__(self, engine):
         self.engine = engine
-        self.meta = MetaData(bind=engine)
+        self.meta = MetaData()
         self._insp = None
         self._conn = None
         self.loaded_tables = {}   # dictionary of Table objects keyed by "schema.table_name"
@@ -57,11 +64,12 @@ class Warehouse:
         execute: SQL statement -> (connection, proxy)
 
         Running the execute method sends the SQL string to the warehouse using
-        this object's connection object. The return value is a tuple of the
-        connection object and the SQLAlchemy proxy object returned from executing
-        the SQL.
+        this object's connection object, and commits the statement.
+
+        No value is returned.
         """
-        return self.conn, self.conn.execute(sql)
+        self.conn.execute(text(sql))
+        self.conn.commit()
 
     def read_sql(self, sql):
         """
@@ -98,7 +106,7 @@ class Warehouse:
         if table is not None:
             return table
 
-        table = Table(table_or_view, self.meta, autoload=True, schema=schema)
+        table = Table(table_or_view, self.meta, autoload_with=self.engine, schema=schema)
 
         # sets the column names explicitly on the instance so that tab-completion is easy
         for c in table.columns:
@@ -108,6 +116,113 @@ class Warehouse:
         self.loaded_tables[name_with_schema] = table
 
         return table
+
+    def upload_df(
+        self,
+        table,
+        schema,
+        dataframe,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        force_string=False,
+    ):
+
+        if force_string:
+            dataframe = dataframe.astype(str)
+        
+        if end_index is None:
+            end_index = len(dataframe)
+
+        dataframe = sanitize_columns_for_upload(dataframe)
+        dataframe = dataframe.rename(columns=renamer())
+    
+        print(str(end_index - start_index) + ' rows to insert')
+    
+        current_index = start_index
+        while current_index < end_index:
+            stop_index = min(current_index + batch_size, end_index)
+            print(f'loading records {current_index} to {stop_index-1}')
+            dataframe[current_index:stop_index].to_sql(
+                name=table,
+                con=self.engine,
+                schema=schema,
+                if_exists='append',
+                index=False,
+                method='multi',
+            )
+            current_index = stop_index
+
+        print(f"Data inserted to {schema}.{table} successfully")
+    
+    def upload_google_drive_csv(
+        self,
+        table,
+        schema,
+        google_drive_id,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        encoding=DEFAULT_ENCODING,
+        force_string=False,
+        sep=",",
+    ):
+        letters = string.ascii_letters
+        filename = ''.join(random.choice(letters) for i in range(10)) + '.csv'
+        tempFile = GoogleDrive.CreateFile({'id': google_drive_id})
+        tempFile.GetContentFile(filename)
+        try:
+            if force_string:
+                df = pandas.read_csv(filename, encoding=encoding, dtype=str, sep=sep)
+            else:
+                df = pandas.read_csv(filename, encoding=encoding, sep=sep)
+            os.remove(filename)
+        except Exception as error:
+            raise error
+
+        #  Pass force_string=False, since we've already handled force_string here
+        self.upload_df(table, schema, df, start_index, end_index, batch_size, force_string=False)
+
+    
+    def upload_google_sheet(
+        self,
+        table,
+        schema,
+        google_sheet,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        encoding=DEFAULT_ENCODING,
+        force_string=False,
+    ):
+        if force_string:
+            google_sheet_values = google_sheet.get_all_values()
+            df = pandas.DataFrame(google_sheet_values[1:], columns=google_sheet_values[0])
+        else:
+            df = pandas.DataFrame(google_sheet.get_all_records())
+
+        #  Pass force_string=False, since we've already handled force_string here
+        self.upload_df(table, schema, df, start_index, end_index, batch_size, force_string=False)
+        
+    def upload_local_csv(
+        self,
+        table,
+        schema,
+        csv_filename,
+        start_index=0,
+        end_index=None,
+        batch_size=DEFAULT_BATCH_SIZE,
+        encoding=DEFAULT_ENCODING,
+        force_string=False,
+        sep=",",
+    ):
+        if force_string:
+            df = pandas.read_csv(csv_filepath, encoding=encoding, dtype=str, sep=sep)
+        else:
+            df = pandas.read_csv(csv_filepath, encoding=encoding, sep=sep)
+
+        #  Pass force_string=False, since we've already handled force_string here
+        self.upload_df(table, schema, df, start_index, end_index, batch_size, force_string=False)
 
 Warehouse = Warehouse(
     create_engine(
