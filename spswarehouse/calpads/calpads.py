@@ -91,7 +91,7 @@ class CALPADS():
         elif self.host is None:
             self.host = calpads_config['host']
         else:
-            pass
+            self.host = "https://www.calpads.org"
         
         if download_location is None:
             self.download_location = tempfile.mkdtemp()
