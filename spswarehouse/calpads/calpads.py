@@ -1,7 +1,7 @@
 # Code adapted from original code by Yusuph in the dops-calpad repo
 
 # Author: Howard Shen
-# Last Edited 5/25/2023
+# Last Edited 4/22/2026
 
 import logging
 import os
@@ -37,6 +37,12 @@ from spswarehouse.calpads.calpads_config import (
     monitoring_links,
     snapshot_report_base,
     snapshot_links,
+)
+
+from spswarehouse.general.selenium import (
+    click_element_by_id,
+    click_element_by_xpath,
+    type_in_element_by_name
 )
     
 class CALPADS():
@@ -91,7 +97,7 @@ class CALPADS():
         elif self.host is None:
             self.host = calpads_config['host']
         else:
-            pass
+            self.host = "https://www.calpads.org"
         
         if download_location is None:
             self.download_location = tempfile.mkdtemp()
@@ -684,29 +690,29 @@ class CALPADS():
         )
             
     def _login_to_calpads(self, username, password):
-        self.driver.get(self.host)
+        self.driver.get(self.host + "/login/AzureOpenId")
         try:
-            WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((
-                By.XPATH,
-                '/html/body/div[3]/div/form/div/div[2]/fieldset/div[4]/div/button'
-            )))
+            type_in_element_by_name(self.driver, "username", username)
         except TimeoutException:
             logging.info("Was unable to reach the login page. Check the browser: {}".format(self.driver.title))
             return False
         except NoSuchElementException:
             logging.info("Was unable to reach the login page. Check the browser: {}".format(self.driver.title))
             return False
-        user = self.driver.find_element(By.ID, "Username")
-        user.send_keys(username)
-        pw = self.driver.find_element(By.ID, "Password")
-        pw.send_keys(password)
-        agreement = self.driver.find_element(By.ID, "AgreementConfirmed")
-        self.driver.execute_script("arguments[0].click();", agreement)
-        btn = self.driver.find_element(
-            By.XPATH,
-            "/html/body/div[3]/div/form/div/div[2]/fieldset/div[4]/div/button"
-        )
-        btn.click()
+        click_element_by_id(self.driver, "usernamePrimaryButton")
+        type_in_element_by_name(self.driver, "passwd", password)
+        click_element_by_id(self.driver, "idSIButton9")
+
+        try:
+            # This is the "do you want to stay signed in button"
+            # Click no.
+            click_element_by_id(self.driver, "idBtn_Back")
+        except:
+            # If the stay signed in screen doesn't appear, no need to raise an error
+            pass
+
+        click_element_by_xpath(self.driver, '/html/body/div[1]/div/div/div[2]/form/button')
+        
         try:
             WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((
                 By.ID,
