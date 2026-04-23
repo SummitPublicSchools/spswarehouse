@@ -41,6 +41,7 @@ from spswarehouse.calpads.calpads_config import (
 
 from spswarehouse.general.selenium import (
     click_element_by_id,
+    click_element_by_xpath,
     type_in_element_by_name
 )
     
@@ -710,8 +711,7 @@ class CALPADS():
             # If the stay signed in screen doesn't appear, no need to raise an error
             pass
 
-        accept_button = WebDriverWait(self.driver, 15).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[1]/div/div/div[2]/form/button')))
-        accept_button.click()
+        click_element_by_xpath(self.driver, '/html/body/div[1]/div/div/div[2]/form/button')
         
         try:
             WebDriverWait(self.driver, 30).until(EC.presence_of_element_located((
