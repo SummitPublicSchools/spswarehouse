@@ -689,7 +689,7 @@ class CALPADS():
             cert_status=cert_status
         )
             
-    def _login_to_calpads(self, username, password):
+    def _login_to_calpads(self, username, password, mfa_function=None, mfa_function_kwargs_dict={}):
         self.driver.get(self.host + "/login/AzureOpenId")
         try:
             type_in_element_by_name(self.driver, "username", username)
@@ -703,6 +703,17 @@ class CALPADS():
         type_in_element_by_name(self.driver, "passwd", password)
         click_element_by_id(self.driver, "idSIButton9")
 
+        try:
+            # MFA "email code to ..." button
+            click_element_by_xpath(self.driver, '//*[@id="tileList"]/div/div/button')
+            verification_code = mfa_function(**mfa_function_kwargs_dict)
+            type_in_element_by_name(self.driver, 'otc', verification_code)
+            click_element_by_id(self.driver, "oneTimeCodePrimaryButton")
+        except:
+            # User may not have MFA turned on
+            logging.info("No MFA screen found")
+            pass
+        
         try:
             # This is the "do you want to stay signed in button"
             # Click no.
