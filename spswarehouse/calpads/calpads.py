@@ -707,13 +707,18 @@ class CALPADS():
 
         try:
             # MFA "email code to ..." button
+            logging.info("Pressing MFA button")
             click_element_by_xpath(self.driver, '//*[@id="tileList"]/div/div/button')
+            logging.info("Getting MFA from email")
             verification_code = mfa_function(**mfa_function_kwargs_dict)
+            # Next log has two purposes - report MFA success and also acts as a fail triggere if
+            # the verification code is None.
+            logging.info(f"Found MFA code starting with {str(verification_code[0])}")
             type_in_element_by_name(self.driver, 'otc', verification_code)
             click_element_by_id(self.driver, "oneTimeCodePrimaryButton")
         except:
             # User may not have MFA turned on
-            logging.info("No MFA screen found")
+            logging.info("MFA failed. Proceeding in case user does not have MFA turned on")
             pass
         
         try:
