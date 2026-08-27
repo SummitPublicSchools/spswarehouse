@@ -55,6 +55,8 @@ class CALPADS():
         host=None,
         download_location=None,
         headless=True,
+        mfa_function=None,
+        mfa_function_kwargs_dict={},
     ):
         """
         By default, the class will pull the username and password from the
@@ -108,7 +110,7 @@ class CALPADS():
             download_location=self.download_location,
             headless=headless
         )
-        self._login_to_calpads(username, password)
+        self._login_to_calpads(username, password, mfa_function, mfa_function_kwargs_dict)
 
     def quit(self):
         self.driver.quit()
@@ -689,7 +691,7 @@ class CALPADS():
             cert_status=cert_status
         )
             
-    def _login_to_calpads(self, username, password):
+    def _login_to_calpads(self, username, password, mfa_function=None, mfa_function_kwargs_dict={}):
         self.driver.get(self.host + "/login/AzureOpenId")
         try:
             type_in_element_by_name(self.driver, "username", username)
@@ -703,6 +705,22 @@ class CALPADS():
         type_in_element_by_name(self.driver, "passwd", password)
         click_element_by_id(self.driver, "idSIButton9")
 
+        try:
+            # MFA "email code to ..." button
+            logging.info("Pressing MFA button")
+            click_element_by_xpath(self.driver, '//*[@id="tileList"]/div/div/button')
+            logging.info("Getting MFA from email")
+            verification_code = mfa_function(**mfa_function_kwargs_dict)
+            # Next log has two purposes - report MFA success and also acts as a fail triggere if
+            # the verification code is None.
+            logging.info(f"Found MFA code starting with {str(verification_code[0])}")
+            type_in_element_by_name(self.driver, 'otc', verification_code)
+            click_element_by_id(self.driver, "oneTimeCodePrimaryButton")
+        except:
+            # User may not have MFA turned on
+            logging.info("MFA failed. Proceeding in case user does not have MFA turned on")
+            pass
+        
         try:
             # This is the "do you want to stay signed in button"
             # Click no.
