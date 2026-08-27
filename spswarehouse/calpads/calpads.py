@@ -55,6 +55,8 @@ class CALPADS():
         host=None,
         download_location=None,
         headless=True,
+        mfa_function=None,
+        mfa_function_kwargs_dict={},
     ):
         """
         By default, the class will pull the username and password from the
@@ -108,7 +110,7 @@ class CALPADS():
             download_location=self.download_location,
             headless=headless
         )
-        self._login_to_calpads(username, password)
+        self._login_to_calpads(username, password, mfa_function, mfa_function_kwargs_dict)
 
     def quit(self):
         self.driver.quit()
