@@ -270,8 +270,8 @@ class CALPADS():
             logging.info('Something went wrong with loading the submission error details page.')
             return submitted_date_string, job_results_df, False
 
-         #We expect the error details to be the second table in the HTML source
-        error_details_df = pd.read_html(self.driver.page_source)[1]
+         #We expect the error details to be the third table in the HTML source (as of August 2026)
+        error_details_df = pd.read_html(self.driver.page_source)[2]
 
         # Get errors if there are multiple pages
         error_has_next = WebDriverWait(self.driver, 30).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="FileErrors"]/div/a[3]')))
