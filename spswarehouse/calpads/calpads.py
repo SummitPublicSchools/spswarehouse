@@ -228,7 +228,7 @@ class CALPADS():
         for i in range(max_wait):
             file_status = self.driver.find_element(
                 By.XPATH,
-                '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[8]'
+                '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[9]'
             ).text
             if file_status in ['Posted', 'Failed', 'Rejected']:
                 logging.info('Found final job results. Storing them.')
