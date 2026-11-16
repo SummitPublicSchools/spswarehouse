@@ -209,7 +209,7 @@ class CALPADS():
             # The filtered page is identical, so sleep for a moment
             time.sleep(2)
             WebDriverWait(self.driver, 20).until(EC.text_to_be_present_in_element(
-                (By.XPATH, '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[6]'),
+                (By.XPATH, '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[7]'),
                 submission_type
             ))
         except TimeoutException:
