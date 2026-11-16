@@ -198,7 +198,7 @@ class CALPADS():
             )
         except TimeoutException:
             logging.info("Can't load View Submission page")
-            return None, False
+            return None, False, False
 
         # Filter the file list
         file_select = Select(file_elem)
@@ -214,7 +214,7 @@ class CALPADS():
             ))
         except TimeoutException:
             logging.info(f"No recent submissions of type {submission_type}")
-            return None, False
+            return None, False, False
 
         # Process submission date
         date_text = self.driver.find_element(
