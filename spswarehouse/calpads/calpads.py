@@ -198,7 +198,7 @@ class CALPADS():
             )
         except TimeoutException:
             logging.info("Can't load View Submission page")
-            return None, False
+            return None, False, False
 
         # Filter the file list
         file_select = Select(file_elem)
@@ -209,12 +209,12 @@ class CALPADS():
             # The filtered page is identical, so sleep for a moment
             time.sleep(2)
             WebDriverWait(self.driver, 20).until(EC.text_to_be_present_in_element(
-                (By.XPATH, '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[6]'),
+                (By.XPATH, '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[7]'),
                 submission_type
             ))
         except TimeoutException:
             logging.info(f"No recent submissions of type {submission_type}")
-            return None, False
+            return None, False, False
 
         # Process submission date
         date_text = self.driver.find_element(
@@ -228,7 +228,7 @@ class CALPADS():
         for i in range(max_wait):
             file_status = self.driver.find_element(
                 By.XPATH,
-                '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[8]'
+                '//*[@id="FileSubmissionSearchResults"]/table/tbody/tr[1]/td[9]'
             ).text
             if file_status in ['Posted', 'Failed', 'Rejected']:
                 logging.info('Found final job results. Storing them.')
